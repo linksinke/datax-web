@@ -55,8 +55,8 @@ public class JobFailMonitorHelper {
 								if (lockRet < 1) {
 									continue;
 								}
-								JobLog log = JobAdminConfig.getAdminConfig().getJobLogMapper().load(failLogId);
-								JobInfo info = JobAdminConfig.getAdminConfig().getJobInfoMapper().loadById(log.getJobId());
+								JobLog log = JobAdminConfig.getAdminConfig().getJobLogMapper().selectById(failLogId);
+								JobInfo info = JobAdminConfig.getAdminConfig().getJobInfoMapper().selectById(log.getJobId());
 
 								// 1、fail retry monitor
 								if (log.getExecutorFailRetryCount() > 0) {
@@ -168,7 +168,7 @@ public class JobFailMonitorHelper {
 			}
 
 			// email info
-			JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().load(Integer.valueOf(info.getJobGroup()));
+			JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().selectById(Integer.valueOf(info.getJobGroup()));
 			String personal = I18nUtil.getString("admin_name_full");
 			String title = I18nUtil.getString("jobconf_monitor");
 			String content = MessageFormat.format(mailBodyTemplate,

@@ -47,6 +47,15 @@
 
     <build>
         <plugins>
+            <!-- Enables Spring Boot Maven integration and IDEA run configuration discovery. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>com.wugui.datax.executor.DataXExecutorApplication</mainClass>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

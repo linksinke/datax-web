@@ -1,0 +1,4 @@
+<div class="datax-code-editor">
+  <textarea ref="textarea" aria-label="当前 JSON 配置编辑器"></textarea>
+  <div class="datax-code-status" :class="{ 'has-error': error }" aria-live="polite">{{ error || 'JSON 格式正确 · Ctrl+S 保存 · Ctrl+Shift+F 格式化' }}</div>
+</div>

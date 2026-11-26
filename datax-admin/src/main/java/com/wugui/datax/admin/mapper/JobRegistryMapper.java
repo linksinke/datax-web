@@ -30,14 +30,6 @@ public interface JobRegistryMapper extends BaseMapper<JobRegistry> {
                               @Param("loadAverage") double loadAverage,
                               @Param("updateTime") Date updateTime);
 
-    public int registrySave(@Param("registryGroup") String registryGroup,
-                            @Param("registryKey") String registryKey,
-                            @Param("registryValue") String registryValue,
-                            @Param("cpuUsage") double cpuUsage,
-                            @Param("memoryUsage") double memoryUsage,
-                            @Param("loadAverage") double loadAverage,
-                            @Param("updateTime") Date updateTime);
-
     public int registryDelete(@Param("registryGroup") String registryGroup,
                               @Param("registryKey") String registryKey,
                               @Param("registryValue") String registryValue);

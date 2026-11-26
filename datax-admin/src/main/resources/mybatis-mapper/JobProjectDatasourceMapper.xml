@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wugui.datax.admin.mapper.JobProjectDatasourceMapper">
+
+    <!-- Include unavailable existing bindings so they remain visible and removable. -->
+    <select id="selectProjectDatasources" resultType="com.wugui.datax.admin.dto.ProjectDatasourceDto">
+        SELECT binding.project_id, binding.datasource_id AS id,
+               source.datasource_name, source.datasource, source.datasource_group, source.status
+        FROM job_project_datasource binding
+        LEFT JOIN job_jdbc_datasource source ON source.id = binding.datasource_id
+        WHERE binding.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">#{projectId}</foreach>
+        ORDER BY binding.id
+    </select>
+
+</mapper>

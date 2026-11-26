@@ -71,7 +71,7 @@ public class JobRegistryMonitorHelper {
 								addressListStr = addressListStr.substring(0, addressListStr.length()-1);
 							}
 							group.setAddressList(addressListStr);
-							JobAdminConfig.getAdminConfig().getJobGroupMapper().update(group);
+							JobAdminConfig.getAdminConfig().getJobGroupMapper().updateById(group);
 						}
 					}
 				} catch (Exception e) {

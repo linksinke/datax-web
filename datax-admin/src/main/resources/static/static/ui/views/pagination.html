@@ -1,0 +1,5 @@
+<footer class="ui-table-footer">
+  <span class="ui-updated">{{ updatedAt ? '更新于 ' + updatedAt : ' ' }}</span>
+  <el-pagination background :total="Number(total || 0)" :current-page="Number(current || 1)" :page-size="Number(size || 10)"
+    :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @current-change="changePage" @size-change="changeSize"></el-pagination>
+</footer>

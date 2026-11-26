@@ -1,8 +1,8 @@
 package com.wugui.datax.admin.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,6 +17,9 @@ public class JobLogReport {
     private Date triggerDay;
 
     private int runningCount;
+
     private int sucCount;
+
     private int failCount;
+
 }

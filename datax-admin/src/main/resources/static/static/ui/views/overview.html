@@ -1,0 +1,12 @@
+<section class="app-container ui-page">
+  <div class="ui-panel-title"><h2>运行概况</h2><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新报表</el-button></div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <div v-loading="uiRead.loading" class="ui-overview">
+    <div class="ui-overview-stat is-success"><span>成功执行</span><strong>{{ uiOverview.success.toLocaleString() }}</strong></div>
+    <div class="ui-overview-stat is-running"><span>正在运行</span><strong>{{ uiOverview.running.toLocaleString() }}</strong></div>
+    <div class="ui-overview-stat is-failed"><span>执行失败</span><strong>{{ uiOverview.failed.toLocaleString() }}</strong></div>
+  </div>
+  <div class="ui-panel-title"><h3>近七日执行趋势</h3><el-button type="text" @click="$router.push('/datax/log/jobLog')">查看执行日志</el-button></div>
+  <line-chart :chart-data="lineChartData"></line-chart>
+  <footer class="ui-table-footer"><span class="ui-updated">统计来自任务执行记录</span><span v-if="uiRead.updatedAt" class="ui-updated">更新于 {{ uiRead.updatedAt }}</span></footer>
+</section>

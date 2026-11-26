@@ -1,0 +1,20 @@
+<section class="app-container ui-page">
+  <div class="ui-filter"><el-input v-model="keyword" clearable prefix-icon="el-icon-search" placeholder="搜索项目名称" @keyup.enter.native="search"></el-input><el-button @click="search">查询</el-button><el-button @click="keyword = ''; search()">重置</el-button><span class="ui-filter-spacer"></span><el-button icon="el-icon-refresh" :loading="loading" @click="fetch">刷新</el-button><el-button type="primary" icon="el-icon-plus" @click="open('create')">新增项目</el-button></div>
+  <ui-data-state :state="{ error: listError }" @retry="fetch"></ui-data-state>
+  <el-table v-loading="loading" :data="rows" row-key="id" empty-text="暂无项目，请创建项目并绑定数据源">
+    <el-table-column label="项目" min-width="210"><template slot-scope="scope"><span class="ui-row-title">{{ scope.row.name }}</span><small class="ui-cell-secondary">{{ scope.row.description }}</small></template></el-table-column>
+    <el-table-column label="绑定数据源" min-width="270"><template slot-scope="scope"><div class="ui-tag-list"><el-tag v-for="source in (scope.row.datasources || []).slice(0, 3)" :key="source.id" size="small" :type="source.status === 1 ? '' : 'info'">{{ source.datasourceName || '数据源 #' + source.id }}{{ source.status === 1 ? '' : '（不可用）' }}</el-tag><el-tag v-if="(scope.row.datasources || []).length > 3" type="info" size="small">+{{ scope.row.datasources.length - 3 }}</el-tag><span v-if="!(scope.row.datasources || []).length" class="ui-cell-secondary">未绑定</span></div></template></el-table-column>
+    <el-table-column prop="userName" label="所属用户" width="120"></el-table-column><el-table-column prop="createTime" label="创建时间" min-width="175"></el-table-column>
+    <el-table-column label="操作" width="300" fixed="right"><template slot-scope="scope"><div class="ui-row-actions"><el-button type="text" @click="open('bindings', scope.row)">绑定数据源</el-button><el-button type="text" :disabled="!(scope.row.datasourceIds || []).length" @click="generate(scope.row)">生成 JSON</el-button><el-button type="text" @click="open('edit', scope.row)">编辑</el-button><el-button type="text" class="ui-danger" @click="remove(scope.row)">删除</el-button></div></template></el-table-column>
+  </el-table>
+  <ui-pagination :total="total" :current.sync="current" :size.sync="size" @change="fetch"></ui-pagination>
+  <el-dialog class="ui-dialog" :title="mode === 'bindings' ? '绑定数据源 · ' + form.name : mode === 'create' ? '新增项目' : '编辑项目'" :visible.sync="dialogVisible" width="700px" top="7vh" :close-on-click-modal="false" :close-on-press-escape="!saving" :show-close="!saving">
+    <ui-data-state :state="{ error: dialogError }"></ui-data-state>
+    <el-form v-loading="dialogLoading" label-position="top" :disabled="saving || dialogLoading || !!dialogError">
+      <template v-if="mode !== 'bindings'"><el-form-item label="项目名称"><el-input v-model="form.name" :maxlength="100" show-word-limit></el-input></el-form-item><el-form-item label="项目描述"><el-input v-model="form.description" type="textarea" :rows="2" resize="none" :maxlength="200"></el-input></el-form-item></template>
+      <el-form-item label="绑定数据源"><el-select v-model="form.datasourceIds" multiple collapse-tags filterable clearable placeholder="选择已有数据源，可多选" style="width: 100%"><el-option v-for="source in sourceOptions" :key="source.id" :value="source.id" :label="(source.datasourceName || '数据源 #' + source.id) + '（' + (source.status === 1 ? source.datasource : '不可用') + '）'"></el-option></el-select></el-form-item>
+      <div class="ui-tag-list"><el-tag v-for="source in selectedSources" :key="source.id" size="small" :type="source.status === 1 ? '' : 'info'">{{ source.datasourceName || '数据源 #' + source.id }}</el-tag></div><p class="ui-hint">支持绑定多个数据源，同一个数据源可用于多个项目。</p>
+    </el-form>
+    <div slot="footer"><el-button :disabled="saving" @click="close">取消</el-button><el-button type="primary" :loading="saving" :disabled="dialogLoading || !!dialogError" @click="save">{{ mode === 'bindings' ? '保存绑定' : '保存项目' }}</el-button></div>
+  </el-dialog>
+</section>

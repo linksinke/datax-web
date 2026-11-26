@@ -1,0 +1,19 @@
+<section class="app-container ui-page">
+  <div class="ui-filter"><el-input v-model="listQuery.username" clearable placeholder="搜索用户名" prefix-icon="el-icon-search" @keyup.enter.native="uiSearch"></el-input><el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新</el-button><el-button type="primary" icon="el-icon-plus" @click="uiOpenCreate">新增用户</el-button></div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="没有匹配的用户">
+    <el-table-column prop="id" label="ID" width="80"></el-table-column><el-table-column prop="username" label="用户名" min-width="200"></el-table-column>
+    <el-table-column label="角色" min-width="160"><template slot-scope="scope"><el-tag size="small" :type="scope.row.role === 'ROLE_ADMIN' ? '' : 'info'">{{ scope.row.role === 'ROLE_ADMIN' ? '管理员' : '普通用户' }}</el-tag></template></el-table-column>
+    <el-table-column label="执行器权限" min-width="220" show-overflow-tooltip><template slot-scope="scope">{{ scope.row.permission || '未指定' }}</template></el-table-column>
+    <el-table-column label="操作" width="130" fixed="right"><template slot-scope="scope"><div class="ui-row-actions"><el-button type="text" @click="uiOpenUpdate(scope.row)">编辑</el-button><el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)" @click="uiRemove(scope.row)">删除</el-button></div></template></el-table-column>
+  </el-table>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+  <el-dialog class="ui-dialog" :title="dialogStatus === 'create' ? '新增用户' : '编辑用户'" :visible.sync="dialogFormVisible" width="640px" top="8vh" :close-on-click-modal="false" :show-close="!uiPending.save" :close-on-press-escape="!uiPending.save">
+    <el-form ref="dataForm" :model="temp" :rules="rules" label-position="top" :disabled="uiPending.save">
+      <div class="ui-form-grid"><el-form-item label="用户名" prop="username"><el-input v-model="temp.username" :disabled="dialogStatus !== 'create'" autocomplete="off"></el-input></el-form-item><el-form-item label="角色" prop="role"><el-select v-model="temp.role"><el-option label="普通用户" value="ROLE_USER"></el-option><el-option label="管理员" value="ROLE_ADMIN"></el-option></el-select></el-form-item></div>
+      <el-form-item :label="dialogStatus === 'create' ? '登录密码' : '新密码'" prop="password"><el-input v-model="temp.password" type="password" show-password autocomplete="new-password" placeholder="输入4至20位密码"></el-input></el-form-item>
+      <el-form-item label="执行器权限"><el-input v-model="temp.permission" placeholder="执行器 ID，多个使用逗号分隔"></el-input></el-form-item>
+    </el-form>
+    <div slot="footer"><el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button><el-button type="primary" :loading="uiPending.save" @click="uiSave">保存用户</el-button></div>
+  </el-dialog>
+</section>

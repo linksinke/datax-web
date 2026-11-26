@@ -57,11 +57,6 @@
           AND `registry_value` = #{registryValue}
     </update>
 
-    <insert id="registrySave">
-        INSERT INTO job_registry( `registry_group` , `registry_key` , `registry_value`, `cpu_usage`,`memory_usage`,`load_average`,`update_time`)
-        VALUES( #{registryGroup}  , #{registryKey} , #{registryValue},#{cpuUsage}, #{memoryUsage},#{loadAverage},#{updateTime})
-    </insert>
-
     <delete id="registryDelete">
 		DELETE FROM job_registry
 		WHERE registry_group = #{registryGroup}

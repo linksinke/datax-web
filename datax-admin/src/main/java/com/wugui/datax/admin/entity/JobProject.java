@@ -1,16 +1,14 @@
 package com.wugui.datax.admin.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.wugui.datax.admin.dto.ProjectDatasourceDto;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.wugui.datax.admin.dto.ProjectDatasourceDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -44,9 +42,10 @@ public class JobProject {
     @ApiModelProperty("更新时间")
     private Date updateTime;
 
-    @TableField(exist=false)
+    @TableField(exist = false)
     private String userName;
 
+    //************** 非数据库字段 **************/
     /** Null on legacy update requests means keep existing bindings. */
     @TableField(exist = false)
     private List<Long> datasourceIds;

@@ -102,6 +102,8 @@ public class JobTemplate {
     @ApiModelProperty("所属项目")
     private int projectId;
 
+
+    //************** 非数据库字段 **************/
     @TableField(exist = false)
     private String projectName;
 

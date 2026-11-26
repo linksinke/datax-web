@@ -1,0 +1,118 @@
+<section class="app-container ui-page">
+    <div class="ui-filter">
+        <el-input v-model="listQuery.datasourceName" clearable placeholder="搜索数据源名称" prefix-icon="el-icon-search"
+                  @keyup.enter.native="uiSearch"></el-input>
+        <el-button @click="uiSearch">查询</el-button>
+        <el-button @click="uiReset">重置</el-button>
+        <span class="ui-filter-spacer"></span>
+        <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="handleCreate">新增数据源</el-button>
+    </div>
+    <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+    <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="暂无数据源，请新增连接配置">
+        <el-table-column label="数据源名称" min-width="200">
+            <template slot-scope="scope"><span class="ui-row-title">{{ scope.row.datasourceName }}</span><small
+                    class="ui-cell-secondary">{{ scope.row.datasourceGroup || 'Default' }}</small></template>
+        </el-table-column>
+        <el-table-column prop="datasource" label="数据库类型" width="130"></el-table-column>
+        <el-table-column prop="jdbcUrl" label="连接地址" min-width="300" show-overflow-tooltip></el-table-column>
+        <el-table-column label="状态" width="100">
+            <template slot-scope="scope">
+                <el-tag size="small" :type="scope.row.status === 1 ? 'success' : 'info'">{{ scope.row.status === 1 ?
+                    '可用' : '已禁用' }}
+                </el-tag>
+            </template>
+        </el-table-column>
+        <el-table-column prop="comments" label="备注" min-width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="125" fixed="right">
+            <template slot-scope="scope">
+                <div class="ui-row-actions">
+                    <el-button type="text" @click="handleUpdate(scope.row)">编辑</el-button>
+                    <el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)"
+                               @click="uiRemove(scope.row)">删除
+                    </el-button>
+                </div>
+            </template>
+        </el-table-column>
+    </el-table>
+    <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size"
+                   :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+
+    <el-dialog class="datax-datasource-dialog ui-dialog"
+               :title="dialogStatus === 'create' ? '新增数据源' : '编辑数据源'" :visible.sync="dialogFormVisible"
+               width="940px" top="5vh"
+               :close-on-click-modal="false" :close-on-press-escape="!datasourceSaving && !datasourceTesting"
+               :show-close="!datasourceSaving && !datasourceTesting">
+        <el-form ref="dataForm" :model="temp" :rules="rules" label-position="top"
+                 :disabled="datasourceSaving || datasourceTesting">
+            <div class="ui-form-grid">
+                <el-form-item label="数据源名称" prop="datasourceName">
+                    <el-input v-model="temp.datasourceName" placeholder="例如：生产业务库"
+                              @input="uiClearConnection"></el-input>
+                </el-form-item>
+                <el-form-item label="数据库类型" prop="datasource">
+                    <el-select :value="temp.datasource" placeholder="选择数据库类型" @input="uiTypeChange">
+                        <el-option v-for="item in dataSources" :key="item.value" :label="item.label"
+                                   :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item class="ui-span-full" label="数据源分组">
+                    <el-input v-model="temp.datasourceGroup" placeholder="例如：生产环境、测试环境"
+                              @input="uiClearConnection"></el-input>
+                </el-form-item>
+            </div>
+            <section class="ui-form-section"><h3>连接配置</h3>
+                <template v-if="temp.datasource !== 'hbase'">
+                    <el-form-item :label="temp.datasource === 'mongodb' ? 'MongoDB 连接地址' : 'JDBC URL'"
+                                  prop="jdbcUrl">
+                        <el-input v-model="temp.jdbcUrl" type="textarea" :rows="3" resize="none" class="ui-code"
+                                  spellcheck="false" @input="uiClearConnection"></el-input>
+                    </el-form-item>
+                    <el-form-item v-if="temp.datasource === 'mongodb'" label="数据库名称" prop="databaseName">
+                        <el-input v-model="temp.databaseName" @input="uiClearConnection"></el-input>
+                    </el-form-item>
+                    <template v-else>
+                        <el-form-item label="JDBC 驱动类" prop="jdbcDriverClass">
+                            <el-input v-model="temp.jdbcDriverClass" class="ui-code" spellcheck="false"
+                                      @input="uiClearConnection"></el-input>
+                        </el-form-item>
+                        <div class="ui-form-grid">
+                            <el-form-item label="用户名">
+                                <el-input v-model="temp.jdbcUsername" autocomplete="off"
+                                          @input="uiClearConnection"></el-input>
+                            </el-form-item>
+                            <el-form-item label="密码">
+                                <el-input v-model="temp.jdbcPassword" type="password" show-password
+                                          autocomplete="new-password" @input="uiClearConnection"></el-input>
+                            </el-form-item>
+                        </div>
+                    </template>
+                </template>
+                <el-form-item v-else label="ZooKeeper 地址" prop="zkAdress">
+                    <el-input v-model="temp.zkAdress" type="textarea" :rows="2" resize="none"
+                              placeholder="多个节点使用逗号分隔" @input="uiClearConnection"></el-input>
+                </el-form-item>
+            </section>
+            <el-form-item label="备注">
+                <el-input v-model="temp.comments" type="textarea" :rows="2" resize="none"
+                          placeholder="记录用途、所属业务或其他说明"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer">
+            <el-alert v-if="connectionResult" :title="connectionResult.message" :type="connectionResult.type"
+                      :closable="false" show-icon class="datax-ds-connection-result"></el-alert>
+            <div class="datax-ds-footer">
+                <el-button :loading="datasourceTesting" :disabled="datasourceSaving" @click="testDataSource">测试连接
+                </el-button>
+                <div>
+                    <el-button :disabled="datasourceSaving || datasourceTesting" @click="dialogFormVisible = false">
+                        取消
+                    </el-button>
+                    <el-button type="primary" :loading="datasourceSaving" :disabled="datasourceTesting"
+                               @click="dialogStatus === 'create' ? createData() : updateData()">保存数据源
+                    </el-button>
+                </div>
+            </div>
+        </div>
+    </el-dialog>
+</section>

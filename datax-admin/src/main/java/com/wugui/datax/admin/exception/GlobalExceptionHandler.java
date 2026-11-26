@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public R handleException(Exception e){
-        log.error("系统异常{0}",e);
+    public R handleException(Exception e) {
+        log.error("系统异常{0}", e);
         return R.failed(e.getMessage());
     }
+
 }

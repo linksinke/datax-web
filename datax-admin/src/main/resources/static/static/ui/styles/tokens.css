@@ -1,0 +1,22 @@
+:root {
+  --ui-nav: #193247;
+  --ui-nav-deep: #152b3d;
+  --ui-primary: #2469c9;
+  --ui-primary-soft: #edf4ff;
+  --ui-text: #213247;
+  --ui-muted: #64748b;
+  --ui-bg: #f4f6f9;
+  --ui-surface: #ffffff;
+  --ui-border: #e2e8f0;
+  --ui-success: #20845b;
+  --ui-warning: #a97016;
+  --ui-danger: #c84646;
+  --ui-radius: 8px;
+  --ui-control-height: 36px;
+  --ui-font: "Microsoft YaHei UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --dx-canvas: var(--ui-bg);
+  --dx-ink: var(--ui-text);
+  --dx-muted: var(--ui-muted);
+  --dx-line: var(--ui-border);
+  --dx-blue: var(--ui-primary);
+}

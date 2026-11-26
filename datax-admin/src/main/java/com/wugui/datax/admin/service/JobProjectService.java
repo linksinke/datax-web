@@ -2,7 +2,6 @@ package com.wugui.datax.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.entity.JobProject;
 import com.wugui.datax.admin.dto.ProjectDatasourceDto;
 import java.util.List;
@@ -23,7 +22,6 @@ public interface JobProjectService extends IService<JobProject> {
      * @param searchName
      * @return
      */
-
     IPage<JobProject> getProjectListPaging(Integer pageSize, Integer pageNo, String searchName);
 
     List<JobProject> listProjects();

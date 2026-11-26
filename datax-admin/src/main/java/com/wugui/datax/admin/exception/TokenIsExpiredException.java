@@ -5,7 +5,7 @@ package com.wugui.datax.admin.exception;
  * @author: jingwk
  * @date: 2019/11/17 17:21
  */
-public class TokenIsExpiredException extends Exception{
+public class TokenIsExpiredException extends Exception {
     public TokenIsExpiredException() {
     }
 
@@ -24,4 +24,5 @@ public class TokenIsExpiredException extends Exception{
     public TokenIsExpiredException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
+
 }

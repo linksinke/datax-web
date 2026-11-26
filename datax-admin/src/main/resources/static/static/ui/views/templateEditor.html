@@ -1,0 +1,17 @@
+<section class="app-container datax-config-page ui-page" :class="{ 'datax-json-focus': !buildVisible, 'is-fullscreen': jsonFullscreen }">
+  <template v-if="!buildVisible">
+    <header class="datax-json-heading"><div><span class="ui-cell-secondary">{{ batchCode || 'DataX 任务模板' }}</span><h2>{{ uiCurrentResult ? uiCurrentResult.fileName : '正在加载当前文件…' }}</h2></div><div><el-button @click="showBatch">所属批次</el-button><el-button :disabled="busy || !uiCurrentResult" @click="openConfiguration">调整配置</el-button></div></header>
+    <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon></el-alert>
+    <div v-if="uiCurrentResult && pairs[previewIndex]" class="datax-json-summary"><span>{{ sourceName(readerDatasourceId) }} / {{ pairs[previewIndex].reader.actualTable }}</span><i class="el-icon-right"></i><span>{{ sourceName(writerDatasourceId) }} / {{ pairs[previewIndex].writer.actualTable }}</span><el-tag size="small" :type="needsGenerate || uiCurrentResult.jobJson !== savedJson[previewIndex] ? 'warning' : 'success'">{{ needsGenerate ? '配置已变化，需重新生成' : uiCurrentResult.jobJson !== savedJson[previewIndex] ? '尚未保存' : '已保存' }}</el-tag></div>
+    <div class="ui-filter" style="padding-top: 16px"><el-button type="primary" :loading="saving" :disabled="busy || !uiCurrentResult || !!jsonError" @click="saveSingle">保存当前 JSON</el-button><el-button :disabled="busy || !uiCurrentResult" @click="format">格式化</el-button><el-button :disabled="busy || !uiCurrentResult || !!jsonError" @click="downloadOne">下载当前文件</el-button><el-button :loading="downloading" :disabled="busy || !uiCurrentResult" @click="downloadAll">下载整个批次</el-button><el-button v-if="results.length > 1" @click="filePickerOpen = true">本批文件（{{ results.length }}）</el-button><span class="ui-filter-spacer"></span><el-button :disabled="!uiCurrentResult" @click="toggleFullscreen">{{ jsonFullscreen ? '退出全屏' : '全屏编辑' }}</el-button></div>
+    <datax-json-code-editor v-if="uiCurrentResult" :key="uiCurrentResult.id || previewIndex" ref="jsonEditor" v-model="uiCurrentResult.jobJson" :read-only="busy" @validation="jsonError = $event" @save="saveSingle" @format="format"></datax-json-code-editor>
+    <el-drawer title="调整当前模板配置" :visible.sync="configurationOpen" size="88%" append-to-body><div v-if="configurationOpen" class="datax-config-drawer"><el-form label-position="top" :disabled="busy"><datax-template-fields :editor="uiEditor"></datax-template-fields></el-form></div></el-drawer>
+    <el-drawer title="本批文件" :visible.sync="filePickerOpen" size="min(560px, 95vw)" append-to-body><div v-if="filePickerOpen" class="datax-config-drawer"><el-input v-model="resultFilter" clearable placeholder="搜索文件名"></el-input><div class="datax-json-file-list"><el-button v-for="(file, index) in results" v-if="(file.fileName || '').toLowerCase().includes(resultFilter.toLowerCase())" :key="file.id || index" :type="index === previewIndex ? 'primary' : 'text'" @click="previewIndex = index; filePickerOpen = false">{{ file.fileName }}</el-button></div></div></el-drawer>
+  </template>
+  <template v-else>
+    <header class="ui-panel-title"><h2>批量生成 DataX 配置</h2><el-button v-if="results.length" @click="buildVisible = false">返回当前 JSON</el-button></header>
+    <p class="ui-hint">从本地模拟库选择表结构，生成的配置使用实际源库和目标库。批次编码按日期自动递增。</p>
+    <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon></el-alert>
+    <el-form label-position="top" :disabled="busy" @submit.native.prevent><datax-template-fields :editor="uiEditor"></datax-template-fields></el-form>
+  </template>
+</section>

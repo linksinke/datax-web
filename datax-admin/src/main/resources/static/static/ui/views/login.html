@@ -1,0 +1,13 @@
+<main class="ui-login">
+  <section class="ui-login-panel">
+    <div class="ui-login-brand"><img src="/static/img/datax-mark.svg" alt=""><span>DataX Web</span></div>
+    <h1>登录数据同步工作台</h1><p>管理数据源、配置同步任务并跟踪执行结果。</p>
+    <el-alert v-if="uiLoginError" :title="uiLoginError" type="error" :closable="false" show-icon style="margin-bottom: 20px"></el-alert>
+    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" label-position="top" :disabled="loading" @submit.native.prevent="handleLogin">
+      <el-form-item label="用户名" prop="username"><el-input ref="username" v-model="loginForm.username" autocomplete="username" placeholder="输入用户名" prefix-icon="el-icon-user"></el-input></el-form-item>
+      <el-form-item label="密码" prop="password"><el-input ref="password" v-model="loginForm.password" type="password" show-password autocomplete="current-password" placeholder="输入登录密码" prefix-icon="el-icon-lock" @keyup.enter.native="handleLogin"></el-input></el-form-item>
+      <el-checkbox v-model="loginForm.rememberMe" :true-label="1" :false-label="0">保持登录</el-checkbox>
+      <el-button type="primary" :loading="loading" @click="handleLogin">登录工作台</el-button>
+    </el-form>
+  </section>
+</main>

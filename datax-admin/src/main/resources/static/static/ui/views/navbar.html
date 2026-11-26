@@ -1,0 +1,27 @@
+<header class="navbar">
+  <div class="ui-navigation-trail">
+    <hamburger class="hamburger-container" :is-active="sidebar.opened" @toggleClick="toggleSideBar"></hamburger>
+    <breadcrumb class="breadcrumb-container"></breadcrumb>
+  </div>
+  <div class="ui-topbar-actions">
+    <el-button class="ui-quick-search" icon="el-icon-search" @click="uiOpenSearch">查找页面 <kbd>Ctrl K</kbd></el-button>
+    <el-dropdown trigger="click">
+      <button class="ui-account" type="button"><i class="el-icon-user"></i><span>{{ uiUsername }}</span><i class="el-icon-arrow-down"></i></button>
+      <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item icon="el-icon-user" @click.native="$router.push('/profile/index')">当前账号</el-dropdown-item>
+        <el-dropdown-item icon="el-icon-switch-button" divided @click.native="logout">退出登录</el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
+  </div>
+  <el-dialog title="查找页面" :visible.sync="uiSearchVisible" width="560px" custom-class="ui-search-dialog" append-to-body>
+    <el-input ref="uiSearchInput" v-model="uiSearchQuery" clearable placeholder="搜索菜单或功能名称" prefix-icon="el-icon-search"
+      @input="uiSearchIndex = 0" @keydown.down.native.prevent="uiMoveSearch(1)" @keydown.up.native.prevent="uiMoveSearch(-1)"
+      @keydown.enter.native.prevent="uiChooseSearch(uiSearchResults[uiSearchIndex])"></el-input>
+    <div class="ui-search-results" role="listbox" aria-label="可访问的页面">
+      <button v-for="(item, index) in uiSearchResults" :key="item.path" type="button" :class="{ 'is-active': index === uiSearchIndex }" @click="uiChooseSearch(item)">
+        <span>{{ item.title }}</span><small>{{ item.group }}</small><i class="el-icon-arrow-right"></i>
+      </button>
+      <p v-if="!uiSearchResults.length" class="ui-empty-text">没有匹配的页面，试试其他关键词。</p>
+    </div>
+  </el-dialog>
+</header>

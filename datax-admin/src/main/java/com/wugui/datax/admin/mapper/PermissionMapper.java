@@ -12,4 +12,5 @@ import java.util.List;
 public interface PermissionMapper extends BaseMapper<JobPermission> {
 
     List<JobPermission> findByAdminUserId(int userId);
+
 }
