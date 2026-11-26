@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.wugui.datatx.core.util.Constants;
+import com.wugui.datax.admin.core.util.DatasourceCacheKey;
 import com.wugui.datax.admin.core.util.LocalCacheUtil;
 import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.tool.database.ColumnInfo;
@@ -21,10 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 抽象查询工具
@@ -57,19 +55,21 @@ public abstract class BaseQueryTool implements QueryToolInterface {
      * @param jobDatasource
      */
     BaseQueryTool(JobDatasource jobDatasource) throws SQLException {
-        if (LocalCacheUtil.get(jobDatasource.getDatasourceName()) == null) {
+        String cacheKey = DatasourceCacheKey.of(jobDatasource);
+        Connection cached = (Connection) LocalCacheUtil.get(cacheKey);
+        if (cached == null) {
             getDataSource(jobDatasource);
         } else {
-            this.connection = (Connection) LocalCacheUtil.get(jobDatasource.getDatasourceName());
+            this.connection = cached;
             if (!this.connection.isValid(500)) {
-                LocalCacheUtil.remove(jobDatasource.getDatasourceName());
+                LocalCacheUtil.remove(cacheKey);
                 getDataSource(jobDatasource);
             }
         }
         sqlBuilder = DatabaseMetaFactory.getByDbType(jobDatasource.getDatasource());
         currentSchema = getSchema(jobDatasource.getJdbcUsername());
         currentDatabase = jobDatasource.getDatasource();
-        LocalCacheUtil.set(jobDatasource.getDatasourceName(), this.connection, 4 * 60 * 60 * 1000);
+        LocalCacheUtil.set(cacheKey, this.connection, 4 * 60 * 60 * 1000);
     }
 
     private void getDataSource(JobDatasource jobDatasource) throws SQLException {
@@ -287,6 +287,64 @@ public abstract class BaseQueryTool implements QueryToolInterface {
                     + "the exception message is:" + e.getMessage());
         }
         return res;
+    }
+
+    /**
+     * 获取指定表的字段名称，多个表同时查询，提高效率
+     *
+     * @param tables
+     * @return
+     * @throws SQLException
+     */
+    public Map<String, List<String>> getColumnNamesBatch(List<String> tables) throws SQLException {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        synchronized (connection) {
+            if (!JdbcConstants.MYSQL.equals(currentDatabase)) {
+                for (String table : tables) result.put(table, getColumnNames(table, currentDatabase));
+                return result;
+            }
+            Map<String, Map<String, List<String>>> schemas = new LinkedHashMap<>();
+            for (String table : tables) {
+                result.put(table, new ArrayList<>());
+                int dot = table.lastIndexOf('.');
+                String schema = dot >= 0 ? table.substring(0, dot) : connection.getCatalog();
+                String name = dot >= 0 ? table.substring(dot + 1) : table;
+                schemas.computeIfAbsent(schema, ignored -> new LinkedHashMap<>())
+                        .computeIfAbsent(name, ignored -> new ArrayList<>()).add(table);
+            }
+            for (Map.Entry<String, Map<String, List<String>>> schema : schemas.entrySet()) {
+                List<String> names = new ArrayList<>(schema.getValue().keySet());
+                String sql = "SELECT TABLE_NAME,COLUMN_NAME FROM information_schema.COLUMNS "
+                        + "WHERE TABLE_SCHEMA=? AND TABLE_NAME IN (" + String.join(",", Collections.nCopies(names.size(), "?"))
+                        + ") AND EXTRA NOT LIKE '%INVISIBLE%' ORDER BY TABLE_NAME,ORDINAL_POSITION";
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setQueryTimeout(30);
+                    statement.setString(1, schema.getKey());
+                    for (int i = 0; i < names.size(); i++) statement.setString(i + 2, names.get(i));
+                    try (ResultSet rows = statement.executeQuery()) {
+                        while (rows.next()) {
+                            String table = rows.getString(1), column = rows.getString(2);
+                            List<String> requested = schema.getValue().get(table);
+                            // MySQL on Windows may normalize identifier case in information_schema.
+                            if (requested == null) {
+                                for (String name : names) {
+                                    if (name.equalsIgnoreCase(table)) {
+                                        requested = schema.getValue().get(name);
+                                        break;
+                                    }
+                                }
+                            }
+                            if (requested != null) {
+                                for (String key : requested) {
+                                    result.get(key).add(column);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     @Override
@@ -512,4 +570,5 @@ public abstract class BaseQueryTool implements QueryToolInterface {
     protected String getSQLQueryTableSchema() {
         return sqlBuilder.getSQLQueryTableSchema();
     }
+
 }

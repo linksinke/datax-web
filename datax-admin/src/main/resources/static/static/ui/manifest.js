@@ -1,0 +1,45 @@
+/* Browser dependencies and HTML view paths. No frontend build is required. */
+window.DataxManifest = {
+  "compiler": "/static/ui/vendor/vue-compiler.js?v=b9f18495",
+  "element": "/static/js/chunk-elementUI.b47b6259.js",
+  "libraries": "/static/js/chunk-libs.1b4497f1.js",
+  "runtime": "/static/ui/vendor/runtime.js?v=730943c4",
+  "modules": [
+    "/static/ui/bridge.js?v=1514e796",
+    "/static/js/datax-navigation.js?v=7e1bce19",
+    "/static/js/datax-datasource-form.js?v=d3f0a0c9",
+    "/static/js/datax-project.js?v=7d19fd5c",
+    "/static/js/datax-config-template.js?v=701075db"
+  ],
+  "app": "/static/js/app.d2cc3aeb.js",
+  "views": {
+    "app-main": "/static/ui/views/app-main.html",
+    "batches": "/static/ui/views/batches.html",
+    "buildBatch": "/static/ui/views/buildBatch.html",
+    "buildSingle": "/static/ui/views/buildSingle.html",
+    "data-state": "/static/ui/views/data-state.html",
+    "datasources": "/static/ui/views/datasources.html",
+    "executors": "/static/ui/views/executors.html",
+    "forbidden": "/static/ui/views/forbidden.html",
+    "heading": "/static/ui/views/heading.html",
+    "json-editor": "/static/ui/views/json-editor.html",
+    "layout": "/static/ui/views/layout.html",
+    "login": "/static/ui/views/login.html",
+    "logs": "/static/ui/views/logs.html",
+    "navbar": "/static/ui/views/navbar.html",
+    "not-found": "/static/ui/views/not-found.html",
+    "overview": "/static/ui/views/overview.html",
+    "pagination": "/static/ui/views/pagination.html",
+    "profile": "/static/ui/views/profile.html",
+    "projects": "/static/ui/views/projects.html",
+    "resources": "/static/ui/views/resources.html",
+    "schedulerTemplates": "/static/ui/views/schedulerTemplates.html",
+    "sidebar": "/static/ui/views/sidebar.html",
+    "tags": "/static/ui/views/tags.html",
+    "tasks": "/static/ui/views/tasks.html",
+    "template-fields": "/static/ui/views/template-fields.html",
+    "templateEditor": "/static/ui/views/templateEditor.html",
+    "users": "/static/ui/views/users.html",
+    "breadcrumb": "/static/ui/views/breadcrumb.html"
+  }
+};

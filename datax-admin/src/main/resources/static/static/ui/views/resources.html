@@ -1,15 +1,45 @@
 <section class="app-container ui-page">
-  <div class="ui-filter"><el-input v-model="listQuery.registryKey" clearable placeholder="筛选执行器" prefix-icon="el-icon-search" @keyup.enter.native="uiSearch"></el-input><el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新资源状态</el-button></div>
-  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <div class="ui-filter">
+    <el-input v-model="listQuery.registryKey" clearable placeholder="筛选执行器" prefix-icon="el-icon-search" @keyup.enter.native="uiSearch">
+    </el-input>
+    <el-button @click="uiSearch">查询</el-button>
+    <el-button @click="uiReset">重置</el-button>
+    <span class="ui-filter-spacer">
+    </span>
+    <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新资源状态</el-button>
+  </div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh">
+  </ui-data-state>
   <div v-loading="uiRead.loading" class="ui-resource-grid">
     <article v-for="node in list || []" :key="node.id" class="ui-resource-card">
-      <h3>{{ node.registryKey }}</h3><span class="ui-resource-address">{{ node.registryValue }}</span>
-      <div class="ui-resource-metric"><div><span>CPU 使用率</span><strong>{{ uiPercent(node.cpuUsage).toFixed(1) }}%</strong></div><el-progress :percentage="uiPercent(node.cpuUsage)" :show-text="false" :stroke-width="7" color="#2469c9"></el-progress></div>
-      <div class="ui-resource-metric"><div><span>内存使用率</span><strong>{{ uiPercent(node.memoryUsage).toFixed(1) }}%</strong></div><el-progress :percentage="uiPercent(node.memoryUsage)" :show-text="false" :stroke-width="7" color="#20845b"></el-progress></div>
-      <div class="ui-resource-metric"><div><span>系统平均负载</span><strong>{{ Number(node.loadAverage || 0).toFixed(2) }}</strong></div></div>
+      <h3>{{ node.registryKey }}</h3>
+      <span class="ui-resource-address">{{ node.registryValue }}</span>
+      <div class="ui-resource-metric">
+        <div>
+          <span>CPU 使用率</span>
+          <strong>{{ uiPercent(node.cpuUsage).toFixed(1) }}%</strong>
+        </div>
+        <el-progress :percentage="uiPercent(node.cpuUsage)" :show-text="false" :stroke-width="7" color="#2469c9">
+        </el-progress>
+      </div>
+      <div class="ui-resource-metric">
+        <div>
+          <span>内存使用率</span>
+          <strong>{{ uiPercent(node.memoryUsage).toFixed(1) }}%</strong>
+        </div>
+        <el-progress :percentage="uiPercent(node.memoryUsage)" :show-text="false" :stroke-width="7" color="#20845b">
+        </el-progress>
+      </div>
+      <div class="ui-resource-metric">
+        <div>
+          <span>系统平均负载</span>
+          <strong>{{ Number(node.loadAverage || 0).toFixed(2) }}</strong>
+        </div>
+      </div>
       <span class="ui-resource-updated">节点上报时间：{{ node.updateTime || '暂无' }}</span>
     </article>
   </div>
   <p v-if="!uiRead.loading && !(list || []).length && !uiRead.error" class="ui-empty-text">暂无在线节点，请检查执行器是否已启动并注册。</p>
-  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh">
+  </ui-pagination>
 </section>

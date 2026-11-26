@@ -1,6 +1,8 @@
 <div class="ui-data-state" aria-live="polite">
-    <div v-if="state.error" class="ui-read-error" role="alert">
-        <i class="el-icon-warning-outline"></i><span>{{ state.error }}</span>
-        <el-button type="text" @click="$emit('retry')">重新加载</el-button>
-    </div>
+  <div v-if="state.error" class="ui-read-error" role="alert">
+    <i class="el-icon-warning-outline">
+    </i>
+    <span>{{ state.error }}</span>
+    <el-button type="text" @click="$emit('retry')">重新加载</el-button>
+  </div>
 </div>

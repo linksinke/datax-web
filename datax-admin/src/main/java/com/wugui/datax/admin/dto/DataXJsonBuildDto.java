@@ -43,4 +43,15 @@ public class DataXJsonBuildDto implements Serializable {
     private MongoDBReaderDto mongoDBReader;
 
     private MongoDBWriterDto mongoDBWriter;
+
+    /** Template metadata is read from these optional local connections, never from the runtime connections. */
+    private Long readerMetadataDatasourceId;
+    private Long writerMetadataDatasourceId;
+    private String readerMetadataTable;
+    private String writerMetadataTable;
+    private Integer sequence;
+    private String batchId;
+    private String batchName;
+    private String fileName;
+
 }

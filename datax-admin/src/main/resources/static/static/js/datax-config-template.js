@@ -99,7 +99,7 @@
             saveBlob(await response.blob(), fileName);
         }
 
-        function createJsonEditor(CodeMirror) {
+        function createJsonEditorCore(CodeMirror) {
             return {
                 name: "DataxJsonCodeEditor", props: {value: {type: String, default: ""}, readOnly: Boolean},
                 data: function () {
@@ -193,6 +193,11 @@
                 }
             };
         }
+
+        function createJsonEditor(CodeMirror) {
+  var options = createJsonEditorCore(CodeMirror);
+  return window.DataxUI ? window.DataxUI.apply(options, "json-editor") : options;
+}
 
         var JsonCodeEditor = function () {
             return require.e("chunk-52071f51").then(function () {
@@ -1510,5 +1515,6 @@
         exports.List = List;
         exports.Editor = Editor;
         exports.createJsonEditor = createJsonEditor;
+exports.JsonCodeEditor = JsonCodeEditor;
     }
 }]);

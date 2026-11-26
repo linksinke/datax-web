@@ -39,6 +39,29 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .ui-tab-close { width: 19px; height: 19px; margin-left: 5px; border: 0; border-radius: 3px; background: transparent; color: inherit; cursor: pointer; padding: 0; }
 .ui-tab-close:hover { background: #d9e7fb; }
 #app .app-main, #app .hasTagsView .app-main { min-height: calc(100vh - 96px); overflow: visible; padding-bottom: 24px; }
+/* Switch pages immediately, including controls retained from the legacy shell. */
+#app .app-main .fade-transform-enter-active,
+#app .app-main .fade-transform-leave-active,
+#app .app-main .fade-transform-enter,
+#app .app-main .fade-transform-enter-to,
+#app .app-main .fade-transform-leave-to,
+#app .app-breadcrumb .breadcrumb-enter-active,
+#app .app-breadcrumb .breadcrumb-leave-active,
+#app .app-breadcrumb .breadcrumb-enter,
+#app .app-breadcrumb .breadcrumb-enter-to,
+#app .app-breadcrumb .breadcrumb-leave-to,
+#app .app-breadcrumb .breadcrumb-move {
+  transition: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+#app .app-breadcrumb .breadcrumb-leave-active { display: none; }
+/* Keep table contents visible while refreshing; the loading indicator remains. */
+#app .app-main .el-loading-mask {
+  background-color: transparent;
+  transition: none;
+}
 #app .datax-workspace-heading { padding: 24px 28px 0; }
 #app .datax-workspace-heading h1, #app .datax-config-page h2 { font-size: 22px; font-weight: 600; line-height: 1.4; color: var(--ui-text); }
 #app .datax-workspace-heading p { margin: 8px 0 0; color: var(--ui-muted); font-size: 13px; }
@@ -93,6 +116,15 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .ui-dialog .el-select, .ui-dialog .el-date-editor, .ui-dialog .el-input-number { width: 100%; }
 .ui-form-section { border-top: 1px solid var(--ui-border); padding-top: 18px; margin-top: 4px; }
 .ui-form-section h3 { font-size: 15px; font-weight: 600; margin: 0 0 18px; }
+.ui-filter .el-date-editor--datetimerange { width: 360px; max-width: 100%; }
+.ui-template-fields .el-card { box-shadow: none; border-color: var(--ui-border); border-radius: 7px; }
+.ui-template-fields .el-card__header { background: #f7f9fc; border-bottom-color: var(--ui-border); padding: 14px 20px; }
+.ui-template-fields .el-card__body { padding: 20px; }
+.ui-template-fields .el-form-item { margin-bottom: 18px; }
+#app .datax-config-page .datax-code-editor { height: calc(100vh - 330px); min-height: 360px; }
+#app .datax-json-focus.is-fullscreen { margin: 0 !important; border: 0 !important; border-radius: 0 !important; padding: 24px !important; }
+#app .datax-json-focus.is-fullscreen .datax-code-editor { height: calc(100vh - 220px); min-height: 320px; }
+.datax-config-drawer { padding-top: 4px; }.el-drawer__header { color: var(--ui-text); font-size: 17px; font-weight: 600; margin-bottom: 18px; }
 .ui-hint { color: var(--ui-muted); font-size: 12px; line-height: 1.7; margin: 5px 0 0; }
 .ui-dialog .el-tabs__item { height: 42px; line-height: 42px; font-size: 14px; }
 .ui-dialog .el-tabs__nav-wrap::after { height: 1px; background: var(--ui-border); }
@@ -153,3 +185,18 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
   .ui-login { padding: 16px; }.ui-login-panel { padding: 28px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; } }
+.el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner,
+.el-radio__input.is-checked .el-radio__inner { background-color: var(--ui-primary); border-color: var(--ui-primary); }
+.el-checkbox__input.is-checked + .el-checkbox__label, .el-radio__input.is-checked + .el-radio__label,
+.el-select-dropdown__item.selected, .el-tabs__item.is-active, .el-tabs__item:hover,
+.el-pagination .el-pager li.active { color: var(--ui-primary); }
+.el-tabs__active-bar { background: var(--ui-primary); }
+.el-input.is-active .el-input__inner, .el-input__inner:focus, .el-textarea__inner:focus { border-color: var(--ui-primary); }
+.el-button--primary.is-disabled, .el-button--primary.is-disabled:hover { color: white; background: #91b3e3; border-color: #91b3e3; }
+.ui-dialog .cm-s-rubyblue.CodeMirror, .ui-build .cm-s-rubyblue.CodeMirror { color: #263d55; background: #f8fafd; border: 1px solid var(--ui-border); border-radius: 5px; }
+.ui-dialog .cm-s-rubyblue .CodeMirror-gutters, .ui-build .cm-s-rubyblue .CodeMirror-gutters { background: #f0f4f9; border-right: 1px solid var(--ui-border); }
+.ui-dialog .cm-s-rubyblue span.cm-string, .ui-build .cm-s-rubyblue span.cm-string { color: #207353; }
+.ui-dialog .cm-s-rubyblue span.cm-property, .ui-build .cm-s-rubyblue span.cm-property { color: #285fa7; }
+.ui-dialog .cm-s-rubyblue span.cm-number, .ui-build .cm-s-rubyblue span.cm-number { color: #925a19; }
+.ui-dialog .cm-s-rubyblue .CodeMirror-cursor, .ui-build .cm-s-rubyblue .CodeMirror-cursor { border-left-color: #263d55; }
+.ui-dialog .cm-s-rubyblue div.CodeMirror-selected, .ui-build .cm-s-rubyblue div.CodeMirror-selected { background: #dce9f9; }

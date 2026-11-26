@@ -1,10 +1,11 @@
 <nav id="tags-view-container" class="tags-view-container" aria-label="已打开的页面">
   <scroll-pane ref="scrollPane" class="tags-view-wrapper">
-    <router-link v-for="tag in visitedViews" ref="tag" :key="tag.path" :to="{ path: tag.path, query: tag.query, fullPath: tag.fullPath }"
-      tag="span" class="tags-view-item" :class="{ active: isActive(tag) }" tabindex="0"
-      @keydown.enter.native="$router.push(tag.fullPath || tag.path)" @mouseup.middle.native="closeSelectedTag(tag)" @contextmenu.prevent.native="openMenu(tag, $event)">
+    <router-link v-for="tag in visitedViews" ref="tag" :key="tag.path" :to="{ path: tag.path, query: tag.query, fullPath: tag.fullPath }" tag="span" class="tags-view-item" :class="{ active: isActive(tag) }" tabindex="0" @keydown.enter.native="$router.push(tag.fullPath || tag.path)" @mouseup.middle.native="closeSelectedTag(tag)" @contextmenu.prevent.native="openMenu(tag, $event)">
       {{ tag.title }}
-      <button v-if="!tag.meta.affix" type="button" :aria-label="'关闭 ' + tag.title" class="ui-tab-close" @click.prevent.stop="closeSelectedTag(tag)"><i class="el-icon-close"></i></button>
+      <button v-if="!tag.meta.affix" type="button" :aria-label="'关闭 ' + tag.title" class="ui-tab-close" @click.prevent.stop="closeSelectedTag(tag)">
+        <i class="el-icon-close">
+        </i>
+      </button>
     </router-link>
   </scroll-pane>
   <ul v-show="visible" class="contextmenu" :style="{ left: left + 'px', top: top + 'px' }">

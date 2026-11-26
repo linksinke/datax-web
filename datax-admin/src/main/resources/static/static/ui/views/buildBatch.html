@@ -1,0 +1,64 @@
+<section class="app-container ui-page ui-build">
+  <el-steps :active="active - 1" finish-status="success" align-center>
+    <el-step title="选择源库" description="Reader">
+    </el-step>
+    <el-step title="选择目标库" description="Writer">
+    </el-step>
+    <el-step title="表映射">
+    </el-step>
+    <el-step title="确认与创建">
+    </el-step>
+  </el-steps>
+  <div v-show="active === 1">
+    <reader ref="reader">
+    </reader>
+  </div>
+  <div v-show="active === 2">
+    <writer ref="writer">
+    </writer>
+  </div>
+  <div v-show="active === 3">
+    <mapper ref="mapper">
+    </mapper>
+  </div>
+  <div v-show="active === 4">
+    <div class="ui-panel-title">
+      <h3>使用调度模板批量创建任务</h3>
+      <el-button @click="uiOpenTemplates">{{ jobTemplate ? '更换模板' : '选择调度模板' }}</el-button>
+    </div>
+    <el-alert :title="jobTemplate ? '当前模板：' + jobTemplate : '请选择调度模板，任务将使用模板中的项目、执行器和调度参数。'" :type="jobTemplate ? 'success' : 'info'" :closable="false">
+    </el-alert>
+    <p class="ui-hint" style="margin-top: 16px">每组源表、目标表配对生成一个同步任务。</p>
+  </div>
+  <div class="ui-build-actions">
+    <el-button v-if="active > 1" :disabled="uiPending.save" @click="last">上一步</el-button>
+    <el-button v-if="active < 4" type="primary" @click="uiNext">下一步</el-button>
+    <el-button v-else type="primary" :loading="uiPending.save" @click="uiSaveBuiltTask">批量创建任务</el-button>
+  </div>
+  <el-drawer title="选择调度模板" :visible.sync="jobTemplateSelectDrawer" size="80%" append-to-body>
+    <div class="datax-config-drawer">
+      <div class="ui-filter">
+        <el-input v-model="listQuery.jobDesc" clearable placeholder="搜索模板名称" @keyup.enter.native="uiSearch">
+        </el-input>
+        <el-button :loading="uiRead.loading" @click="uiSearch">查询</el-button>
+      </div>
+      <ui-data-state :state="uiPageState" @retry="fetchData">
+      </ui-data-state>
+      <el-table v-loading="uiRead.loading" :data="list || []" row-key="id">
+        <el-table-column prop="jobDesc" label="模板名称" min-width="220">
+        </el-table-column>
+        <el-table-column prop="projectName" label="所属项目" min-width="180">
+        </el-table-column>
+        <el-table-column prop="jobCron" label="Cron" min-width="160">
+        </el-table-column>
+        <el-table-column label="操作" width="90">
+          <template slot-scope="scope">
+            <el-button type="text" @click="uiChooseTemplate(scope.row)">使用</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" @change="fetchData">
+      </ui-pagination>
+    </div>
+  </el-drawer>
+</section>

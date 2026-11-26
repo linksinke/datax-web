@@ -1,68 +1,74 @@
 <section class="app-container ui-page">
-    <div class="ui-filter"><span class="ui-cell-secondary">执行器负责接收和运行同步任务</span><span
-            class="ui-filter-spacer"></span>
-        <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新</el-button>
-        <el-button type="primary" icon="el-icon-plus" @click="uiOpenCreate">新增执行器</el-button>
-    </div>
-    <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
-    <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="暂无执行器，请先创建分组">
-        <el-table-column label="执行器" min-width="180">
-            <template slot-scope="scope"><strong class="ui-row-title">{{ scope.row.title }}</strong><small
-                    class="ui-cell-secondary">{{ scope.row.appName }}</small></template>
-        </el-table-column>
-        <el-table-column label="注册方式" width="130">
-            <template slot-scope="scope">
-                <el-tag type="info" size="small">{{ scope.row.addressType === 0 ? '自动注册' : '手动录入' }}</el-tag>
-            </template>
-        </el-table-column>
-        <el-table-column label="节点地址" min-width="320" show-overflow-tooltip>
-            <template slot-scope="scope">{{ scope.row.addressList || '暂无在线节点' }}</template>
-        </el-table-column>
-        <el-table-column prop="order" label="排序" width="80"></el-table-column>
-        <el-table-column label="操作" width="130" fixed="right">
-            <template slot-scope="scope">
-                <div class="ui-row-actions">
-                    <el-button type="text" @click="uiOpenUpdate(scope.row)">编辑</el-button>
-                    <el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)"
-                               @click="uiRemove(scope.row)">删除
-                    </el-button>
-                </div>
-            </template>
-        </el-table-column>
-    </el-table>
-    <footer class="ui-table-footer"><span class="ui-updated">共 {{ total }} 个执行器分组</span><span class="ui-updated"
-                                                                                                     v-if="uiRead.updatedAt">更新于 {{ uiRead.updatedAt }}</span>
-    </footer>
-    <el-dialog class="ui-dialog" :title="dialogStatus === 'create' ? '新增执行器' : '编辑执行器'"
-               :visible.sync="dialogFormVisible" width="720px" top="5vh" :close-on-click-modal="false"
-               :show-close="!uiPending.save" :close-on-press-escape="!uiPending.save">
-        <el-form ref="dataForm" :model="temp" :rules="rules" label-position="top" :disabled="uiPending.save">
-            <div class="ui-form-grid">
-                <el-form-item label="执行器名称" prop="title">
-                    <el-input v-model="temp.title" placeholder="业务可识别的名称"></el-input>
-                </el-form-item>
-                <el-form-item label="分组标识 AppName" prop="appName">
-                    <el-input v-model="temp.appName" placeholder="例如：datax-executor"></el-input>
-                </el-form-item>
-                <el-form-item label="注册方式" prop="addressType">
-                    <el-select v-model="temp.addressType">
-                        <el-option v-for="item in addressTypes" :key="item.value" :label="item.label"
-                                   :value="item.value"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="排序" prop="order">
-                    <el-input-number v-model="temp.order" :min="0" controls-position="right"></el-input-number>
-                </el-form-item>
-                <el-form-item v-if="temp.addressType === 1" class="ui-span-full" label="节点地址" prop="addressList">
-                    <el-input v-model="temp.addressList" type="textarea" :rows="3" resize="none"
-                              placeholder="多个执行器地址使用逗号分隔"></el-input>
-                </el-form-item>
-            </div>
-            <p v-if="temp.addressType === 0" class="ui-hint">自动注册时，节点地址由执行器心跳维护。</p>
-        </el-form>
-        <div slot="footer">
-            <el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button>
-            <el-button type="primary" :loading="uiPending.save" @click="uiSave">保存执行器</el-button>
+  <div class="ui-filter">
+    <span class="ui-cell-secondary">执行器负责接收和运行同步任务</span>
+    <span class="ui-filter-spacer">
+    </span>
+    <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="uiOpenCreate">新增执行器</el-button>
+  </div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh">
+  </ui-data-state>
+  <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="暂无执行器，请先创建分组">
+    <el-table-column label="执行器" min-width="180">
+      <template slot-scope="scope">
+        <strong class="ui-row-title">{{ scope.row.title }}</strong>
+        <small class="ui-cell-secondary">{{ scope.row.appName }}</small>
+      </template>
+    </el-table-column>
+    <el-table-column label="注册方式" width="130">
+      <template slot-scope="scope">
+        <el-tag type="info" size="small">{{ scope.row.addressType === 0 ? '自动注册' : '手动录入' }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column label="节点地址" min-width="320" show-overflow-tooltip>
+      <template slot-scope="scope">{{ scope.row.addressList || '暂无在线节点' }}</template>
+    </el-table-column>
+    <el-table-column prop="order" label="排序" width="80">
+    </el-table-column>
+    <el-table-column label="操作" width="130" fixed="right">
+      <template slot-scope="scope">
+        <div class="ui-row-actions">
+          <el-button type="text" @click="uiOpenUpdate(scope.row)">编辑</el-button>
+          <el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)" @click="uiRemove(scope.row)">删除</el-button>
         </div>
-    </el-dialog>
+      </template>
+    </el-table-column>
+  </el-table>
+  <footer class="ui-table-footer">
+    <span class="ui-updated">共 {{ total }} 个执行器分组</span>
+    <span class="ui-updated" v-if="uiRead.updatedAt">更新于 {{ uiRead.updatedAt }}</span>
+  </footer>
+  <el-dialog class="ui-dialog" :title="dialogStatus === 'create' ? '新增执行器' : '编辑执行器'" :visible.sync="dialogFormVisible" width="720px" top="5vh" :close-on-click-modal="false" :show-close="!uiPending.save" :close-on-press-escape="!uiPending.save">
+    <el-form ref="dataForm" :model="temp" :rules="rules" label-position="top" :disabled="uiPending.save">
+      <div class="ui-form-grid">
+        <el-form-item label="执行器名称" prop="title">
+          <el-input v-model="temp.title" placeholder="业务可识别的名称">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="分组标识 AppName" prop="appName">
+          <el-input v-model="temp.appName" placeholder="例如：datax-executor">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="注册方式" prop="addressType">
+          <el-select v-model="temp.addressType">
+            <el-option v-for="item in addressTypes" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="排序" prop="order">
+          <el-input-number v-model="temp.order" :min="0" controls-position="right">
+          </el-input-number>
+        </el-form-item>
+        <el-form-item v-if="temp.addressType === 1" class="ui-span-full" label="节点地址" prop="addressList">
+          <el-input v-model="temp.addressList" type="textarea" :rows="3" resize="none" placeholder="多个执行器地址使用逗号分隔">
+          </el-input>
+        </el-form-item>
+      </div>
+      <p v-if="temp.addressType === 0" class="ui-hint">自动注册时，节点地址由执行器心跳维护。</p>
+    </el-form>
+    <div slot="footer">
+      <el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button>
+      <el-button type="primary" :loading="uiPending.save" @click="uiSave">保存执行器</el-button>
+    </div>
+  </el-dialog>
 </section>

@@ -9,7 +9,7 @@
             {key: "templates", title: "模板中心", icon: "task-tmp"},
             {key: "settings", title: "系统配置", icon: "exe-cfg"}
         ];
-        var pages = [
+        var pages = window.DataxRouteCatalog || [
             {path: "/dashboard", group: "monitor", title: "运行报表", description: "查看任务运行情况与执行统计。"},
             {
                 path: "/datax/log/jobLog",

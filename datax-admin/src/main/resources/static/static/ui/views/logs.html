@@ -1,12 +1,95 @@
 <section class="app-container ui-page">
   <div class="ui-filter">
-    <el-input v-model="listQuery.jobId" clearable placeholder="任务 ID" @keyup.enter.native="uiSearch"></el-input><el-select v-model="listQuery.jobGroup" filterable placeholder="执行器"><el-option label="全部执行器" :value="0"></el-option><el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id"></el-option></el-select><el-select v-model="listQuery.logStatus"><el-option v-for="item in logStatusList" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select><el-input v-model="listQuery.filterTime" clearable placeholder="日期范围（沿用原查询格式）" v-show="false"></el-input><el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span><el-button :loading="uiRead.loading" icon="el-icon-refresh" @click="uiReload">刷新</el-button><el-button @click="handlerDelete">清理日志</el-button>
+    <el-input v-model="listQuery.jobId" clearable placeholder="任务 ID" @keyup.enter.native="uiSearch">
+    </el-input>
+    <el-select v-model="listQuery.jobGroup" filterable placeholder="执行器">
+      <el-option label="全部执行器" :value="0">
+      </el-option>
+      <el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id">
+      </el-option>
+    </el-select>
+    <el-select v-model="listQuery.logStatus">
+      <el-option v-for="item in logStatusList" :key="item.value" :label="item.label" :value="item.value">
+      </el-option>
+    </el-select>
+    <el-date-picker v-model="uiLogDates" type="datetimerange" value-format="yyyy-MM-dd HH:mm:ss" start-placeholder="开始时间" end-placeholder="结束时间" range-separator="至" clearable>
+    </el-date-picker>
+    <el-button @click="uiSearch">查询</el-button>
+    <el-button @click="uiReset">重置</el-button>
+    <span class="ui-filter-spacer">
+    </span>
+    <el-button :loading="uiRead.loading" icon="el-icon-refresh" @click="uiReload">刷新</el-button>
+    <el-button @click="handlerDelete">清理日志</el-button>
   </div>
-  <ui-data-state :state="uiPageState" @retry="uiReload"></ui-data-state>
+  <ui-data-state :state="uiPageState" @retry="uiReload">
+  </ui-data-state>
   <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="暂无符合条件的执行记录">
-    <el-table-column prop="id" label="日志 ID" width="95"></el-table-column><el-table-column label="任务" min-width="200"><template slot-scope="scope"><span class="ui-row-title">{{ scope.row.jobDesc || '任务 #' + scope.row.jobId }}</span><small class="ui-cell-secondary">任务 ID：{{ scope.row.jobId }}</small></template></el-table-column><el-table-column prop="triggerTime" label="触发时间" min-width="175"></el-table-column><el-table-column label="调度结果" width="110"><template slot-scope="scope"><el-tag size="small" :type="uiStatusType(scope.row.triggerCode)">{{ uiStatus(scope.row.triggerCode) }}</el-tag></template></el-table-column><el-table-column label="执行结果" width="110"><template slot-scope="scope"><el-tag size="small" :type="uiStatusType(scope.row.handleCode)">{{ scope.row.handleCode === 0 ? '执行中 / 未返回' : uiStatus(scope.row.handleCode) }}</el-tag></template></el-table-column><el-table-column prop="executorAddress" label="执行节点" min-width="220" show-overflow-tooltip></el-table-column><el-table-column label="操作" width="160" fixed="right"><template slot-scope="scope"><div class="ui-row-actions"><el-button type="text" @click="uiViewLog(scope.row)">查看日志</el-button><el-button v-if="scope.row.handleCode === 0" class="ui-danger" type="text" :loading="uiBusy('kill-' + scope.row.id)" @click="uiKill(scope.row)">终止</el-button></div></template></el-table-column>
+    <el-table-column prop="id" label="日志 ID" width="95">
+    </el-table-column>
+    <el-table-column label="任务" min-width="200">
+      <template slot-scope="scope">
+        <span class="ui-row-title">{{ scope.row.jobDesc || '任务 #' + scope.row.jobId }}</span>
+        <small class="ui-cell-secondary">任务 ID：{{ scope.row.jobId }}</small>
+      </template>
+    </el-table-column>
+    <el-table-column prop="triggerTime" label="触发时间" min-width="175">
+    </el-table-column>
+    <el-table-column label="调度结果" width="110">
+      <template slot-scope="scope">
+        <el-tag size="small" :type="uiStatusType(scope.row.triggerCode)">{{ uiStatus(scope.row.triggerCode) }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column label="执行结果" width="110">
+      <template slot-scope="scope">
+        <el-tag size="small" :type="uiStatusType(scope.row.handleCode)">{{ scope.row.handleCode === 0 ? '执行中 / 未返回' : uiStatus(scope.row.handleCode) }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column prop="executorAddress" label="执行节点" min-width="220" show-overflow-tooltip>
+    </el-table-column>
+    <el-table-column label="操作" width="160" fixed="right">
+      <template slot-scope="scope">
+        <div class="ui-row-actions">
+          <el-button type="text" @click="uiViewLog(scope.row)">查看日志</el-button>
+          <el-button v-if="scope.row.handleCode === 0" class="ui-danger" type="text" :loading="uiBusy('kill-' + scope.row.id)" @click="uiKill(scope.row)">终止</el-button>
+        </div>
+      </template>
+    </el-table-column>
   </el-table>
-  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
-  <el-dialog class="ui-dialog" title="执行日志" :visible.sync="dialogVisible" width="1100px" top="5vh"><div v-loading="uiPending.log"><pre class="ui-log-content">{{ logContent || '暂无日志内容' }}</pre></div><div slot="footer"><el-button @click="dialogVisible = false">关闭</el-button><el-button type="primary" :loading="uiPending.log" @click="uiLoadLog">加载后续日志</el-button></div></el-dialog>
-  <el-dialog class="ui-dialog" title="清理执行日志" :visible.sync="dialogFormVisible" width="620px" top="8vh" :close-on-click-modal="false" :show-close="!uiPending.save"><el-form ref="dataForm" :model="temp" label-position="top" :disabled="uiPending.save"><el-form-item label="执行器"><el-select v-model="temp.jobGroup"><el-option label="全部执行器" :value="0"></el-option><el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id"></el-option></el-select></el-form-item><el-form-item label="任务 ID（0 表示全部）"><el-input-number v-model="temp.jobId" :min="0" controls-position="right"></el-input-number></el-form-item><el-form-item label="清理范围"><el-select v-model="temp.deleteType"><el-option v-for="item in deleteTypeList" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item></el-form><div slot="footer"><el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button><el-button type="primary" :loading="uiPending.save" @click="uiClearLogs">确认清理</el-button></div></el-dialog>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh">
+  </ui-pagination>
+  <el-dialog class="ui-dialog" title="执行日志" :visible.sync="dialogVisible" width="1100px" top="5vh">
+    <div v-loading="uiPending.log">
+      <pre class="ui-log-content">{{ logContent || '暂无日志内容' }}</pre>
+    </div>
+    <div slot="footer">
+      <el-button @click="dialogVisible = false">关闭</el-button>
+      <el-button type="primary" :loading="uiPending.log" @click="uiLoadLog">加载后续日志</el-button>
+    </div>
+  </el-dialog>
+  <el-dialog class="ui-dialog" title="清理执行日志" :visible.sync="dialogFormVisible" width="620px" top="8vh" :close-on-click-modal="false" :show-close="!uiPending.save">
+    <el-form ref="dataForm" :model="temp" label-position="top" :disabled="uiPending.save">
+      <el-form-item label="执行器">
+        <el-select v-model="temp.jobGroup">
+          <el-option label="全部执行器" :value="0">
+          </el-option>
+          <el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="任务 ID（0 表示全部）">
+        <el-input-number v-model="temp.jobId" :min="0" controls-position="right">
+        </el-input-number>
+      </el-form-item>
+      <el-form-item label="清理范围">
+        <el-select v-model="temp.deleteType">
+          <el-option v-for="item in deleteTypeList" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <div slot="footer">
+      <el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button>
+      <el-button type="primary" :loading="uiPending.save" @click="uiClearLogs">确认清理</el-button>
+    </div>
+  </el-dialog>
 </section>

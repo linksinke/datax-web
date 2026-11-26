@@ -36,14 +36,26 @@
   }
   function open(vm, row) {
     vm.uiTab = "basic"; vm.uiFormError = "";
-    if (row) (vm.handlerUpdate || vm.handleUpdate).call(vm, row);
-    else vm.handleCreate();
-    if (vm.temp && "childJobId" in vm.temp && !vm.temp.childJobId) vm.temp.childJobId = [];
+    vm.temp = row ? clone(row) : vm.$options.data.call(vm).temp;
+    vm.dialogStatus = row ? "update" : "create";
+    vm.dialogFormVisible = true;
+    if ("childJobId" in vm.temp) vm.temp.childJobId = String(vm.temp.childJobId || "").split(",").filter(Boolean).map(function (id) {
+      return (vm.jobIdList || []).find(function (job) { return job.id === Number(id); }) || { id: Number(id), jobDesc: "任务 #" + id };
+    });
+    if ("jobJson" in vm) {
+      vm.jobJson = row && row.jobJson || "";
+      vm.glueSource = row && row.glueSource || "";
+      var partition = String(vm.temp.partitionInfo || "").split(",");
+      vm.partitionField = partition[0] || "";
+      vm.timeOffset = Number(partition[1]) || 0;
+      vm.timeFormatType = partition[2] || "yyyy-MM-dd";
+    }
     if (!row && vm.temp && "jobCron" in vm.temp) {
       vm.temp.jobCron = "0 0 0 * * ?"; vm.temp.glueType = "BEAN";
       vm.temp.executorRouteStrategy = "FIRST"; vm.temp.executorBlockStrategy = "SERIAL_EXECUTION";
       vm.temp.executorTimeout = 0; vm.temp.executorFailRetryCount = 0;
     }
+    vm.$nextTick(function () { if (vm.$refs.dataForm) vm.$refs.dataForm.clearValidate(); });
   }
   function taskPayload(vm, schedulerTemplate) {
     var value = clone(vm.temp);
@@ -97,8 +109,16 @@
   };
   var taskConfig = { task: true, create: "/api/job/add", update: "/api/job/update" };
   var templateConfig = { task: true, template: true, create: "/api/jobTemplate/add", update: "/api/jobTemplate/update" };
+  function choices(values) { return values.map(function (item) { return { value: item[0], label: item[1] }; }); }
+  function taskData() { return {
+    projectIds: [], executorList: [], jobIdList: [], jobProjectList: [], dataSourceList: [],
+    blockStrategies: choices([["SERIAL_EXECUTION", "单机串行"], ["DISCARD_LATER", "丢弃后续调度"], ["COVER_EARLY", "覆盖之前调度"]]),
+    routeStrategies: choices([["FIRST", "第一个"], ["LAST", "最后一个"], ["ROUND", "轮询"], ["RANDOM", "随机"], ["CONSISTENT_HASH", "一致性 HASH"], ["LEAST_FREQUENTLY_USED", "最不经常使用"], ["LEAST_RECENTLY_USED", "最近最少使用"], ["FAILOVER", "故障转移"], ["BUSYOVER", "忙碌转移"]]),
+    glueTypes: choices([["BEAN", "DataX 任务"], ["GLUE_SHELL", "Shell 脚本"], ["GLUE_PYTHON", "Python 脚本"], ["GLUE_POWERSHELL", "PowerShell 脚本"]]),
+    incrementTypes: choices([[0, "全量同步"], [1, "主键增量"], [2, "时间增量"], [3, "Hive 分区"]])
+  }; }
   global.DataxPages = {
-    tasks: { methods: Object.assign({}, taskOptions, {
+    tasks: { data: taskData, methods: Object.assign({}, taskOptions, {
       fetchData: list("/api/job/pageList"), uiSave: function () { return save(this, taskConfig); },
       uiRemove: function (row) { return remove(this, row, "/api/job/remove/" + row.id); },
       uiToggleTask: function (row, enabled) {
@@ -114,7 +134,7 @@
           function () { vm.$message.success("执行请求已提交，可在执行日志查看进度"); });
       }
     }) },
-    schedulerTemplates: { methods: Object.assign({}, taskOptions, {
+    schedulerTemplates: { data: function () { var value = taskData(); value.glueTypes = choices([["BEAN", "DataX 任务"]]); return value; }, methods: Object.assign({}, taskOptions, {
       fetchData: list("/api/jobTemplate/pageList"), uiSave: function () { return save(this, templateConfig); },
       uiRemove: function (row) { return remove(this, row, "/api/jobTemplate/remove/" + row.id); }
     }) },
@@ -129,13 +149,13 @@
       uiTypeChange: function (value) { if (value !== this.temp.datasource) { this.$set(this.temp, "datasource", value); this.selectDataSource(value); this.connectionResult = null; } },
       uiClearConnection: function () { this.connectionResult = null; }
     } },
-    executors: { methods: {
+    executors: { data: function () { return { addressTypes: choices([[0, "自动注册"], [1, "手动录入"]]) }; }, methods: {
       fetchData: list("/api/jobGroup/list", "array"), uiOpenCreate: function () { open(this); this.temp.order = 0; this.temp.addressType = 0; }, uiOpenUpdate: function (row) { open(this, row); },
       uiSave: function () { return save(this, { create: "/api/jobGroup/save", update: "/api/jobGroup/update" }); },
       uiRemove: function (row) { return remove(this, row, "/api/jobGroup/remove", { id: row.id }); }
     } },
     users: { methods: {
-      fetchData: list("/api/user/pageList"), uiOpenCreate: function () { open(this); this.temp.role = "ROLE_USER"; }, uiOpenUpdate: function (row) { open(this, row); },
+      fetchData: list("/api/user/pageList"), uiOpenCreate: function () { open(this); this.temp.role = "ROLE_USER"; }, uiOpenUpdate: function (row) { open(this, row); this.temp.password = ""; },
       uiSave: function () { return save(this, { create: "/api/user/add", update: "/api/user/update" }); },
       uiRemove: function (row) { return remove(this, row, "/api/user/remove", { id: row.id }); }
     } },
@@ -152,8 +172,11 @@
         }, chartInfo: function () { return this.fetchData(); }
       }
     },
-    logs: { methods: {
-      fetchData: list("/api/log/pageList"), getExecutor: taskOptions.getExecutor, uiReload: function () { reload(this); },
+    logs: { data: function () { return { uiLogDates: [], executorList: [],
+      logStatusList: choices([[-1, "全部状态"], [1, "成功"], [2, "失败"], [3, "执行中"]]),
+      deleteTypeList: choices([[1, "清理一个月之前"], [2, "清理三个月之前"], [3, "清理六个月之前"], [4, "清理一年之前"], [5, "保留最新一千条"], [6, "保留最新一万条"], [7, "保留最新三万条"], [8, "保留最新十万条"], [9, "清理全部日志"]]) }; }, methods: {
+      fetchData: function () { this.listQuery.filterTime = this.uiLogDates && this.uiLogDates.length === 2 ? this.uiLogDates.join(" - ") : ""; return list("/api/log/pageList").call(this); }, getExecutor: taskOptions.getExecutor, uiReload: function () { reload(this); },
+      uiReset: function () { this.uiLogDates = []; this.listQuery = clone(this.uiDefaultQuery); return this.uiSearch(); },
       uiClearLogs: function () {
         var vm = this;
         return UI.commit(vm, "save", function () { return vm.$confirm("确认按所选范围清理执行日志？", "清理日志", { type: "warning", confirmButtonText: "清理", cancelButtonText: "取消" })
@@ -161,17 +184,26 @@
           function () { vm.dialogFormVisible = false; vm.$message.success("日志已清理"); vm.uiRefresh(); });
       },
       uiViewLog: function (row) {
+        this.uiLogVersion = (this.uiLogVersion || 0) + 1;
+        this.$set(this.uiPending, "log", false);
         this.dialogVisible = true; this.logContent = "";
-        this.jobLogQuery = { executorAddress: row.executorAddress, triggerTime: Date.parse(row.triggerTime), id: row.id, fromLineNum: 1 };
+        this.jobLogQuery = { executorAddress: row.executorAddress, triggerTime: typeof row.triggerTime === "number" ? row.triggerTime : Date.parse(row.triggerTime), id: row.id, fromLineNum: 1 };
         return this.uiLoadLog();
       },
       uiLoadLog: function () {
-        var vm = this;
-        return UI.commit(vm, "log", function () { return UI.api("/api/log/logDetailCat", "get", null, {
+        var vm = this, version = vm.uiLogVersion;
+        if (vm.uiPending.log) return Promise.resolve(false);
+        vm.$set(vm.uiPending, "log", true);
+        return UI.api("/api/log/logDetailCat", "get", null, {
           executorAddress: vm.jobLogQuery.executorAddress, triggerTime: vm.jobLogQuery.triggerTime, logId: vm.jobLogQuery.id, fromLineNum: vm.jobLogQuery.fromLineNum
-        }); }, function (value) {
-          vm.logContent += value.logContent || ""; vm.jobLogQuery.fromLineNum = Number(value.toLineNum || vm.jobLogQuery.fromLineNum - 1) + 1;
+        }).then(function (value) {
+          if (version !== vm.uiLogVersion || vm._isDestroyed) return;
+          vm.logContent += String(value.logContent || "").replace(/<br\s*\/?>/gi, "\n"); vm.jobLogQuery.fromLineNum = Number(value.toLineNum || vm.jobLogQuery.fromLineNum - 1) + 1;
           vm.logShow = true;
+        }).catch(function (error) {
+          if (version === vm.uiLogVersion) vm.$message.error(error.message || "日志加载失败，请重试");
+        }).finally(function () {
+          if (version === vm.uiLogVersion) vm.$set(vm.uiPending, "log", false);
         });
       },
       uiKill: function (row) {
@@ -180,7 +212,15 @@
           .then(function () { return UI.api("/api/log/killJob", "post", row); }); }, function () { vm.$message.success("终止请求已提交"); vm.uiRefresh(); });
       }
     } },
-    login: { created: function () { this.loginForm.username = ""; this.loginForm.password = ""; } },
+    login: { data: function () { return { uiLoginError: "" }; }, created: function () {
+      this.loginForm.username = ""; this.loginForm.password = ""; this.$set(this.loginForm, "rememberMe", 0);
+      this.loginRules = { username: [{ required: true, message: "请输入用户名", trigger: "blur" }], password: [{ required: true, message: "请输入登录密码", trigger: "blur" }] };
+    }, methods: { handleLogin: function () {
+      var vm = this; if (vm.loading) return; vm.loading = true; vm.uiLoginError = "";
+      return UI.validate(vm, "loginForm").then(function (valid) { if (!valid) return false;
+        return vm.$store.dispatch("user/login", vm.loginForm).then(function () { return vm.$router.push({ path: vm.redirect || "/", query: vm.otherQuery }); });
+      }).catch(function (error) { vm.uiLoginError = error.message || "登录失败，请检查用户名和密码"; }).finally(function () { vm.loading = false; });
+    } } },
     profile: { computed: { uiName: function () { return this.$store.getters.name || "当前账号"; }, uiRoles: function () { return (this.$store.getters.roles || []).map(function (role) { return role === "ROLE_ADMIN" ? "管理员" : "普通用户"; }).join("、"); } } }
   };
 })(window);

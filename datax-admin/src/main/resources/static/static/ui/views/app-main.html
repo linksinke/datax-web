@@ -1,6 +1,8 @@
 <main class="app-main" id="main-content">
-  <workspace-heading></workspace-heading>
+  <workspace-heading>
+  </workspace-heading>
   <keep-alive :include="cachedViews">
-    <router-view :key="key"></router-view>
+    <router-view :key="key">
+    </router-view>
   </keep-alive>
 </main>

@@ -3,6 +3,7 @@ package com.wugui.datax.admin.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.api.R;
+import com.wugui.datax.admin.core.util.DatasourceCacheKey;
 import com.wugui.datax.admin.core.util.LocalCacheUtil;
 import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.service.JobDatasourceService;
@@ -50,7 +51,7 @@ public class JobDatasourceController extends BaseController {
     @ApiOperation("获取所有数据源")
     @GetMapping("/all")
     public R<List<JobDatasource>> selectAllDatasource() {
-        return success(this.jobJdbcDatasourceService.selectAllDatasource());
+        return success(this.jobJdbcDatasourceService.list());
     }
 
     @ApiOperation("通过主键查询单条数据")
@@ -68,9 +69,12 @@ public class JobDatasourceController extends BaseController {
     @PutMapping
     @ApiOperation("修改数据")
     public R<Boolean> update(@RequestBody JobDatasource entity) {
-        LocalCacheUtil.remove(entity.getDatasourceName());
         JobDatasource d = jobJdbcDatasourceService.getById(entity.getId());
-        if (null != d.getJdbcUsername() && entity.getJdbcUsername().equals(d.getJdbcUsername())) {
+        if (d == null) {
+            return success(false);
+        }
+        LocalCacheUtil.remove(DatasourceCacheKey.of(d));
+        if (entity.getJdbcUsername() != null && entity.getJdbcUsername().equals(d.getJdbcUsername())) {
             entity.setJdbcUsername(null);
         }
         if (null != entity.getJdbcPassword() && entity.getJdbcPassword().equals(d.getJdbcPassword())) {
@@ -82,6 +86,9 @@ public class JobDatasourceController extends BaseController {
     @DeleteMapping
     @ApiOperation("删除数据")
     public R<Boolean> delete(@RequestParam("idList") List<Long> idList) {
+        for (JobDatasource source : jobJdbcDatasourceService.listByIds(idList)) {
+            LocalCacheUtil.remove(DatasourceCacheKey.of(source));
+        }
         return success(this.jobJdbcDatasourceService.removeByIds(idList));
     }
 

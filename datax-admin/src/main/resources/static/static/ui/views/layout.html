@@ -1,11 +1,16 @@
 <div class="app-wrapper ui-console" :class="classObj">
-  <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside"></div>
-  <sidebar class="sidebar-container"></sidebar>
+  <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside">
+  </div>
+  <sidebar class="sidebar-container">
+  </sidebar>
   <div class="main-container" :class="{ hasTagsView: needTagsView }">
     <div class="ui-topbar">
-      <navbar></navbar>
-      <tags-view v-if="needTagsView"></tags-view>
+      <navbar>
+      </navbar>
+      <tags-view v-if="needTagsView">
+      </tags-view>
     </div>
-    <app-main></app-main>
+    <app-main>
+    </app-main>
   </div>
 </div>

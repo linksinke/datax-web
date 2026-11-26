@@ -1,66 +1,227 @@
 <section class="app-container ui-page">
   <div class="ui-filter">
-    <el-input v-model="listQuery.jobDesc" clearable placeholder="搜索任务名称" prefix-icon="el-icon-search" @keyup.enter.native="uiSearch"></el-input>
-    <el-select v-model="projectIds" multiple collapse-tags filterable clearable placeholder="所属项目"><el-option v-for="item in jobProjectList || []" :key="item.id" :label="item.name" :value="item.id"></el-option></el-select>
-    <el-select v-model="listQuery.glueType" clearable placeholder="任务类型"><el-option v-for="item in glueTypes" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select>
-    <el-select v-model="listQuery.triggerStatus" placeholder="调度状态"><el-option label="全部状态" :value="-1"></el-option><el-option label="已启用" :value="1"></el-option><el-option label="已停止" :value="0"></el-option></el-select>
-    <el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span>
-    <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiReload">刷新</el-button><el-button type="primary" icon="el-icon-plus" :disabled="uiOptionsBusy" @click="uiOpenCreate">新增任务</el-button>
+    <el-input v-model="listQuery.jobDesc" clearable placeholder="搜索任务名称" prefix-icon="el-icon-search" @keyup.enter.native="uiSearch">
+    </el-input>
+    <el-select v-model="projectIds" multiple collapse-tags filterable clearable placeholder="所属项目">
+      <el-option v-for="item in jobProjectList || []" :key="item.id" :label="item.name" :value="item.id">
+      </el-option>
+    </el-select>
+    <el-select v-model="listQuery.glueType" clearable placeholder="任务类型">
+      <el-option v-for="item in glueTypes" :key="item.value" :label="item.label" :value="item.value">
+      </el-option>
+    </el-select>
+    <el-select v-model="listQuery.triggerStatus" placeholder="调度状态">
+      <el-option label="全部状态" :value="-1">
+      </el-option>
+      <el-option label="已启用" :value="1">
+      </el-option>
+      <el-option label="已停止" :value="0">
+      </el-option>
+    </el-select>
+    <el-button @click="uiSearch">查询</el-button>
+    <el-button @click="uiReset">重置</el-button>
+    <span class="ui-filter-spacer">
+    </span>
+    <el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiReload">刷新</el-button>
+    <el-button type="primary" icon="el-icon-plus" :disabled="uiOptionsBusy" @click="uiOpenCreate">新增任务</el-button>
   </div>
-  <ui-data-state :state="uiPageState" @retry="uiReload"></ui-data-state>
+  <ui-data-state :state="uiPageState" @retry="uiReload">
+  </ui-data-state>
   <el-table v-loading="uiRead.loading" :data="list || []" row-key="id" empty-text="没有匹配的任务，请调整筛选条件或新增任务">
-    <el-table-column prop="id" label="ID" width="75"></el-table-column>
-    <el-table-column label="任务" min-width="210"><template slot-scope="scope"><span class="ui-row-title">{{ scope.row.jobDesc }}</span><small class="ui-cell-secondary">{{ scope.row.projectName || '未归属项目' }}</small></template></el-table-column>
-    <el-table-column label="类型" width="120"><template slot-scope="scope"><el-tag type="info" size="small">{{ scope.row.glueType === 'BEAN' ? 'DataX' : scope.row.glueType.replace('GLUE_', '') }}</el-tag></template></el-table-column>
-    <el-table-column prop="jobCron" label="Cron 表达式" min-width="160"></el-table-column>
-    <el-table-column label="调度" width="115"><template slot-scope="scope"><el-switch :value="scope.row.triggerStatus === 1" :disabled="uiBusy('state-' + scope.row.id)" active-color="#2469c9" @change="uiToggleTask(scope.row, $event)"></el-switch><small class="ui-cell-secondary">{{ scope.row.triggerStatus === 1 ? '已启用' : '已停止' }}</small></template></el-table-column>
-    <el-table-column label="最近执行" width="110"><template slot-scope="scope"><el-tag size="small" :type="uiStatusType(scope.row.lastHandleCode)">{{ uiStatus(scope.row.lastHandleCode) }}</el-tag></template></el-table-column>
-    <el-table-column prop="updateTime" label="更新时间" min-width="170"></el-table-column>
-    <el-table-column label="操作" width="240" fixed="right"><template slot-scope="scope"><div class="ui-row-actions"><el-button type="text" :loading="uiBusy('execute-' + scope.row.id)" @click="uiExecute(scope.row)">执行</el-button><el-button type="text" @click="handlerViewLog(scope.row)">日志</el-button><el-button type="text" @click="uiOpenUpdate(scope.row)">编辑</el-button><el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)" @click="uiRemove(scope.row)">删除</el-button></div></template></el-table-column>
+    <el-table-column prop="id" label="ID" width="75">
+    </el-table-column>
+    <el-table-column label="任务" min-width="210">
+      <template slot-scope="scope">
+        <span class="ui-row-title">{{ scope.row.jobDesc }}</span>
+        <small class="ui-cell-secondary">{{ scope.row.projectName || '未归属项目' }}</small>
+      </template>
+    </el-table-column>
+    <el-table-column label="类型" width="120">
+      <template slot-scope="scope">
+        <el-tag type="info" size="small">{{ scope.row.glueType === 'BEAN' ? 'DataX' : (scope.row.glueType || '').replace('GLUE_', '') }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column prop="jobCron" label="Cron 表达式" min-width="160">
+    </el-table-column>
+    <el-table-column label="调度" width="115">
+      <template slot-scope="scope">
+        <el-switch :value="scope.row.triggerStatus === 1" :disabled="uiBusy('state-' + scope.row.id)" active-color="#2469c9" @change="uiToggleTask(scope.row, $event)">
+        </el-switch>
+        <small class="ui-cell-secondary">{{ scope.row.triggerStatus === 1 ? '已启用' : '已停止' }}</small>
+      </template>
+    </el-table-column>
+    <el-table-column label="最近执行" width="110">
+      <template slot-scope="scope">
+        <el-tag size="small" :type="uiStatusType(scope.row.lastHandleCode)">{{ uiStatus(scope.row.lastHandleCode) }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column prop="updateTime" label="更新时间" min-width="170">
+    </el-table-column>
+    <el-table-column label="操作" width="240" fixed="right">
+      <template slot-scope="scope">
+        <div class="ui-row-actions">
+          <el-button type="text" :loading="uiBusy('execute-' + scope.row.id)" @click="uiExecute(scope.row)">执行</el-button>
+          <el-button type="text" @click="handlerViewLog(scope.row)">日志</el-button>
+          <el-button type="text" @click="uiOpenUpdate(scope.row)">编辑</el-button>
+          <el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)" @click="uiRemove(scope.row)">删除</el-button>
+        </div>
+      </template>
+    </el-table-column>
   </el-table>
-  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
-
-  <el-dialog class="ui-dialog" :title="dialogStatus === 'create' ? '新增任务' : '编辑任务'" :visible.sync="dialogFormVisible" width="1000px" top="5vh"
-    :close-on-click-modal="false" :close-on-press-escape="!uiPending.save" :show-close="!uiPending.save">
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh">
+  </ui-pagination>
+  <el-dialog class="ui-dialog" :title="dialogStatus === 'create' ? '新增任务' : '编辑任务'" :visible.sync="dialogFormVisible" width="1000px" top="5vh" :close-on-click-modal="false" :close-on-press-escape="!uiPending.save" :show-close="!uiPending.save">
     <el-form ref="dataForm" :model="temp" :rules="rules" label-position="top" :disabled="uiPending.save">
       <el-tabs v-model="uiTab">
         <el-tab-pane label="基本与调度" name="basic">
           <div class="ui-form-grid">
-            <el-form-item label="任务名称" prop="jobDesc"><el-input v-model="temp.jobDesc"></el-input></el-form-item>
-            <el-form-item label="所属项目" prop="projectId"><el-select v-model="temp.projectId" filterable><el-option v-for="item in jobProjectList || []" :key="item.id" :label="item.name" :value="item.id"></el-option></el-select></el-form-item>
-            <el-form-item label="执行器" prop="jobGroup"><el-select v-model="temp.jobGroup" filterable><el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id"></el-option></el-select></el-form-item>
-            <el-form-item label="任务类型" prop="glueType"><el-select v-model="temp.glueType"><el-option v-for="item in glueTypes" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item>
-            <el-form-item class="ui-span-full" label="Cron 表达式" prop="jobCron"><el-input v-model="temp.jobCron" class="ui-code"><el-button slot="append" icon="el-icon-date" @click="showCronBox = true">图形配置</el-button></el-input><el-button type="text" :loading="uiPending.nextTimes" @click="uiNextTimes">预览下次触发时间</el-button><pre v-if="triggerNextTimes" class="ui-hint">{{ triggerNextTimes }}</pre></el-form-item>
-            <el-form-item label="路由策略" prop="executorRouteStrategy"><el-select v-model="temp.executorRouteStrategy"><el-option v-for="item in routeStrategies" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item>
-            <el-form-item label="阻塞策略" prop="executorBlockStrategy"><el-select v-model="temp.executorBlockStrategy"><el-option v-for="item in blockStrategies" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item>
-            <el-form-item label="超时时间（秒，0 表示不限）"><el-input-number v-model="temp.executorTimeout" :min="0" controls-position="right"></el-input-number></el-form-item>
-            <el-form-item label="失败重试次数"><el-input-number v-model="temp.executorFailRetryCount" :min="0" controls-position="right"></el-input-number></el-form-item>
-            <el-form-item label="告警邮箱"><el-input v-model="temp.alarmEmail" placeholder="多个邮箱使用逗号分隔"></el-input></el-form-item>
-            <el-form-item label="子任务"><el-select v-model="temp.childJobId" multiple filterable value-key="id"><el-option v-for="item in jobIdList || []" v-if="item.id !== temp.id" :key="item.id" :label="item.jobDesc" :value="item"></el-option></el-select></el-form-item>
+            <el-form-item label="任务名称" prop="jobDesc">
+              <el-input v-model="temp.jobDesc">
+              </el-input>
+            </el-form-item>
+            <el-form-item label="所属项目" prop="projectId">
+              <el-select v-model="temp.projectId" filterable>
+                <el-option v-for="item in jobProjectList || []" :key="item.id" :label="item.name" :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="执行器" prop="jobGroup">
+              <el-select v-model="temp.jobGroup" filterable>
+                <el-option v-for="item in executorList || []" :key="item.id" :label="item.title" :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="任务类型" prop="glueType">
+              <el-select v-model="temp.glueType">
+                <el-option v-for="item in glueTypes" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item class="ui-span-full" label="Cron 表达式" prop="jobCron">
+              <el-input v-model="temp.jobCron" class="ui-code">
+                <el-button slot="append" icon="el-icon-date" @click="showCronBox = true">图形配置</el-button>
+              </el-input>
+              <el-button type="text" :loading="uiPending.nextTimes" @click="uiNextTimes">预览下次触发时间</el-button>
+              <pre v-if="triggerNextTimes" class="ui-hint">{{ triggerNextTimes }}</pre>
+            </el-form-item>
+            <el-form-item label="路由策略" prop="executorRouteStrategy">
+              <el-select v-model="temp.executorRouteStrategy">
+                <el-option v-for="item in routeStrategies" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="阻塞策略" prop="executorBlockStrategy">
+              <el-select v-model="temp.executorBlockStrategy">
+                <el-option v-for="item in blockStrategies" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="超时时间（秒，0 表示不限）">
+              <el-input-number v-model="temp.executorTimeout" :min="0" controls-position="right">
+              </el-input-number>
+            </el-form-item>
+            <el-form-item label="失败重试次数">
+              <el-input-number v-model="temp.executorFailRetryCount" :min="0" controls-position="right">
+              </el-input-number>
+            </el-form-item>
+            <el-form-item label="告警邮箱">
+              <el-input v-model="temp.alarmEmail" placeholder="多个邮箱使用逗号分隔">
+              </el-input>
+            </el-form-item>
+            <el-form-item label="子任务">
+              <el-select v-model="temp.childJobId" multiple filterable value-key="id">
+                <el-option v-for="item in jobIdList || []" v-if="item.id !== temp.id" :key="item.id" :label="item.jobDesc" :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
           </div>
         </el-tab-pane>
         <el-tab-pane label="任务内容" name="content">
-          <el-form-item v-if="temp.glueType === 'BEAN'" label="DataX JSON 配置"><json-editor v-model="jobJson"></json-editor></el-form-item>
-          <component v-else :is="temp.glueType === 'GLUE_SHELL' ? 'ShellEditor' : temp.glueType === 'GLUE_PYTHON' ? 'PythonEditor' : 'PowershellEditor'" v-model="glueSource"></component>
-          <el-form-item label="执行参数"><el-input v-model="temp.executorParam" type="textarea" :rows="2" resize="none"></el-input></el-form-item>
-          <el-form-item label="JVM 参数"><el-input v-model="temp.jvmParam" placeholder="例如：-Xms512m -Xmx1024m"></el-input></el-form-item>
+          <el-form-item v-if="temp.glueType === 'BEAN'" label="DataX JSON 配置">
+            <datax-json-code-editor v-model="jobJson" :read-only="!!uiPending.save" @save="uiSave" @format="uiFormatJson('jobJson')">
+            </datax-json-code-editor>
+          </el-form-item>
+          <component v-else :is="temp.glueType === 'GLUE_SHELL' ? 'ShellEditor' : temp.glueType === 'GLUE_PYTHON' ? 'PythonEditor' : 'PowershellEditor'" v-model="glueSource">
+          </component>
+          <el-form-item label="执行参数">
+            <el-input v-model="temp.executorParam" type="textarea" :rows="2" resize="none">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="JVM 参数">
+            <el-input v-model="temp.jvmParam" placeholder="例如：-Xms512m -Xmx1024m">
+            </el-input>
+          </el-form-item>
         </el-tab-pane>
         <el-tab-pane v-if="temp.glueType === 'BEAN'" label="增量与分区" name="increment">
-          <el-form-item label="增量方式"><el-select v-model="temp.incrementType"><el-option v-for="item in incrementTypes" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item>
+          <el-form-item label="增量方式">
+            <el-select v-model="temp.incrementType">
+              <el-option v-for="item in incrementTypes" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
           <div v-if="temp.incrementType === 1 || temp.incrementType === 2" class="ui-form-grid">
-            <el-form-item label="Reader 数据源" prop="datasourceId"><el-select v-model="temp.datasourceId" filterable><el-option v-for="item in dataSourceList || []" :key="item.id" :label="item.datasourceName" :value="item.id"></el-option></el-select></el-form-item>
-            <el-form-item label="Reader 表名" prop="readerTable"><el-input v-model="temp.readerTable"></el-input></el-form-item>
-            <el-form-item v-if="temp.incrementType === 1" label="增量主键" prop="primaryKey"><el-input v-model="temp.primaryKey"></el-input></el-form-item>
-            <el-form-item v-if="temp.incrementType === 1" label="首次开始 ID" prop="incStartId"><el-input v-model="temp.incStartId"></el-input></el-form-item>
-            <el-form-item v-if="temp.incrementType === 2" label="首次开始时间" prop="incStartTime"><el-date-picker v-model="temp.incStartTime" type="datetime" placeholder="选择开始时间"></el-date-picker></el-form-item>
-            <el-form-item v-if="temp.incrementType === 2" label="时间格式" prop="replaceParamType"><el-select v-model="temp.replaceParamType"><el-option v-for="item in replaceFormatTypes" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item>
-            <el-form-item class="ui-span-full" label="增量动态参数" prop="replaceParam"><el-input v-model="temp.replaceParam" placeholder="例如：-DstartId='%s' -DendId='%s'"></el-input></el-form-item>
+            <el-form-item label="Reader 数据源" prop="datasourceId">
+              <el-select v-model="temp.datasourceId" filterable>
+                <el-option v-for="item in dataSourceList || []" :key="item.id" :label="item.datasourceName" :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Reader 表名" prop="readerTable">
+              <el-input v-model="temp.readerTable">
+              </el-input>
+            </el-form-item>
+            <el-form-item v-if="temp.incrementType === 1" label="增量主键" prop="primaryKey">
+              <el-input v-model="temp.primaryKey">
+              </el-input>
+            </el-form-item>
+            <el-form-item v-if="temp.incrementType === 1" label="首次开始 ID" prop="incStartId">
+              <el-input v-model="temp.incStartId">
+              </el-input>
+            </el-form-item>
+            <el-form-item v-if="temp.incrementType === 2" label="首次开始时间" prop="incStartTime">
+              <el-date-picker v-model="temp.incStartTime" type="datetime" placeholder="选择开始时间">
+              </el-date-picker>
+            </el-form-item>
+            <el-form-item v-if="temp.incrementType === 2" label="时间格式" prop="replaceParamType">
+              <el-select v-model="temp.replaceParamType">
+                <el-option v-for="item in replaceFormatTypes" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item class="ui-span-full" label="增量动态参数" prop="replaceParam">
+              <el-input v-model="temp.replaceParam" placeholder="例如：-DstartId='%s' -DendId='%s'">
+              </el-input>
+            </el-form-item>
           </div>
-          <div v-if="temp.incrementType === 3" class="ui-form-grid"><el-form-item label="分区字段" prop="partitionField"><el-input v-model="partitionField"></el-input></el-form-item><el-form-item label="时间偏移（天）"><el-input-number v-model="timeOffset" controls-position="right"></el-input-number></el-form-item><el-form-item label="分区时间格式"><el-select v-model="timeFormatType"><el-option v-for="item in timeFormatTypes" :key="item.value" :label="item.label" :value="item.value"></el-option></el-select></el-form-item></div>
+          <div v-if="temp.incrementType === 3" class="ui-form-grid">
+            <el-form-item label="分区字段" prop="partitionField">
+              <el-input v-model="partitionField">
+              </el-input>
+            </el-form-item>
+            <el-form-item label="时间偏移（天）">
+              <el-input-number v-model="timeOffset" controls-position="right">
+              </el-input-number>
+            </el-form-item>
+            <el-form-item label="分区时间格式">
+              <el-select v-model="timeFormatType">
+                <el-option v-for="item in timeFormatTypes" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </el-form>
-    <div slot="footer"><el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button><el-button type="primary" :loading="uiPending.save" @click="uiSave">保存任务</el-button></div>
+    <div slot="footer">
+      <el-button :disabled="uiPending.save" @click="uiDialogClose">取消</el-button>
+      <el-button type="primary" :loading="uiPending.save" @click="uiSave">保存任务</el-button>
+    </div>
   </el-dialog>
-  <el-dialog class="ui-dialog" title="配置 Cron 表达式" :visible.sync="showCronBox" width="900px" top="5vh" append-to-body><cron v-model="temp.jobCron"></cron><div slot="footer"><el-button type="primary" @click="showCronBox = false">使用此表达式</el-button></div></el-dialog>
+  <el-dialog class="ui-dialog" title="配置 Cron 表达式" :visible.sync="showCronBox" width="900px" top="5vh" append-to-body>
+    <cron v-model="temp.jobCron">
+    </cron>
+    <div slot="footer">
+      <el-button type="primary" @click="showCronBox = false">使用此表达式</el-button>
+    </div>
+  </el-dialog>
 </section>

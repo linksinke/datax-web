@@ -6,9 +6,14 @@
     function script(url) {
         return new Promise(function (resolve, reject) {
             var node = document.createElement("script");
+            var timer = setTimeout(function () {
+                node.remove();
+                reject(new Error("界面资源加载超时: " + url));
+            }, 30000);
             node.src = url;
-            node.onload = resolve;
+            node.onload = function () { clearTimeout(timer); resolve(); };
             node.onerror = function () {
+                clearTimeout(timer);
                 reject(new Error("界面资源加载失败"));
             };
             document.head.appendChild(node);
@@ -17,15 +22,18 @@
 
     function loadTemplates() {
         return Promise.all(Object.keys(manifest.views).map(function (name) {
+            var controller = new AbortController();
+            var timer = setTimeout(function () { controller.abort(); }, 30000);
             return fetch(manifest.views[name], {
                 credentials: "same-origin",
-                cache: "no-cache"
+                cache: "no-cache",
+                signal: controller.signal
             }).then(function (response) {
                 if (!response.ok) throw new Error("页面模板加载失败");
                 return response.text();
             }).then(function (html) {
                 window.DataxUI.templates[name] = html;
-            });
+            }).finally(function () { clearTimeout(timer); });
         }));
     }
 

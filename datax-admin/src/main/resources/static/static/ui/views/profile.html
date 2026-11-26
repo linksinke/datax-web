@@ -1,5 +1,16 @@
 <section class="app-container ui-page ui-profile">
-  <div class="ui-panel-title"><h2>当前账号</h2></div>
-  <dl><div class="ui-definition"><dt>用户名</dt><dd>{{ uiName }}</dd></div><div class="ui-definition"><dt>角色</dt><dd>{{ uiRoles || '已登录用户' }}</dd></div></dl>
+  <div class="ui-panel-title">
+    <h2>当前账号</h2>
+  </div>
+  <dl>
+    <div class="ui-definition">
+      <dt>用户名</dt>
+      <dd>{{ uiName }}</dd>
+    </div>
+    <div class="ui-definition">
+      <dt>角色</dt>
+      <dd>{{ uiRoles || '已登录用户' }}</dd>
+    </div>
+  </dl>
   <el-button @click="$router.push('/dashboard')">返回运行报表</el-button>
 </section>

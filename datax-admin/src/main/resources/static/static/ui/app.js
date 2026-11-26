@@ -127,12 +127,18 @@
             },
             uiBusy: function (key) {
                 return !!this.uiPending[key];
+            },
+            uiFormatJson: function (key) {
+                try { this[key] = JSON.stringify(JSON.parse(this[key]), null, 2); }
+                catch (error) { this.$message.warning("JSON 格式有误，请修正后再格式化"); }
             }
         }, definition.methods || {});
         if (definition.data) {
             var oldData = options.data;
             options.data = function () {
-                return Object.assign(oldData.call(this), definition.data());
+                var value = Object.assign(oldData.call(this), definition.data());
+                value.uiDefaultQuery = JSON.parse(JSON.stringify(value.listQuery || {}));
+                return value;
             };
         }
         options.computed = Object.assign({}, options.computed, {
@@ -149,6 +155,22 @@
                 }, this);
             }
         }, definition.computed || {});
+        if (definition.enhance) definition.enhance(options, base.default || base);
+        options.watch = Object.assign({}, options.watch, {
+            uiTab: function () {
+                var vm = this;
+                vm.$nextTick(function () {
+                    function refresh(instance) {
+                        [instance.cm, instance.jsonEditor].forEach(function (editor) {
+                            if (editor && typeof editor.refresh === "function") editor.refresh();
+                        });
+                        (instance.$children || []).forEach(refresh);
+                    }
+                    refresh(vm);
+                });
+            }
+        });
+
         if (definition.created) appendHook(options, "created", definition.created);
         appendHook(options, "beforeDestroy", function () {
             ++this.uiReadSequence;
@@ -161,6 +183,9 @@
     function part(base, name) {
         var options = apply(base, name);
         if (name === "navbar") {
+            options.components = Object.assign({}, options.components, {
+                Breadcrumb: part(options.components.Breadcrumb, "breadcrumb")
+            });
             var oldData = options.data;
             options.data = function () {
                 return Object.assign(oldData ? oldData.call(this) : {}, {
@@ -249,6 +274,7 @@
             }
         }, "pagination"));
         Vue.component("datax-template-fields", apply({props: ["editor"]}, "template-fields"));
+        Vue.component("datax-json-code-editor", dependencies.codeEditor);
     }
 
     global.DataxUI = {
