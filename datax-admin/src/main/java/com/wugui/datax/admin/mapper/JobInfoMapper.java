@@ -1,5 +1,6 @@
 package com.wugui.datax.admin.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.wugui.datax.admin.entity.JobInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author xuxueli 2016-1-12 18:03:45
  */
 @Mapper
-public interface JobInfoMapper {
+public interface JobInfoMapper extends BaseMapper<JobInfo> {
 
     List<JobInfo> pageList(@Param("offset") int offset,
                            @Param("pagesize") int pagesize,
@@ -34,19 +35,7 @@ public interface JobInfoMapper {
                       @Param("userId") int userId,
                       @Param("projectIds") Integer[] projectIds);
 
-    List<JobInfo> findAll();
-
-    int save(JobInfo info);
-
-    JobInfo loadById(@Param("id") int id);
-
-    int update(JobInfo jobInfo);
-
-    int delete(@Param("id") long id);
-
     List<JobInfo> getJobsByGroup(@Param("jobGroup") int jobGroup);
-
-    int findAllCount();
 
     List<JobInfo> scheduleJobQuery(@Param("maxNextTime") long maxNextTime, @Param("pagesize") int pagesize);
 

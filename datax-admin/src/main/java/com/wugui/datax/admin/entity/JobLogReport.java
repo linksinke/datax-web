@@ -7,6 +7,7 @@ import java.util.Date;
 @Data
 public class JobLogReport {
 
+    @TableId(type = IdType.AUTO)
     private int id;
 
     private Date triggerDay;

@@ -13,6 +13,7 @@ import java.util.Date;
 @Data
 public class JobLogGlue {
 
+    @TableId(type = IdType.AUTO)
     private int id;
 
     @ApiModelProperty("任务主键ID")

@@ -1,5 +1,8 @@
 package com.wugui.datax.admin.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -9,8 +12,10 @@ import java.util.Date;
  * Created by xuxueli on 16/9/30.
  */
 @Data
+@TableName("job_registry")
 public class JobRegistry {
 
+    @TableId(type = IdType.AUTO)
     private int id;
     private String registryGroup;
     private String registryKey;

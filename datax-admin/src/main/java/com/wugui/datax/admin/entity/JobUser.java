@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
  */
 public class JobUser {
 
+    @TableId(type = IdType.AUTO)
     private int id;
     @ApiModelProperty("账号")
     private String username;

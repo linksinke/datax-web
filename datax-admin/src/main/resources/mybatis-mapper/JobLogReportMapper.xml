@@ -18,25 +18,8 @@
 		t.suc_count,
 		t.fail_count
 	</sql>
-	
-	<insert id="save" parameterType="com.wugui.datax.admin.entity.JobLogReport" useGeneratedKeys="true" keyProperty="id" >
-		INSERT INTO job_log_report (
-			`trigger_day`,
-			`running_count`,
-			`suc_count`,
-			`fail_count`
-		) VALUES (
-			#{triggerDay},
-			#{runningCount},
-			#{sucCount},
-			#{failCount}
-		);
-		<!--<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
-			SELECT LAST_INSERT_ID() 
-		</selectKey>-->
-	</insert>
 
-	<update id="update" >
+	<update id="updateByTriggerDay" >
         UPDATE job_log_report
         SET `running_count` = #{runningCount},
         	`suc_count` = #{sucCount},

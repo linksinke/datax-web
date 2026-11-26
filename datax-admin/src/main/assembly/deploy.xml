@@ -35,6 +35,7 @@
                 <include>application.yml</include>
                 <include>mybatis-mapper/**</include>
                 <include>i18n/**</include>
+                <include>db/**</include>
                 <include>static/**</include>
             </includes>
             <outputDirectory>datax-admin/conf</outputDirectory>

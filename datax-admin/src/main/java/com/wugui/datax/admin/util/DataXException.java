@@ -4,6 +4,9 @@ package com.wugui.datax.admin.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * DataX运行时异常
+ */
 public class DataXException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -39,10 +42,6 @@ public class DataXException extends RuntimeException {
         return new DataXException(errorCode, getMessage(cause), cause);
     }
 
-    public ErrorCode getErrorCode() {
-        return this.errorCode;
-    }
-
     private static String getMessage(Object obj) {
         if (obj == null) {
             return "";
@@ -58,4 +57,9 @@ public class DataXException extends RuntimeException {
             return obj.toString();
         }
     }
+
+    public ErrorCode getErrorCode() {
+        return this.errorCode;
+    }
+
 }

@@ -13,11 +13,13 @@ import com.wugui.datax.admin.core.trigger.TriggerTypeEnum;
 import com.wugui.datax.admin.core.util.I18nUtil;
 import com.wugui.datax.admin.entity.JobInfo;
 import com.wugui.datax.admin.entity.JobLog;
+import com.wugui.datax.admin.entity.JobRegistry;
 import com.wugui.datax.admin.mapper.JobInfoMapper;
 import com.wugui.datax.admin.mapper.JobLogMapper;
 import com.wugui.datax.admin.mapper.JobRegistryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -69,7 +71,7 @@ public class AdminBizImpl implements AdminBiz {
 
     private ReturnT<String> callback(HandleCallbackParam handleCallbackParam) {
         // valid log item
-        JobLog log = jobLogMapper.load(handleCallbackParam.getLogId());
+        JobLog log = jobLogMapper.selectById(handleCallbackParam.getLogId());
         if (log == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, "log item not found.");
         }
@@ -83,7 +85,7 @@ public class AdminBizImpl implements AdminBiz {
 
         if (IJobHandler.SUCCESS.getCode() == resultCode) {
 
-            JobInfo jobInfo = jobInfoMapper.loadById(log.getJobId());
+            JobInfo jobInfo = jobInfoMapper.selectById(log.getJobId());
 
             updateIncrementParam(log, jobInfo.getIncrementType());
 
@@ -178,8 +180,10 @@ public class AdminBizImpl implements AdminBiz {
         int ret = jobRegistryMapper.registryUpdate(registryParam.getRegistryGroup(), registryParam.getRegistryKey(),
                 registryParam.getRegistryValue(), registryParam.getCpuUsage(), registryParam.getMemoryUsage(), registryParam.getLoadAverage(), new Date());
         if (ret < 1) {
-            jobRegistryMapper.registrySave(registryParam.getRegistryGroup(), registryParam.getRegistryKey(),
-                    registryParam.getRegistryValue(), registryParam.getCpuUsage(), registryParam.getMemoryUsage(), registryParam.getLoadAverage(), new Date());
+            JobRegistry registry = new JobRegistry();
+            BeanUtils.copyProperties(registryParam, registry);
+            registry.setUpdateTime(new Date());
+            jobRegistryMapper.insert(registry);
 
             // fresh
             freshGroupRegistryInfo(registryParam);

@@ -42,7 +42,7 @@ public class JobCodeController {
         if (glueRemark.length() < 4 || glueRemark.length() > 100) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("jobinfo_glue_remark_limit"));
         }
-        JobInfo existsJobInfo = jobInfoMapper.loadById(id);
+        JobInfo existsJobInfo = jobInfoMapper.selectById(id);
         if (existsJobInfo == null) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("jobinfo_glue_jobid_invalid"));
         }
@@ -53,7 +53,7 @@ public class JobCodeController {
         existsJobInfo.setGlueUpdatetime(new Date());
 
         existsJobInfo.setUpdateTime(new Date());
-        jobInfoMapper.update(existsJobInfo);
+        jobInfoMapper.updateById(existsJobInfo);
 
         // log old code
         JobLogGlue jobLogGlue = new JobLogGlue();
@@ -64,7 +64,7 @@ public class JobCodeController {
 
         jobLogGlue.setAddTime(new Date());
         jobLogGlue.setUpdateTime(new Date());
-        jobLogGlueMapper.save(jobLogGlue);
+        jobLogGlueMapper.insert(jobLogGlue);
 
         // remove code backup more than 30
         jobLogGlueMapper.removeOld(existsJobInfo.getId(), 30);

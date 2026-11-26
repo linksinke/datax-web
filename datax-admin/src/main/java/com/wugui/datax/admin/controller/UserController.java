@@ -96,7 +96,7 @@ public class UserController {
         }
 
         // write
-        jobUserMapper.save(jobUser);
+        jobUserMapper.insert(jobUser);
         return ReturnT.SUCCESS;
     }
 
@@ -117,14 +117,14 @@ public class UserController {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_no_blank") + "密码");
         }
         // write
-        jobUserMapper.update(jobUser);
+        jobUserMapper.updateById(jobUser);
         return ReturnT.SUCCESS;
     }
 
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     @ApiOperation("删除用户")
     public ReturnT<String> remove(int id) {
-        int result = jobUserMapper.delete(id);
+        int result = jobUserMapper.deleteById(id);
         return result != 1 ? ReturnT.FAIL : ReturnT.SUCCESS;
     }
 
@@ -142,7 +142,7 @@ public class UserController {
         // do write
         JobUser existUser = jobUserMapper.loadByUserName(jobUser.getUsername());
         existUser.setPassword(bCryptPasswordEncoder.encode(password));
-        jobUserMapper.update(existUser);
+        jobUserMapper.updateById(existUser);
         return ReturnT.SUCCESS;
     }
 

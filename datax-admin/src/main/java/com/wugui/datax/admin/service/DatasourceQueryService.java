@@ -3,6 +3,7 @@ package com.wugui.datax.admin.service;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据库查询服务
@@ -15,7 +16,17 @@ import java.util.List;
 public interface DatasourceQueryService {
 
     /**
+     * 根据数据源id和表名列表查询出所有字段
+     *
+     * @param datasourceId
+     * @param tables
+     * @return
+     */
+    Map<String, List<String>> getColumnsBatch(Long datasourceId, List<String> tables) throws IOException;
+
+    /**
      * 获取db列表
+     *
      * @param id
      * @return
      */
@@ -27,14 +38,15 @@ public interface DatasourceQueryService {
      * @param id
      * @return
      */
-    List<String> getTables(Long id,String tableSchema) throws IOException;
+    List<String> getTables(Long id, String tableSchema) throws IOException;
 
     /**
      * 获取CollectionNames
+     *
      * @param dbName
      * @return
      */
-    List<String> getCollectionNames(long id,String dbName) throws IOException;
+    List<String> getCollectionNames(long id, String dbName) throws IOException;
 
     /**
      * 根据数据源id，表名查询出该表所有字段
@@ -59,4 +71,5 @@ public interface DatasourceQueryService {
      * @return
      */
     List<String> getTableSchema(Long id);
+
 }

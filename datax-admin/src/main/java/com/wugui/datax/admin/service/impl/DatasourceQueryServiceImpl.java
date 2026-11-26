@@ -10,10 +10,14 @@ import com.wugui.datax.admin.util.JdbcConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 /**
  * datasource query
@@ -28,6 +32,20 @@ public class DatasourceQueryServiceImpl implements DatasourceQueryService {
 
     @Autowired
     private JobDatasourceService jobDatasourceService;
+
+    @Override
+    public Map<String, List<String>> getColumnsBatch(Long id, List<String> tables) throws IOException {
+        Assert.notNull(id, "请选择模拟表结构库");
+        Assert.isTrue(tables != null && !tables.isEmpty() && tables.size() <= 1000, "每次请选择1至1000张表");
+        tables.forEach(table -> Assert.hasText(table, "表名不能为空"));
+        JobDatasource source = jobDatasourceService.getById(id);
+        Assert.isTrue(source != null && Integer.valueOf(1).equals(source.getStatus()), "模拟库不存在或未启用");
+        try {
+            return QueryToolFactory.getByDbType(source).getColumnNamesBatch(new ArrayList<>(new LinkedHashSet<>(tables)));
+        } catch (SQLException e) {
+            throw new IOException("批量读取模拟库表结构失败", e);
+        }
+    }
 
     @Override
     public List<String> getDBs(Long id) throws IOException {

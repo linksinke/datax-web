@@ -8,6 +8,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.charset.CodingErrorAction;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -97,6 +99,23 @@ public class AESUtil {
             log.warn("content decrypt error {}", e.getMessage());
         }
         return null;
+    }
+
+    /** Supports both encrypted database results and values already decoded by a MyBatis type handler. */
+    public static String plaintextForExport(String value) {
+        if (value == null || value.length() < 24 || value.length() % 4 != 0) return value;
+        try {
+            byte[] ciphertext = Base64.getDecoder().decode(value);
+            if (ciphertext.length == 0 || ciphertext.length % 16 != 0) return value;
+            KeyGenerator keygen = getKeyGenerator();
+            SecretKey key = new SecretKeySpec(keygen.generateKey().getEncoded(), KEY_ALGORITHM);
+            byte[] plaintext = decrypt(key, ciphertext);
+            // Arbitrary plaintext passwords can resemble Base64. Invalid ciphertext/UTF-8 stays literal.
+            return StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(plaintext)).toString();
+        } catch (Exception ignored) {
+            return value;
+        }
     }
 
     public static void main(String[] args) {
