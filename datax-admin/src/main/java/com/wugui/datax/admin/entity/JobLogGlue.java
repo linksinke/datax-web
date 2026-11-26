@@ -1,5 +1,8 @@
 package com.wugui.datax.admin.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.IdType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,6 +14,7 @@ import java.util.Date;
  * @author xuxueli 2016-5-19 17:57:46
  */
 @Data
+@TableName("job_logglue")
 public class JobLogGlue {
 
     @TableId(type = IdType.AUTO)

@@ -18,7 +18,7 @@ public interface JobDatasourceService extends IService<JobDatasource> {
      * 测试数据源
      *
      * @param jdbcDatasource 数据源对象
-     * @return
+     * @return 是否测试成功；true表示成功，false表示失败
      */
     Boolean dataSourceTest(JobDatasource jdbcDatasource) throws IOException;
 

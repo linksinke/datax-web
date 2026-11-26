@@ -79,7 +79,7 @@ public class JobLogController {
 
             // is end
             if (logResult.getContent() != null && fromLineNum > logResult.getContent().getToLineNum()) {
-                JobLog jobLog = jobLogMapper.load(logId);
+                JobLog jobLog = jobLogMapper.selectById(logId);
                 if (jobLog.getHandleCode() > 0) {
                     logResult.getContent().setEnd(true);
                 }
@@ -96,8 +96,8 @@ public class JobLogController {
     @ApiOperation("kill任务")
     public ReturnT<String> logKill(int id) {
         // base check
-        JobLog log = jobLogMapper.load(id);
-        JobInfo jobInfo = jobInfoMapper.loadById(log.getJobId());
+        JobLog log = jobLogMapper.selectById(id);
+        JobInfo jobInfo = jobInfoMapper.selectById(log.getJobId());
         if (jobInfo == null) {
             return new ReturnT<>(500, I18nUtil.getString("jobinfo_glue_jobid_invalid"));
         }

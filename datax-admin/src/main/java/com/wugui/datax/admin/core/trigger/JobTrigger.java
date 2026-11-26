@@ -45,7 +45,7 @@ public class JobTrigger {
      *                              not null: cover job param
      */
     public static void trigger(int jobId, TriggerTypeEnum triggerType, int failRetryCount, String executorShardingParam, String executorParam) {
-        JobInfo jobInfo = JobAdminConfig.getAdminConfig().getJobInfoMapper().loadById(jobId);
+        JobInfo jobInfo = JobAdminConfig.getAdminConfig().getJobInfoMapper().selectById(jobId);
         if (jobInfo == null) {
             logger.warn(">>>>>>>>>>>> trigger fail, jobId invalid，jobId={}", jobId);
             return;
@@ -59,7 +59,7 @@ public class JobTrigger {
             jobInfo.setExecutorParam(executorParam);
         }
         int finalFailRetryCount = failRetryCount >= 0 ? failRetryCount : jobInfo.getExecutorFailRetryCount();
-        JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().load(jobInfo.getJobGroup());
+        JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().selectById(jobInfo.getJobGroup());
 
         // sharding param
         int[] shardingParam = null;
@@ -123,7 +123,7 @@ public class JobTrigger {
         jobLog.setTriggerTime(triggerTime);
         jobLog.setJobDesc(jobInfo.getJobDesc());
 
-        JobAdminConfig.getAdminConfig().getJobLogMapper().save(jobLog);
+        JobAdminConfig.getAdminConfig().getJobLogMapper().insert(jobLog);
         logger.debug(">>>>>>>>>>> datax-web trigger start, jobId:{}", jobLog.getId());
 
         // 2、init trigger-param

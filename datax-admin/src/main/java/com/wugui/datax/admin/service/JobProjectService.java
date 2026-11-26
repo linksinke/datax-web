@@ -4,9 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.entity.JobProject;
-import org.apache.ibatis.annotations.Param;
-
-import java.io.IOException;
+import com.wugui.datax.admin.dto.ProjectDatasourceDto;
+import java.util.List;
 
 /**
  * Job project
@@ -26,4 +25,12 @@ public interface JobProjectService extends IService<JobProject> {
      */
 
     IPage<JobProject> getProjectListPaging(Integer pageSize, Integer pageNo, String searchName);
+
+    List<JobProject> listProjects();
+    JobProject getProject(int id);
+    List<ProjectDatasourceDto> getProjectDatasources(int id);
+    boolean saveProject(JobProject project, int userId, boolean administrator);
+    boolean bindDatasources(int projectId, List<Long> datasourceIds, int userId, boolean administrator);
+    boolean removeProjects(List<Long> ids, int userId, boolean administrator);
+
 }

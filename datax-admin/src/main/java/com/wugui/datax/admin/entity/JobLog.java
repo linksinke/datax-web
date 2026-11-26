@@ -15,8 +15,10 @@ import java.util.Date;
  * @author jingwk  2019-11-17 22:08:11
  */
 @Data
+@TableName("job_log")
 public class JobLog {
 
+    @TableId(type = IdType.AUTO)
     private long id;
 
     // job info

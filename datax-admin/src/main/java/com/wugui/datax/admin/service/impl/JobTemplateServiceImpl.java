@@ -1,5 +1,6 @@
 package com.wugui.datax.admin.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datatx.core.enums.ExecutorBlockStrategyEnum;
 import com.wugui.datatx.core.glue.GlueTypeEnum;
@@ -28,11 +29,10 @@ import java.util.Map;
  * @author xuxueli 2016-5-28 15:30:33
  */
 @Service
-public class JobTemplateServiceImpl implements JobTemplateService {
+public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTemplate> implements JobTemplateService {
+
     @Resource
     private JobGroupMapper jobGroupMapper;
-    @Resource
-    private JobTemplateMapper jobTemplateMapper;
     @Resource
     private JobLogMapper jobLogMapper;
     @Resource
@@ -44,8 +44,8 @@ public class JobTemplateServiceImpl implements JobTemplateService {
     public Map<String, Object> pageList(int start, int length, int jobGroup, String jobDesc, String executorHandler, int userId, Integer[] projectIds) {
 
         // page list
-        List<JobTemplate> list = jobTemplateMapper.pageList(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
-        int list_count = jobTemplateMapper.pageListCount(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
+        List<JobTemplate> list = baseMapper.pageList(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
+        int list_count = baseMapper.pageListCount(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
 
         // package result
         Map<String, Object> maps = new HashMap<>();
@@ -58,7 +58,7 @@ public class JobTemplateServiceImpl implements JobTemplateService {
     @Override
     public ReturnT<String> add(JobTemplate jobTemplate) {
         // valid
-        JobGroup group = jobGroupMapper.load(jobTemplate.getJobGroup());
+        JobGroup group = jobGroupMapper.selectById(jobTemplate.getJobGroup());
         if (group == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_choose") + I18nUtil.getString("jobinfo_field_jobgroup")));
         }
@@ -94,7 +94,7 @@ public class JobTemplateServiceImpl implements JobTemplateService {
             String[] childJobIds = jobTemplate.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
                 if (StringUtils.isNotBlank(childJobIdItem) && isNumeric(childJobIdItem) && Integer.parseInt(childJobIdItem) > 0) {
-                    JobInfo jobInfo = jobInfoMapper.loadById(Integer.parseInt(childJobIdItem));
+                    JobInfo jobInfo = jobInfoMapper.selectById(Integer.parseInt(childJobIdItem));
                     if (jobInfo == null) {
                         return new ReturnT<String>(ReturnT.FAIL_CODE,
                                 MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_not_found")), childJobIdItem));
@@ -122,7 +122,7 @@ public class JobTemplateServiceImpl implements JobTemplateService {
         jobTemplate.setAddTime(new Date());
         jobTemplate.setUpdateTime(new Date());
         jobTemplate.setGlueUpdatetime(new Date());
-        jobTemplateMapper.save(jobTemplate);
+        save(jobTemplate);
         if (jobTemplate.getId() < 1) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_add") + I18nUtil.getString("system_fail")));
         }
@@ -164,7 +164,7 @@ public class JobTemplateServiceImpl implements JobTemplateService {
             String[] childJobIds = jobTemplate.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
                 if (childJobIdItem != null && childJobIdItem.trim().length() > 0 && isNumeric(childJobIdItem)) {
-                    JobTemplate childJobTemplate = jobTemplateMapper.loadById(Integer.parseInt(childJobIdItem));
+                    JobTemplate childJobTemplate = getById(Integer.parseInt(childJobIdItem));
                     if (childJobTemplate == null) {
                         return new ReturnT<String>(ReturnT.FAIL_CODE,
                                 MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_not_found")), childJobIdItem));
@@ -186,13 +186,13 @@ public class JobTemplateServiceImpl implements JobTemplateService {
         }
 
         // group valid
-        JobGroup jobGroup = jobGroupMapper.load(jobTemplate.getJobGroup());
+        JobGroup jobGroup = jobGroupMapper.selectById(jobTemplate.getJobGroup());
         if (jobGroup == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_invalid")));
         }
 
         // stage job info
-        JobTemplate exists_jobTemplate = jobTemplateMapper.loadById(jobTemplate.getId());
+        JobTemplate exists_jobTemplate = getById(jobTemplate.getId());
         if (exists_jobTemplate == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));
         }
@@ -217,20 +217,20 @@ public class JobTemplateServiceImpl implements JobTemplateService {
         exists_jobTemplate.setJvmParam(jobTemplate.getJvmParam());
         exists_jobTemplate.setProjectId(jobTemplate.getProjectId());
         exists_jobTemplate.setUpdateTime(new Date());
-        jobTemplateMapper.update(exists_jobTemplate);
+        updateById(exists_jobTemplate);
 
         return ReturnT.SUCCESS;
     }
 
     @Override
     public ReturnT<String> remove(int id) {
-        JobTemplate xxlJobTemplate = jobTemplateMapper.loadById(id);
+        JobTemplate xxlJobTemplate = getById(id);
         if (xxlJobTemplate == null) {
             return ReturnT.SUCCESS;
         }
 
-        jobTemplateMapper.delete(id);
-        jobLogMapper.delete(id);
+        removeById(id);
+        jobLogMapper.deleteByJobId(id);
         jobLogGlueMapper.deleteByJobId(id);
         return ReturnT.SUCCESS;
     }

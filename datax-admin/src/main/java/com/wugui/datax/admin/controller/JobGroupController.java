@@ -1,5 +1,7 @@
 package com.wugui.datax.admin.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datatx.core.enums.RegistryConfig;
 import com.wugui.datax.admin.core.util.I18nUtil;
@@ -34,13 +36,14 @@ public class JobGroupController {
     @GetMapping("/list")
     @ApiOperation("执行器列表")
     public ReturnT<List<JobGroup>> getExecutorList() {
-        return new ReturnT<>(jobGroupMapper.findAll());
+        LambdaQueryWrapper<JobGroup> queryWrapper = Wrappers.<JobGroup>lambdaQuery().
+                orderByAsc(JobGroup::getOrder);
+        return new ReturnT<>(jobGroupMapper.selectList(queryWrapper));
     }
 
     @PostMapping("/save")
     @ApiOperation("新建执行器")
     public ReturnT<String> save(@RequestBody JobGroup jobGroup) {
-
         // valid
         if (jobGroup.getAppName() == null || jobGroup.getAppName().trim().length() == 0) {
             return new ReturnT<String>(500, (I18nUtil.getString("system_please_input") + "AppName"));
@@ -63,12 +66,12 @@ public class JobGroupController {
             }
         }
 
-        int ret = jobGroupMapper.save(jobGroup);
+        int ret = jobGroupMapper.insert(jobGroup);
         return (ret > 0) ? ReturnT.SUCCESS : ReturnT.FAIL;
     }
 
-    @PostMapping("/update")
     @ApiOperation("更新执行器")
+    @PostMapping("/update")
     public ReturnT<String> update(@RequestBody JobGroup jobGroup) {
         // valid
         if (jobGroup.getAppName() == null || jobGroup.getAppName().trim().length() == 0) {
@@ -106,7 +109,7 @@ public class JobGroupController {
             }
         }
 
-        int ret = jobGroupMapper.update(jobGroup);
+        int ret = jobGroupMapper.updateById(jobGroup);
         return (ret > 0) ? ReturnT.SUCCESS : ReturnT.FAIL;
     }
 
@@ -135,37 +138,34 @@ public class JobGroupController {
     @PostMapping("/remove")
     @ApiOperation("移除执行器")
     public ReturnT<String> remove(int id) {
-
         // valid
-        int count = jobInfoMapper.pageListCount(0, 10, id, -1, null, null, 0,null);
+        int count = jobInfoMapper.pageListCount(0, 10, id, -1, null, null, 0, null);
         if (count > 0) {
             return new ReturnT<>(500, I18nUtil.getString("jobgroup_del_limit_0"));
         }
 
-        List<JobGroup> allList = jobGroupMapper.findAll();
+        List<JobGroup> allList = jobGroupMapper.selectList(Wrappers.<JobGroup>lambdaQuery().orderByAsc(JobGroup::getOrder));
         if (allList.size() == 1) {
             return new ReturnT<>(500, I18nUtil.getString("jobgroup_del_limit_1"));
         }
 
-        int ret = jobGroupMapper.remove(id);
+        int ret = jobGroupMapper.deleteById(id);
         return (ret > 0) ? ReturnT.SUCCESS : ReturnT.FAIL;
     }
 
     @RequestMapping(value = "/loadById", method = RequestMethod.POST)
     @ApiOperation("根据id获取执行器")
     public ReturnT<JobGroup> loadById(int id) {
-        JobGroup jobGroup = jobGroupMapper.load(id);
+        JobGroup jobGroup = jobGroupMapper.selectById(id);
         return jobGroup != null ? new ReturnT<>(jobGroup) : new ReturnT<>(ReturnT.FAIL_CODE, null);
     }
 
     @GetMapping("/query")
     @ApiOperation("查询执行器")
-    public ReturnT<List<JobGroup>> get(@ApiParam(value = "执行器AppName")
-                                       @RequestParam(value = "appName", required = false) String appName,
-                                       @ApiParam(value = "执行器名称")
-                                       @RequestParam(value = "title", required = false) String title,
-                                       @ApiParam(value = "执行器地址列表")
-                                       @RequestParam(value = "addressList", required = false) String addressList) {
+    public ReturnT<List<JobGroup>> get(
+            @ApiParam(value = "执行器AppName") @RequestParam(value = "appName", required = false) String appName,
+            @ApiParam(value = "执行器名称") @RequestParam(value = "title", required = false) String title,
+            @ApiParam(value = "执行器地址列表") @RequestParam(value = "addressList", required = false) String addressList) {
         return new ReturnT<>(jobGroupMapper.find(appName, title, addressList));
     }
 

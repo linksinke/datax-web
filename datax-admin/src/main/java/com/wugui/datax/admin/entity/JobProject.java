@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.wugui.datax.admin.dto.ProjectDatasourceDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -45,5 +46,12 @@ public class JobProject {
 
     @TableField(exist=false)
     private String userName;
+
+    /** Null on legacy update requests means keep existing bindings. */
+    @TableField(exist = false)
+    private List<Long> datasourceIds;
+
+    @TableField(exist = false)
+    private List<ProjectDatasourceDto> datasources;
 
 }

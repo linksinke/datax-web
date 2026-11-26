@@ -1,5 +1,7 @@
 package com.wugui.datax.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datatx.core.enums.ExecutorBlockStrategyEnum;
 import com.wugui.datatx.core.glue.GlueTypeEnum;
@@ -37,13 +39,12 @@ import java.util.*;
  * @author xuxueli 2016-5-28 15:30:33
  */
 @Service
-public class JobServiceImpl implements JobService {
+public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implements JobService {
+
     private static Logger logger = LoggerFactory.getLogger(JobServiceImpl.class);
 
     @Resource
     private JobGroupMapper jobGroupMapper;
-    @Resource
-    private JobInfoMapper jobInfoMapper;
     @Resource
     private JobLogMapper jobLogMapper;
     @Resource
@@ -61,8 +62,8 @@ public class JobServiceImpl implements JobService {
     public Map<String, Object> pageList(int start, int length, int jobGroup, int triggerStatus, String jobDesc, String glueType, int userId, Integer[] projectIds) {
 
         // page list
-        List<JobInfo> list = jobInfoMapper.pageList(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
-        int list_count = jobInfoMapper.pageListCount(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
+        List<JobInfo> list = baseMapper.pageList(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
+        int list_count = baseMapper.pageListCount(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
 
         // package result
         Map<String, Object> maps = new HashMap<>();
@@ -72,14 +73,15 @@ public class JobServiceImpl implements JobService {
         return maps;
     }
 
+    @Override
     public List<JobInfo> list() {
-        return jobInfoMapper.findAll();
+        return list(Wrappers.<JobInfo>lambdaQuery().orderByAsc(JobInfo::getJobDesc));
     }
 
     @Override
     public ReturnT<String> add(JobInfo jobInfo) {
         // valid
-        JobGroup group = jobGroupMapper.load(jobInfo.getJobGroup());
+        JobGroup group = jobGroupMapper.selectById(jobInfo.getJobGroup());
         if (group == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_choose") + I18nUtil.getString("jobinfo_field_jobgroup")));
         }
@@ -92,7 +94,7 @@ public class JobServiceImpl implements JobService {
         if (jobInfo.getJobDesc() == null || jobInfo.getJobDesc().trim().length() == 0) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_jobdesc")));
         }
-        if (jobInfo.getUserId() == 0 ) {
+        if (jobInfo.getUserId() == 0) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_author")));
         }
         if (ExecutorRouteStrategyEnum.match(jobInfo.getExecutorRouteStrategy(), null) == null) {
@@ -123,7 +125,7 @@ public class JobServiceImpl implements JobService {
             String[] childJobIds = jobInfo.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
                 if (StringUtils.isNotBlank(childJobIdItem) && isNumeric(childJobIdItem) && Integer.parseInt(childJobIdItem) > 0) {
-                    JobInfo childJobInfo = jobInfoMapper.loadById(Integer.parseInt(childJobIdItem));
+                    JobInfo childJobInfo = getById(Integer.parseInt(childJobIdItem));
                     if (childJobInfo == null) {
                         return new ReturnT<String>(ReturnT.FAIL_CODE,
                                 MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_not_found")), childJobIdItem));
@@ -149,7 +151,7 @@ public class JobServiceImpl implements JobService {
         jobInfo.setJobJson(jobInfo.getJobJson());
         jobInfo.setUpdateTime(new Date());
         jobInfo.setGlueUpdatetime(new Date());
-        jobInfoMapper.save(jobInfo);
+        save(jobInfo);
         if (jobInfo.getId() < 1) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_add") + I18nUtil.getString("system_fail")));
         }
@@ -198,7 +200,7 @@ public class JobServiceImpl implements JobService {
             String[] childJobIds = jobInfo.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
                 if (childJobIdItem != null && childJobIdItem.trim().length() > 0 && isNumeric(childJobIdItem)) {
-                    JobInfo childJobInfo = jobInfoMapper.loadById(Integer.parseInt(childJobIdItem));
+                    JobInfo childJobInfo = getById(Integer.parseInt(childJobIdItem));
                     if (childJobInfo == null) {
                         return new ReturnT<String>(ReturnT.FAIL_CODE,
                                 MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_not_found")), childJobIdItem));
@@ -220,13 +222,13 @@ public class JobServiceImpl implements JobService {
         }
 
         // group valid
-        JobGroup jobGroup = jobGroupMapper.load(jobInfo.getJobGroup());
+        JobGroup jobGroup = jobGroupMapper.selectById(jobInfo.getJobGroup());
         if (jobGroup == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_invalid")));
         }
 
         // stage job info
-        JobInfo exists_jobInfo = jobInfoMapper.loadById(jobInfo.getId());
+        JobInfo exists_jobInfo = getById(jobInfo.getId());
         if (exists_jobInfo == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));
         }
@@ -261,7 +263,7 @@ public class JobServiceImpl implements JobService {
             exists_jobInfo.setJobJson(null);
         }
         exists_jobInfo.setGlueUpdatetime(new Date());
-        jobInfoMapper.update(exists_jobInfo);
+        updateById(exists_jobInfo);
 
 
         return ReturnT.SUCCESS;
@@ -269,20 +271,20 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public ReturnT<String> remove(int id) {
-        JobInfo xxlJobInfo = jobInfoMapper.loadById(id);
+        JobInfo xxlJobInfo = getById(id);
         if (xxlJobInfo == null) {
             return ReturnT.SUCCESS;
         }
 
-        jobInfoMapper.delete(id);
-        jobLogMapper.delete(id);
+        removeById(id);
+        jobLogMapper.deleteByJobId(id);
         jobLogGlueMapper.deleteByJobId(id);
         return ReturnT.SUCCESS;
     }
 
     @Override
     public ReturnT<String> start(int id) {
-        JobInfo xxlJobInfo = jobInfoMapper.loadById(id);
+        JobInfo xxlJobInfo = getById(id);
 
         // next trigger time (5s后生效，避开预读周期)
         long nextTriggerTime = 0;
@@ -302,27 +304,27 @@ public class JobServiceImpl implements JobService {
         xxlJobInfo.setTriggerNextTime(nextTriggerTime);
 
         xxlJobInfo.setUpdateTime(new Date());
-        jobInfoMapper.update(xxlJobInfo);
+        updateById(xxlJobInfo);
         return ReturnT.SUCCESS;
     }
 
     @Override
     public ReturnT<String> stop(int id) {
-        JobInfo jobInfo = jobInfoMapper.loadById(id);
+        JobInfo jobInfo = getById(id);
 
         jobInfo.setTriggerStatus(0);
         jobInfo.setTriggerLastTime(0);
         jobInfo.setTriggerNextTime(0);
 
         jobInfo.setUpdateTime(new Date());
-        jobInfoMapper.update(jobInfo);
+        updateById(jobInfo);
         return ReturnT.SUCCESS;
     }
 
     @Override
     public Map<String, Object> dashboardInfo() {
 
-        int jobInfoCount = jobInfoMapper.findAllCount();
+        int jobInfoCount = baseMapper.selectCount(null);
         int jobLogCount = 0;
         int jobLogSuccessCount = 0;
         JobLogReport jobLogReport = jobLogReportMapper.queryLogReportTotal();
@@ -333,7 +335,7 @@ public class JobServiceImpl implements JobService {
 
         // executor count
         Set<String> executorAddressSet = new HashSet<>();
-        List<JobGroup> groupList = jobGroupMapper.findAll();
+        List<JobGroup> groupList = jobGroupMapper.selectList(Wrappers.<JobGroup>lambdaQuery().orderByAsc(JobGroup::getOrder));
 
         if (groupList != null && !groupList.isEmpty()) {
             for (JobGroup group : groupList) {
@@ -448,7 +450,7 @@ public class JobServiceImpl implements JobService {
 
             String json = dataxJsonService.buildJobJson(jsonBuild);
 
-            JobTemplate jobTemplate = jobTemplateMapper.loadById(dto.getTemplateId());
+            JobTemplate jobTemplate = jobTemplateMapper.selectById(dto.getTemplateId());
             JobInfo jobInfo = new JobInfo();
             BeanUtils.copyProperties(jobTemplate, jobInfo);
             jobInfo.setJobJson(json);
@@ -456,8 +458,9 @@ public class JobServiceImpl implements JobService {
             jobInfo.setAddTime(new Date());
             jobInfo.setUpdateTime(new Date());
             jobInfo.setGlueUpdatetime(new Date());
-            jobInfoMapper.save(jobInfo);
+            save(jobInfo);
         }
         return ReturnT.SUCCESS;
     }
+
 }

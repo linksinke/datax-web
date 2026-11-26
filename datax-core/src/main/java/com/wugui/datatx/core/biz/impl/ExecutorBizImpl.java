@@ -22,7 +22,6 @@ import java.util.Date;
 /**
  * Created by xuxueli on 17/3/1.
  */
-
 public class ExecutorBizImpl implements ExecutorBiz {
     private static Logger logger = LoggerFactory.getLogger(ExecutorBizImpl.class);
 
@@ -33,7 +32,6 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
     @Override
     public ReturnT<String> idleBeat(int jobId) {
-
         // isRunningOrHasQueue
         JobThread jobThread = JobExecutor.loadJobThread(jobId);
         if (jobThread != null && jobThread.isRunningOrHasQueue()) {

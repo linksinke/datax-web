@@ -71,14 +71,4 @@ public class JwtUser implements UserDetails {
         this.id = id;
     }
 
-    @Override
-    public String toString() {
-        return "JwtUser{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", authorities=" + authorities +
-                '}';
-    }
-
 }

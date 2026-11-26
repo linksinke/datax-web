@@ -11,4 +11,5 @@ import com.wugui.datax.admin.entity.JobRegistry;
  * @since 2020-03-15
  */
 public interface JobRegistryService extends IService<JobRegistry> {
+
 }

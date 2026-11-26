@@ -28,17 +28,10 @@ import java.util.List;
 @RequestMapping("/api/jobJdbcDatasource")
 @Api(tags = "jdbc数据源配置接口")
 public class JobDatasourceController extends BaseController {
-    /**
-     * 服务对象
-     */
+
     @Autowired
     private JobDatasourceService jobJdbcDatasourceService;
 
-    /**
-     * 分页查询所有数据
-     *
-     * @return 所有数据
-     */
     @GetMapping
     @ApiOperation("分页查询所有数据")
     @ApiImplicitParams(
@@ -54,46 +47,24 @@ public class JobDatasourceController extends BaseController {
         return success(jobJdbcDatasourceService.page(form.getPlusPagingQueryEntity(), query));
     }
 
-    /**
-     * 获取所有数据源
-     * @return
-     */
     @ApiOperation("获取所有数据源")
     @GetMapping("/all")
     public R<List<JobDatasource>> selectAllDatasource() {
         return success(this.jobJdbcDatasourceService.selectAllDatasource());
     }
 
-    /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
-     */
     @ApiOperation("通过主键查询单条数据")
     @GetMapping("{id}")
     public R<JobDatasource> selectOne(@PathVariable Serializable id) {
         return success(this.jobJdbcDatasourceService.getById(id));
     }
 
-    /**
-     * 新增数据
-     *
-     * @param entity 实体对象
-     * @return 新增结果
-     */
     @ApiOperation("新增数据")
     @PostMapping
     public R<Boolean> insert(@RequestBody JobDatasource entity) {
         return success(this.jobJdbcDatasourceService.save(entity));
     }
 
-    /**
-     * 修改数据
-     *
-     * @param entity 实体对象
-     * @return 修改结果
-     */
     @PutMapping
     @ApiOperation("修改数据")
     public R<Boolean> update(@RequestBody JobDatasource entity) {
@@ -108,26 +79,16 @@ public class JobDatasourceController extends BaseController {
         return success(this.jobJdbcDatasourceService.updateById(entity));
     }
 
-    /**
-     * 删除数据
-     *
-     * @param idList 主键结合
-     * @return 删除结果
-     */
     @DeleteMapping
     @ApiOperation("删除数据")
     public R<Boolean> delete(@RequestParam("idList") List<Long> idList) {
         return success(this.jobJdbcDatasourceService.removeByIds(idList));
     }
 
-    /**
-     * 测试数据源
-     * @param jobJdbcDatasource
-     * @return
-     */
     @PostMapping("/test")
     @ApiOperation("测试数据")
-    public R<Boolean> dataSourceTest (@RequestBody JobDatasource jobJdbcDatasource) throws IOException {
+    public R<Boolean> dataSourceTest(@RequestBody JobDatasource jobJdbcDatasource) throws IOException {
         return success(jobJdbcDatasourceService.dataSourceTest(jobJdbcDatasource));
     }
+
 }

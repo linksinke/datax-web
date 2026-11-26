@@ -12,10 +12,11 @@ import com.wugui.datax.admin.dto.DataXJsonBuildDto;
 public interface DataxJsonService {
 
     /**
-     * build datax json
+     * 构建数据同步任务的 datax json配置文件
      *
-     * @param dto
-     * @return
+     * @param dto 数据同步任务的构建参数
+     * @return datax json配置文件
      */
     String buildJobJson(DataXJsonBuildDto dto);
+
 }

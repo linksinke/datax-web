@@ -1,9 +1,11 @@
 package com.wugui.datax.admin.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.wugui.datax.admin.entity.JobProject;
+import com.wugui.datax.admin.dto.ProjectDatasourceDto;
+import com.wugui.datax.admin.dto.ProjectDatasourceBindingDto;
+import com.wugui.datax.admin.util.JwtTokenUtils;
 import com.wugui.datax.admin.service.JobProjectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -11,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,9 +52,7 @@ public class JobProjectController extends BaseController {
     @ApiOperation("获取所有数据")
     @GetMapping("/list")
     public R<List<JobProject>> selectList() {
-        QueryWrapper<JobProject> query = new QueryWrapper();
-        query.eq("flag", true);
-        return success(jobProjectService.list(query));
+        return success(jobProjectService.listProjects());
     }
 
     /**
@@ -63,8 +63,8 @@ public class JobProjectController extends BaseController {
      */
     @ApiOperation("通过主键查询单条数据")
     @GetMapping("{id}")
-    public R<JobProject> selectOne(@PathVariable Serializable id) {
-        return success(this.jobProjectService.getById(id));
+    public R<JobProject> selectOne(@PathVariable int id) {
+        return success(this.jobProjectService.getProject(id));
     }
 
     /**
@@ -76,8 +76,8 @@ public class JobProjectController extends BaseController {
     @ApiOperation("新增数据")
     @PostMapping
     public R<Boolean> insert(HttpServletRequest request, @RequestBody JobProject entity) {
-        entity.setUserId(getCurrentUserId(request));
-        return success(this.jobProjectService.save(entity));
+        entity.setId(0);
+        return success(this.jobProjectService.saveProject(entity, getCurrentUserId(request), isAdministrator(request)));
     }
 
 
@@ -89,11 +89,9 @@ public class JobProjectController extends BaseController {
      */
     @PutMapping
     @ApiOperation("修改数据")
-    public R<Boolean> update(@RequestBody JobProject entity) {
-        JobProject project = jobProjectService.getById(entity.getId());
-        project.setName(entity.getName());
-        project.setDescription(entity.getDescription());
-        return success(this.jobProjectService.updateById(entity));
+    public R<Boolean> update(@RequestBody JobProject entity, HttpServletRequest request) {
+        if (entity.getId() <= 0) throw new IllegalArgumentException("项目ID无效");
+        return success(this.jobProjectService.saveProject(entity, getCurrentUserId(request), isAdministrator(request)));
     }
 
     /**
@@ -104,7 +102,24 @@ public class JobProjectController extends BaseController {
      */
     @DeleteMapping
     @ApiOperation("删除数据")
-    public R<Boolean> delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.jobProjectService.removeByIds(idList));
+    public R<Boolean> delete(@RequestParam("idList") List<Long> idList, HttpServletRequest request) {
+        return success(this.jobProjectService.removeProjects(idList, getCurrentUserId(request), isAdministrator(request)));
+    }
+
+    @GetMapping("/{id}/datasources")
+    @ApiOperation("查询项目绑定的数据源")
+    public R<List<ProjectDatasourceDto>> datasources(@PathVariable int id) {
+        return success(jobProjectService.getProjectDatasources(id));
+    }
+
+    @PutMapping("/{id}/datasources")
+    @ApiOperation("保存项目绑定的数据源")
+    public R<Boolean> bind(@PathVariable int id, @RequestBody ProjectDatasourceBindingDto binding, HttpServletRequest request) {
+        return success(jobProjectService.bindDatasources(id, binding.getDatasourceIds(), getCurrentUserId(request), isAdministrator(request)));
+    }
+
+    private boolean isAdministrator(HttpServletRequest request) {
+        String role = JwtTokenUtils.getUserRole(request.getHeader(JwtTokenUtils.TOKEN_HEADER).replace(JwtTokenUtils.TOKEN_PREFIX, ""));
+        return role != null && Arrays.asList(role.split(",")).contains("ROLE_ADMIN");
     }
 }

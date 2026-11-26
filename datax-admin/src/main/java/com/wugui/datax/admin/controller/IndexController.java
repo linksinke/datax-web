@@ -26,7 +26,6 @@ public class IndexController {
     @Resource
     private JobService jobService;
 
-
     @GetMapping("/index")
     @ApiOperation("监控图")
     public ReturnT<Map<String, Object>> index() {

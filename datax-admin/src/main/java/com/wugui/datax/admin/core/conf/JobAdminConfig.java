@@ -7,6 +7,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.DependsOn;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -18,6 +19,7 @@ import javax.sql.DataSource;
  */
 
 @Component
+@DependsOn("projectDatabaseInitializer")
 public class JobAdminConfig implements InitializingBean, DisposableBean {
 
     private static JobAdminConfig adminConfig = null;

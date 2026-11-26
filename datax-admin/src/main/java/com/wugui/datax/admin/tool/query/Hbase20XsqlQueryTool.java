@@ -5,6 +5,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.wugui.datax.admin.core.util.LocalCacheUtil;
+import com.wugui.datax.admin.core.util.DatasourceCacheKey;
 import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.tool.database.ColumnInfo;
 import com.wugui.datax.admin.util.JdbcUtils;
@@ -32,15 +33,16 @@ public class Hbase20XsqlQueryTool extends BaseQueryTool implements QueryToolInte
     public Hbase20XsqlQueryTool(JobDatasource jobJdbcDatasource) throws SQLException {
         super(jobJdbcDatasource);
 
-        if (LocalCacheUtil.get(jobJdbcDatasource.getDatasourceName()) == null) {
+        String cacheKey = DatasourceCacheKey.of(jobJdbcDatasource);
+        if (LocalCacheUtil.get(cacheKey) == null) {
             getDataSource(jobJdbcDatasource);
         } else {
-            conn = (Connection) LocalCacheUtil.get(jobJdbcDatasource.getDatasourceName());
+            conn = (Connection) LocalCacheUtil.get(cacheKey);
             if (conn == null) {
-                LocalCacheUtil.remove(jobJdbcDatasource.getDatasourceName());
+                LocalCacheUtil.remove(cacheKey);
             }
         }
-        LocalCacheUtil.set(jobJdbcDatasource.getDatasourceName(), conn, 4 * 60 * 60 * 1000);
+        LocalCacheUtil.set(cacheKey, conn, 4 * 60 * 60 * 1000);
 
     }
 

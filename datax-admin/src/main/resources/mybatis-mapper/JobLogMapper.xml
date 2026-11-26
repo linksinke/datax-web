@@ -119,34 +119,6 @@
 			</if>
 		</trim>
 	</select>
-	
-	<select id="load" parameterType="java.lang.Long" resultMap="JobLog">
-		SELECT <include refid="Base_Column_List" />
-		FROM job_log AS t
-		WHERE t.id = #{id}
-	</select>
-
-	
-	<insert id="save" parameterType="com.wugui.datax.admin.entity.JobLog" useGeneratedKeys="true" keyProperty="id" >
-		INSERT INTO job_log (
-			`job_group`,
-			`job_id`,
-			`job_desc`,
-			`trigger_time`,
-			`trigger_code`,
-			`handle_code`
-		) VALUES (
-			#{jobGroup},
-			#{jobId},
-			#{jobDesc},
-			#{triggerTime},
-			#{triggerCode},
-			#{handleCode}
-		);
-		<!--<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
-			SELECT LAST_INSERT_ID() 
-		</selectKey>-->
-	</insert>
 
 	<update id="updateTriggerInfo" >
 		UPDATE job_log
@@ -179,7 +151,7 @@
 		WHERE `id`= #{id}
 	</update>
 	
-	<delete id="delete" >
+	<delete id="deleteByJobId" >
 		delete from job_log
 		WHERE job_id = #{jobId}
 	</delete>

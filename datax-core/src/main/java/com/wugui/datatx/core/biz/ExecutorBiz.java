@@ -49,4 +49,5 @@ public interface ExecutorBiz {
      * @return
      */
     ReturnT<String> run(TriggerParam triggerParam);
+
 }

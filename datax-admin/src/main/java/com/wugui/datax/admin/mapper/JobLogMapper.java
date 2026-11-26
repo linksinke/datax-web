@@ -1,5 +1,6 @@
 package com.wugui.datax.admin.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.wugui.datax.admin.entity.JobLog;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +15,7 @@ import java.util.Map;
  * @author xuxueli 2016-1-12 18:03:06
  */
 @Mapper
-public interface JobLogMapper {
+public interface JobLogMapper extends BaseMapper<JobLog> {
 
     // exist jobId not use jobGroup, not exist use jobGroup
     List<JobLog> pageList(@Param("offset") int offset,
@@ -33,10 +34,6 @@ public interface JobLogMapper {
                       @Param("triggerTimeEnd") Date triggerTimeEnd,
                       @Param("logStatus") int logStatus);
 
-    JobLog load(@Param("id") long id);
-
-    long save(JobLog jobLog);
-
     int updateTriggerInfo(JobLog jobLog);
 
     int updateHandleInfo(JobLog jobLog);
@@ -44,7 +41,7 @@ public interface JobLogMapper {
     int updateProcessId(@Param("id") long id,
                         @Param("processId") String processId);
 
-    int delete(@Param("jobId") int jobId);
+    int deleteByJobId(@Param("jobId") int jobId);
 
     Map<String, Object> findLogReport(@Param("from") Date from,
                                       @Param("to") Date to);

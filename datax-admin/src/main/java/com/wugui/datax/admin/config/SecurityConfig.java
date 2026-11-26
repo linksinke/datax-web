@@ -30,10 +30,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private UserDetailsService userDetailsService;
 
     @Bean
-    UserDetailsService customUserService(){ //注册UserDetailsService 的bean
+    UserDetailsService customUserService() {
+        //注册UserDetailsService 的bean
         return new UserDetailsServiceImpl();
     }
-
 
 
     @Bean
@@ -50,9 +50,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/static/**","/index.html","/favicon.ico","/avatar.jpg").permitAll()
-                .antMatchers("/api/callback","/api/processCallback","/api/registry","/api/registryRemove").permitAll()
-                .antMatchers("/doc.html","/swagger-resources/**","/webjars/**","/*/api-docs").anonymous()
+                .antMatchers("/static/**", "/index.html", "/favicon.ico", "/avatar.jpg").permitAll()
+                .antMatchers("/api/callback", "/api/processCallback", "/api/registry", "/api/registryRemove").permitAll()
+                .antMatchers("/doc.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs").anonymous()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))

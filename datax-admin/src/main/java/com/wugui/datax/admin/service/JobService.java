@@ -1,5 +1,6 @@
 package com.wugui.datax.admin.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datax.admin.dto.DataXBatchJsonBuildDto;
@@ -15,7 +16,7 @@ import java.util.Map;
  *
  * @author xuxueli 2016-5-28 15:30:33
  */
-public interface JobService {
+public interface JobService extends IService<JobInfo> {
 
     /**
      * page list

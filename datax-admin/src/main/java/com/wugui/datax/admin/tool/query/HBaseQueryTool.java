@@ -3,6 +3,7 @@ package com.wugui.datax.admin.tool.query;
 
 import com.wugui.datatx.core.util.Constants;
 import com.wugui.datax.admin.core.util.LocalCacheUtil;
+import com.wugui.datax.admin.core.util.DatasourceCacheKey;
 import com.wugui.datax.admin.entity.JobDatasource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -25,16 +26,18 @@ public class HBaseQueryTool {
     private Table table;
 
     public HBaseQueryTool(JobDatasource jobDatasource) throws IOException {
-        if (LocalCacheUtil.get(jobDatasource.getDatasourceName()) == null) {
+        String cacheKey = DatasourceCacheKey.of(jobDatasource);
+        Connection cached = (Connection) LocalCacheUtil.get(cacheKey);
+        if (cached == null) {
             getDataSource(jobDatasource);
         } else {
-            connection = (Connection) LocalCacheUtil.get(jobDatasource.getDatasourceName());
+            connection = cached;
             if (connection == null || connection.isClosed()) {
-                LocalCacheUtil.remove(jobDatasource.getDatasourceName());
+                LocalCacheUtil.remove(cacheKey);
                 getDataSource(jobDatasource);
             }
         }
-        LocalCacheUtil.set(jobDatasource.getDatasourceName(), connection, 4 * 60 * 60 * 1000);
+        LocalCacheUtil.set(cacheKey, connection, 4 * 60 * 60 * 1000);
     }
 
     private void getDataSource(JobDatasource jobDatasource) throws IOException {

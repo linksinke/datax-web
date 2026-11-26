@@ -81,9 +81,9 @@ public class JobLogReportHelper {
                             }
 
                             // do refresh
-                            int ret = JobAdminConfig.getAdminConfig().getJobLogReportMapper().update(xxlJobLogReport);
+                            int ret = JobAdminConfig.getAdminConfig().getJobLogReportMapper().updateByTriggerDay(xxlJobLogReport);
                             if (ret < 1) {
-                                JobAdminConfig.getAdminConfig().getJobLogReportMapper().save(xxlJobLogReport);
+                                JobAdminConfig.getAdminConfig().getJobLogReportMapper().insert(xxlJobLogReport);
                             }
                         }
 
