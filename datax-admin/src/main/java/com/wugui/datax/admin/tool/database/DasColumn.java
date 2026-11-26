@@ -17,13 +17,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DasColumn {
 
+    /** 字段名 */
     private String columnName;
-
+    /** 字段类型 */
     private String columnTypeName;
-
+    /** 字段类名 */
     private String columnClassName;
-
+    /** 字段注释 */
     private String columnComment;
+    /** 是否为空 */
     private int isNull;
+    /** 是否主键 */
     private boolean isprimaryKey;
+
 }

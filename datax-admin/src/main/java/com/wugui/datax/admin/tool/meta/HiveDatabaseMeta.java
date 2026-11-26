@@ -27,5 +27,4 @@ public class HiveDatabaseMeta extends BaseDatabaseMeta implements DatabaseInterf
         return "show tables";
     }
 
-
 }

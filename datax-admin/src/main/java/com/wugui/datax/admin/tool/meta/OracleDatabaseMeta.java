@@ -1,4 +1,5 @@
 package com.wugui.datax.admin.tool.meta;
+
 /**
  * Oracle数据库 meta信息查询
  *
@@ -68,4 +69,5 @@ public class OracleDatabaseMeta extends BaseDatabaseMeta implements DatabaseInte
     public String getSQLQueryColumns(String... args) {
         return "select table_name,comments from user_tab_comments where table_name = ?";
     }
+
 }

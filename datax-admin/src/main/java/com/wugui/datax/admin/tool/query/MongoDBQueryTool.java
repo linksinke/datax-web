@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.wugui.datax.admin.core.util.LocalCacheUtil;
+import com.wugui.datax.admin.core.util.DatasourceCacheKey;
 import com.wugui.datax.admin.entity.JobDatasource;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -20,21 +21,24 @@ import java.util.List;
 public class MongoDBQueryTool {
 
 
-    private static MongoClient connection = null;
-    private static MongoDatabase collections;
+    private MongoClient connection;
+    private MongoDatabase collections;
 
 
     public MongoDBQueryTool(JobDatasource jobDatasource) throws IOException {
-        if (LocalCacheUtil.get(jobDatasource.getDatasourceName()) == null) {
+        String cacheKey = DatasourceCacheKey.of(jobDatasource);
+        MongoClient cached = (MongoClient) LocalCacheUtil.get(cacheKey);
+        if (cached == null) {
             getDataSource(jobDatasource);
         } else {
-            connection = (MongoClient) LocalCacheUtil.get(jobDatasource.getDatasourceName());
+            connection = cached;
             if (connection == null) {
-                LocalCacheUtil.remove(jobDatasource.getDatasourceName());
+                LocalCacheUtil.remove(cacheKey);
                 getDataSource(jobDatasource);
             }
         }
-        LocalCacheUtil.set(jobDatasource.getDatasourceName(), connection, 4 * 60 * 60 * 1000);
+        collections = connection.getDatabase(jobDatasource.getDatabaseName());
+        LocalCacheUtil.set(cacheKey, connection, 4 * 60 * 60 * 1000);
     }
 
     private void getDataSource(JobDatasource jobDatasource) throws IOException {
@@ -49,7 +53,7 @@ public class MongoDBQueryTool {
 
 
     // 关闭连接
-    public static void sourceClose() {
+    public void sourceClose() {
         if (connection != null) {
             connection.close();
         }

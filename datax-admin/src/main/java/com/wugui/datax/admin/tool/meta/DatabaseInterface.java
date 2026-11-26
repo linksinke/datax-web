@@ -17,8 +17,18 @@ public interface DatabaseInterface {
      */
     String getSQLQueryPrimaryKey();
 
+    /**
+     * 获取表注释
+     *
+     * @return
+     */
     String getSQLQueryTableNameComment();
 
+    /**
+     * 获取所有表名和注释
+     *
+     * @return
+     */
     String getSQLQueryTablesNameComments();
 
     /**
@@ -36,11 +46,13 @@ public interface DatabaseInterface {
     String getSQLQueryTables();
 
     /**
-     * 获取 Table schema
+     * 获取表的schema
      *
-     * @return
+     * @param args 表名
+     * @return The SQL to launch.
      */
     String getSQLQueryTableSchema(String... args);
+
     /**
      * 获取所有的字段的sql
      *
@@ -58,9 +70,11 @@ public interface DatabaseInterface {
 
     /**
      * 获取当前表maxId
-     * @param tableName
-     * @param primaryKey
-     * @return
+     *
+     * @param tableName 表名
+     * @param primaryKey 主键
+     * @return String maxId 主键最大值
      */
-    String getMaxId(String tableName,String primaryKey);
+    String getMaxId(String tableName, String primaryKey);
+
 }

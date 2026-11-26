@@ -13,17 +13,12 @@ import java.util.List;
  */
 @Data
 public class TableInfo {
-    /**
-     * 表名
-     */
-    private String name;
 
-    /**
-     * 注释
-     */
+    /** 表名 */
+    private String name;
+    /** 注释 */
     private String comment;
-    /**
-     * 所有列
-     */
+    /** 所有列 */
     private List<ColumnInfo> columns;
+
 }

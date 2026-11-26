@@ -12,7 +12,12 @@ import com.wugui.datax.admin.util.JdbcConstants;
  */
 public class DatabaseMetaFactory {
 
-    //根据数据库类型返回对应的接口
+    /**
+     * 根据数据库类型返回对应的接口
+     *
+     * @param dbType 数据库类型
+     * @return DatabaseInterface 数据库接口
+     */
     public static DatabaseInterface getByDbType(String dbType) {
         if (JdbcConstants.MYSQL.equals(dbType)) {
             return MySQLDatabaseMeta.getInstance();
@@ -24,12 +29,13 @@ public class DatabaseMetaFactory {
             return SqlServerDatabaseMeta.getInstance();
         } else if (JdbcConstants.HIVE.equals(dbType)) {
             return HiveDatabaseMeta.getInstance();
-        }else if(JdbcConstants.CLICKHOUSE.equals(dbType)) {
+        } else if (JdbcConstants.CLICKHOUSE.equals(dbType)) {
             return ClickHouseDataBaseMeta.getInstance();
-        } else if(JdbcConstants.HBASE20XSQL.equals(dbType)) {
+        } else if (JdbcConstants.HBASE20XSQL.equals(dbType)) {
             return Hbase20xsqlMeta.getInstance();
         } else {
             throw new UnsupportedOperationException("暂不支持的类型：".concat(dbType));
         }
     }
+
 }

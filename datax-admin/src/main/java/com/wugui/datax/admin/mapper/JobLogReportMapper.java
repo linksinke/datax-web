@@ -1,5 +1,6 @@
 package com.wugui.datax.admin.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.wugui.datax.admin.entity.JobLogReport;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,11 +14,9 @@ import java.util.List;
  * @author xuxueli 2019-11-22
  */
 @Mapper
-public interface JobLogReportMapper {
+public interface JobLogReportMapper extends BaseMapper<JobLogReport> {
 
-    int save(JobLogReport xxlJobLogReport);
-
-    int update(JobLogReport xxlJobLogReport);
+    int updateByTriggerDay(JobLogReport xxlJobLogReport);
 
     List<JobLogReport> queryLogReport(@Param("triggerDayFrom") Date triggerDayFrom,
                                       @Param("triggerDayTo") Date triggerDayTo);
