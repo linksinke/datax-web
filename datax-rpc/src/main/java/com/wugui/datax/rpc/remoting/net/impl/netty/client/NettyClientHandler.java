@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * rpc netty client handler
+ * Netty 客户端响应处理器
  *
  * @author xuxueli 2015-10-31 18:00:27
  */
@@ -29,7 +29,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<XxlRpcRespon
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, XxlRpcResponse xxlRpcResponse) throws Exception {
 
-		// notify response
+		// 通知等待方接收响应
 		xxlRpcInvokerFactory.notifyInvokerFuture(xxlRpcResponse.getRequestId(), xxlRpcResponse);
 	}
 
@@ -42,10 +42,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<XxlRpcRespon
 	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof IdleStateEvent){
-			/*ctx.channel().close();      // close idle channel
+			/*ctx.channel().close();      // 关闭空闲连接
 			logger.debug(">>>>>>>>>>> xxl-rpc netty client close an idle channel.");*/
 
-			nettyConnectClient.send(Beat.BEAT_PING);	// beat N, close if fail(may throw error)
+			nettyConnectClient.send(Beat.BEAT_PING);	// 按心跳周期检测连接，失败时关闭连接
 			logger.debug(">>>>>>>>>>> xxl-rpc netty client send beat-ping.");
 
 		} else {

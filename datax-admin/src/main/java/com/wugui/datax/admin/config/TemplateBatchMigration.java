@@ -9,7 +9,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
 
-/** Idempotently groups legacy templates without rewriting JSON documents or changing filenames. */
+/** 幂等归并历史模板批次，保留原 JSON 内容和文件名。 */
 final class TemplateBatchMigration {
     private TemplateBatchMigration() {
     }

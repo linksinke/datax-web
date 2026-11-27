@@ -1,7 +1,7 @@
 package com.wugui.datax.admin.util;
 
 /**
- * DBUtilErrorCode
+ * 数据库访问错误码
  */
 public enum DBUtilErrorCode implements ErrorCode {
     //连接错误
@@ -58,12 +58,12 @@ public enum DBUtilErrorCode implements ErrorCode {
     SPLIT_FAILED_ILLEGAL_SQL("DBUtilErrorCode-15", "DataX尝试切分表时, 执行数据库 Sql 失败. 请检查您的配置 table/splitPk/where 并作出修改."),
     SQL_EXECUTE_FAIL("DBUtilErrorCode-06", "执行数据库 Sql 失败, 请检查您的配置的 column/table/where/querySql或者向 DBA 寻求帮助."),
 
-    // only for reader
+    // 仅用于读取端
     READ_RECORD_FAIL("DBUtilErrorCode-07", "读取数据库数据失败. 请检查您的配置的 column/table/where/querySql或者向 DBA 寻求帮助."),
     TABLE_QUERYSQL_MIXED("DBUtilErrorCode-08", "您配置凌乱了. 不能同时既配置table又配置querySql"),
     TABLE_QUERYSQL_MISSING("DBUtilErrorCode-09", "您配置错误. table和querySql 应该并且只能配置一个."),
 
-    // only for writer
+    // 仅用于写入端
     WRITE_DATA_ERROR("DBUtilErrorCode-05", "往您配置的写入表中写入数据时失败."),
     NO_INSERT_PRIVILEGE("DBUtilErrorCode-11", "数据库没有写权限，请联系DBA"),
     NO_DELETE_PRIVILEGE("DBUtilErrorCode-16", "数据库没有DELETE权限，请联系DBA"),

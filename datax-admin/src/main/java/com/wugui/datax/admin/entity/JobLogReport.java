@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @TableName("job_log_report")
-public class JobLogReport {
+public class JobLogReport extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private int id;

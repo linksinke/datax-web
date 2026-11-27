@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * job log
+ * 任务执行日志
  *
  * @author xuxueli 2019-11-22
  */

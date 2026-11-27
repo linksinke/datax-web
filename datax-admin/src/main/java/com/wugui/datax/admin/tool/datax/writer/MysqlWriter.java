@@ -21,4 +21,32 @@ public class MysqlWriter extends BaseWriterPlugin implements DataxWriterInterfac
     public Map<String, Object> sample() {
         return null;
     }
+
+    @Override
+    public Map<String, Object> build(DataxRdbmsPojo plugin) {
+        Map<String, Object> writerObj = Maps.newLinkedHashMap();
+        writerObj.put("name", getName());
+
+        Map<String, Object> parameterObj = Maps.newLinkedHashMap();
+        JobDatasource jobDatasource = plugin.getJobDatasource();
+        parameterObj.put("username", jobDatasource.getJdbcUsername());
+        parameterObj.put("password", jobDatasource.getJdbcPassword());
+        parameterObj.put("writeMode", "insert");
+        parameterObj.put("print", "true");
+        parameterObj.put("encoding", "UTF-8");
+        parameterObj.put("column", plugin.getRdbmsColumns());
+        parameterObj.put("session", new String[]{});
+        parameterObj.put("preSql", splitSql(plugin.getPreSql()));
+        parameterObj.put("postSql", splitSql(plugin.getPostSql()));
+
+        Map<String, Object> connectionObj = Maps.newLinkedHashMap();
+        connectionObj.put("table", plugin.getTables());
+        connectionObj.put("jdbcUrl", jobDatasource.getJdbcUrl());
+
+        parameterObj.put("connection", ImmutableList.of(connectionObj));
+        writerObj.put("parameter", parameterObj);
+
+        return writerObj;
+    }
+
 }

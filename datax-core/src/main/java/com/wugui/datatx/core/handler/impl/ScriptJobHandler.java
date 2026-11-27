@@ -12,7 +12,7 @@ import com.wugui.datatx.core.util.ShardingUtil;
 import java.io.File;
 
 /**
- * Created by xuxueli on 17/4/27.
+ * 创建者：xuxueli，时间：17/4/27.
  */
 public class ScriptJobHandler extends IJobHandler {
 
@@ -27,7 +27,7 @@ public class ScriptJobHandler extends IJobHandler {
         this.gluesource = gluesource;
         this.glueType = glueType;
 
-        // clean old script file
+        // 清理旧脚本文件
         File glueSrcPath = new File(JobFileAppender.getGlueSrcPath());
         if (glueSrcPath.exists()) {
             File[] glueSrcFileList = glueSrcPath.listFiles();
@@ -53,10 +53,10 @@ public class ScriptJobHandler extends IJobHandler {
             return new ReturnT<>(IJobHandler.FAIL.getCode(), "glueType[" + glueType + "] invalid.");
         }
 
-        // cmd
+        // 执行命令参数
         String cmd = glueType.getCmd();
 
-        // make script file
+        // 生成脚本文件
         String scriptFileName = JobFileAppender.getGlueSrcPath()
                 .concat(File.separator)
                 .concat(String.valueOf(jobId))
@@ -68,7 +68,7 @@ public class ScriptJobHandler extends IJobHandler {
             ScriptUtil.markScriptFile(scriptFileName, gluesource);
         }
 
-        // log file
+        // 日志文件
         String logFileName = JobFileAppender.contextHolder.get();
 
         // script params：0=param、1=分片序号、2=分片总数
@@ -78,7 +78,7 @@ public class ScriptJobHandler extends IJobHandler {
         scriptParams[1] = String.valueOf(shardingVO.getIndex());
         scriptParams[2] = String.valueOf(shardingVO.getTotal());
 
-        // invoke
+        // 执行调用
         JobLogger.log("----------- script file:"+ scriptFileName +" -----------");
         int exitValue = ScriptUtil.execToFile(cmd, scriptFileName, logFileName,tgParam.getLogId(),tgParam.getLogDateTime(), scriptParams);
 

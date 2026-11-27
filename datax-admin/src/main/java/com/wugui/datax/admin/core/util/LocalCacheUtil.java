@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * local cache tool
+ * 本地缓存工具
  *
  * @author xuxueli 2018-01-22 21:37:34
  */
@@ -52,7 +52,7 @@ public class LocalCacheUtil {
 
 
     /**
-     * set cache
+     * 写入缓存
      *
      * @param key
      * @param val
@@ -61,10 +61,10 @@ public class LocalCacheUtil {
      */
     public static boolean set(String key, Object val, long cacheTime){
 
-        // clean timeout cache, before set new cache (avoid cache too much)
+        // 写入新缓存前清理过期项，避免缓存持续增长
         cleanTimeoutCache();
 
-        // set new cache
+        // 写入新的缓存项
         if (key==null || key.trim().length()==0) {
             return false;
         }
@@ -81,7 +81,7 @@ public class LocalCacheUtil {
     }
 
     /**
-     * remove cache
+     * 移除缓存项
      *
      * @param key
      * @return
@@ -95,7 +95,7 @@ public class LocalCacheUtil {
     }
 
     /**
-     * get cache
+     * 获取缓存项
      *
      * @param key
      * @return
@@ -114,7 +114,7 @@ public class LocalCacheUtil {
     }
 
     /**
-     * clean timeout cache
+     * 清理过期缓存
      *
      * @return
      */

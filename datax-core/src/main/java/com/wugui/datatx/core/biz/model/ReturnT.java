@@ -3,7 +3,7 @@ package com.wugui.datatx.core.biz.model;
 import java.io.Serializable;
 
 /**
- * common return
+ * 统一返回结果
  * @author xuxueli 2015-12-4 16:32:31
  * @param <T>
  */

@@ -10,7 +10,7 @@ import com.wugui.datax.rpc.serialize.impl.HessianSerializer;
 import java.lang.annotation.*;
 
 /**
- * rpc service annotation, skeleton of stub ("@Inherited" allow service use "Transactional")
+ * RPC 服务引用注解；继承注解允许服务配合事务代理使用
  *
  * @author 2015-10-29 19:44:33
  */

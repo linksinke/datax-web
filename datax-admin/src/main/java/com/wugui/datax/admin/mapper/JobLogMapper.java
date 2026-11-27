@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * job log
+ * 任务执行日志
  *
  * @author xuxueli 2016-1-12 18:03:06
  */
 @Mapper
 public interface JobLogMapper extends BaseMapper<JobLog> {
 
-    // exist jobId not use jobGroup, not exist use jobGroup
+    // 指定任务编号时按任务筛选，否则按执行器分组筛选
     List<JobLog> pageList(@Param("offset") int offset,
                           @Param("pagesize") int pagesize,
                           @Param("jobGroup") int jobGroup,

@@ -14,7 +14,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 
 /**
- * ProcessUtil
+ * 进程操作工具
  *
  * @author jingwk
  * @version 1.0

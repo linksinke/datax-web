@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @RestController
 @RequestMapping("/api/jobRegistry")

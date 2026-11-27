@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 /**
- * Created by jingwk on 2020/01/30
+ * 创建者：jingwk，时间：2020/01/30
  */
 @Service
 public class JobDatasourceServiceImpl extends ServiceImpl<JobDatasourceMapper, JobDatasource> implements JobDatasourceService {

@@ -15,7 +15,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Imports optional named connections and makes the project DB visible in datasource management. */
+/** 导入可选业务连接，并将管理库登记到数据源管理页面。 */
 @Component
 @DependsOn("jobAdminConfig")
 public class ProjectDatasourceBootstrap implements ApplicationRunner {

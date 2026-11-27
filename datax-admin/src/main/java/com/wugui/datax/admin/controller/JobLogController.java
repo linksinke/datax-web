@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @RestController
 @RequestMapping("/api/log")
@@ -44,10 +44,10 @@ public class JobLogController {
             @RequestParam(required = false, defaultValue = "10") int size,
             int jobGroup, int jobId, int logStatus, String filterTime) {
 
-        // valid permission
+        // 校验操作权限
         //JobInfoController.validPermission(request, jobGroup);	// 仅管理员支持查询全部；普通用户仅支持查询有权限的 jobGroup
 
-        // parse param
+        // 解析请求参数
         Date triggerTimeStart = null;
         Date triggerTimeEnd = null;
         if (filterTime != null && filterTime.trim().length() > 0) {
@@ -58,11 +58,11 @@ public class JobLogController {
             }
         }
 
-        // page query
+        // 分页查询
         List<JobLog> data = jobLogMapper.pageList((current - 1) * size, size, jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
         int cnt = jobLogMapper.pageListCount((current - 1) * size, size, jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
 
-        // package result
+        // 组装分页结果
         Map<String, Object> maps = new HashMap<>();
         maps.put("recordsTotal", cnt);        // 总记录数
         maps.put("recordsFiltered", cnt);    // 过滤后的总记录数
@@ -77,7 +77,7 @@ public class JobLogController {
             ExecutorBiz executorBiz = JobScheduler.getExecutorBiz(executorAddress);
             ReturnT<LogResult> logResult = executorBiz.log(triggerTime, logId, fromLineNum);
 
-            // is end
+            // 判断日志是否读取结束
             if (logResult.getContent() != null && fromLineNum > logResult.getContent().getToLineNum()) {
                 JobLog jobLog = jobLogMapper.selectById(logId);
                 if (jobLog.getHandleCode() > 0) {
@@ -95,7 +95,7 @@ public class JobLogController {
     @RequestMapping(value = "/logKill", method = RequestMethod.POST)
     @ApiOperation("kill任务")
     public ReturnT<String> logKill(int id) {
-        // base check
+        // 基础校验
         JobLog log = jobLogMapper.selectById(id);
         JobInfo jobInfo = jobInfoMapper.selectById(log.getJobId());
         if (jobInfo == null) {
@@ -105,7 +105,7 @@ public class JobLogController {
             return new ReturnT<>(500, I18nUtil.getString("joblog_kill_log_limit"));
         }
 
-        // request of kill
+        // 请求终止任务
         ReturnT<String> runResult;
         try {
             ExecutorBiz executorBiz = JobScheduler.getExecutorBiz(log.getExecutorAddress());

@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.regex.Pattern;
 
 /**
- * ip tool
+ * IP 地址工具
  *
  * @author xuxueli 2016-5-22 11:38:05
  */
@@ -26,7 +26,7 @@ public class IpUtil {
 
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
-    // ---------------------- valid ----------------------
+    // 地址校验
 
     private static InetAddress toValidAddress(InetAddress address) {
         if (address instanceof Inet6Address) {
@@ -46,7 +46,7 @@ public class IpUtil {
     }
 
     /**
-     * valid Inet4Address
+     * 校验 IPv4 地址
      *
      * @param address
      * @return
@@ -64,18 +64,18 @@ public class IpUtil {
 
 
     /**
-     * normalize the ipv6 Address, convert scope name to scope id.
+     * 规范 IPv6 地址，将网络接口作用域名称转换为作用域编号
      * e.g.
-     * convert
+     * 执行地址转换
      * fe80:0:0:0:894:aeec:f37d:23e1%en0
      * to
      * fe80:0:0:0:894:aeec:f37d:23e1%5
      * <p>
-     * The %5 after ipv6 address is called scope id.
-     * see java doc of {@link Inet6Address} for more details.
+     * IPv6 地址末尾的百分号及数字表示作用域编号
+     * 更多说明参见 {@link Inet6Address} 的接口文档。
      *
-     * @param address the input address
-     * @return the normalized address, with scope id converted to int
+     * @param address 待规范的地址
+     * @return 已将作用域转换为数字编号的规范地址
      */
     private static InetAddress normalizeV6Address(Inet6Address address) {
         String addr = address.getHostAddress();
@@ -84,14 +84,14 @@ public class IpUtil {
             try {
                 return InetAddress.getByName(addr.substring(0, i) + '%' + address.getScopeId());
             } catch (UnknownHostException e) {
-                // ignore
+                // 忽略当前异常并继续
                 logger.debug("Unknown IPV6 address: ", e);
             }
         }
         return address;
     }
 
-    // ---------------------- find ip ----------------------
+    // 查找本机地址
 
 
     private static InetAddress getLocalAddress0() {
@@ -127,7 +127,7 @@ public class IpUtil {
                                         return addressItem;
                                     }
                                 } catch (IOException e) {
-                                    // ignore
+                                    // 忽略当前异常并继续
                                 }
                             }
                         } catch (Throwable e) {
@@ -145,12 +145,12 @@ public class IpUtil {
     }
 
 
-    // ---------------------- tool ----------------------
+    // 网络辅助工具
 
     /**
-     * Find first valid IP from local network card
+     * 从本机网卡查找第一个有效 IP 地址
      *
-     * @return first valid local IP
+     * @return 本机第一个有效 IP 地址
      */
     public static InetAddress getLocalAddress() {
         if (LOCAL_ADDRESS != null) {
@@ -162,7 +162,7 @@ public class IpUtil {
     }
 
     /**
-     * get ip address
+     * 获取本机 IP 地址
      *
      * @return String
      */
@@ -171,7 +171,7 @@ public class IpUtil {
     }
 
     /**
-     * get ip:port
+     * 获取主机及端口
      *
      * @param port
      * @return String

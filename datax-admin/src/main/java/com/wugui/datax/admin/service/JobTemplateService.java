@@ -8,14 +8,14 @@ import com.wugui.datax.admin.entity.JobTemplate;
 import java.util.Map;
 
 /**
- * core job action for datax-web
+ * DataX Web 任务管理服务
  *
  * @author xuxueli 2016-5-28 15:30:33
  */
 public interface JobTemplateService extends IService<JobTemplate> {
 
     /**
-     * page list
+     * 分页查询列表
      *
      * @param start
      * @param length
@@ -28,7 +28,7 @@ public interface JobTemplateService extends IService<JobTemplate> {
     Map<String, Object> pageList(int start, int length, int jobGroup, String jobDesc, String executorHandler, int userId, Integer[] projectIds);
 
     /**
-     * add job
+     * 新增任务
      *
      * @param jobTemplate
      * @return
@@ -36,7 +36,7 @@ public interface JobTemplateService extends IService<JobTemplate> {
     ReturnT<String> add(JobTemplate jobTemplate);
 
     /**
-     * update job
+     * 更新任务
      *
      * @param jobTemplate
      * @return
@@ -44,7 +44,7 @@ public interface JobTemplateService extends IService<JobTemplate> {
     ReturnT<String> update(JobTemplate jobTemplate);
 
     /**
-     * remove job
+     * 删除任务
      * 	 *
      * @param id
      * @return

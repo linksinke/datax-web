@@ -10,7 +10,7 @@ import com.wugui.datax.admin.core.util.I18nUtil;
 import java.util.List;
 
 /**
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteBusyover extends ExecutorRouter {
 
@@ -18,7 +18,7 @@ public class ExecutorRouteBusyover extends ExecutorRouter {
     public ReturnT<String> route(TriggerParam triggerParam, List<String> addressList) {
         StringBuffer idleBeatResultSB = new StringBuffer();
         for (String address : addressList) {
-            // beat
+            // 检测心跳
             ReturnT<String> idleBeatResult = null;
             try {
                 ExecutorBiz executorBiz = JobScheduler.getExecutorBiz(address);
@@ -33,7 +33,7 @@ public class ExecutorRouteBusyover extends ExecutorRouter {
                     .append("<br>code：").append(idleBeatResult.getCode())
                     .append("<br>msg：").append(idleBeatResult.getMsg());
 
-            // beat success
+            // 心跳检测成功
             if (idleBeatResult.getCode() == ReturnT.SUCCESS_CODE) {
                 idleBeatResult.setMsg(idleBeatResultSB.toString());
                 idleBeatResult.setContent(address);

@@ -10,6 +10,14 @@
       查找页面
       <kbd>Ctrl K</kbd>
     </el-button>
+    <el-tooltip :content="uiWorkbench.available ? '查看后台作业' : '后台服务暂不可用，重启管理端后刷新'" placement="bottom">
+      <el-badge :value="uiWorkbench.running" :hidden="!uiWorkbench.running" type="primary" class="ui-topbar-badge">
+        <el-button class="ui-icon-button" icon="el-icon-finished" aria-label="后台作业" @click="$router.push('/datax/operations/jobs')"></el-button>
+      </el-badge>
+    </el-tooltip>
+    <el-badge :value="uiWorkbench.unread" :hidden="!uiWorkbench.unread" :max="99" class="ui-topbar-badge">
+      <el-button class="ui-icon-button" icon="el-icon-bell" aria-label="完成通知" @click="uiOpenNotifications"></el-button>
+    </el-badge>
     <el-dropdown trigger="click">
       <button class="ui-account" type="button">
         <i class="el-icon-user">
@@ -37,4 +45,16 @@
       <p v-if="!uiSearchResults.length" class="ui-empty-text">没有匹配的页面，试试其他关键词。</p>
     </div>
   </el-dialog>
+  <el-drawer title="后台操作通知" :visible.sync="uiNotificationsVisible" size="min(420px, 96vw)" append-to-body>
+    <div class="ui-notification-panel">
+      <div class="ui-panel-title"><span class="ui-hint">{{ uiWorkbench.unread }} 条未读通知</span><el-button type="text" :disabled="!uiWorkbench.unread" @click="uiReadNotifications">全部已读</el-button></div>
+      <p v-if="!uiWorkbench.records.length" class="ui-empty-text">暂无完成通知。生成、复制和导出结束后会在这里通知。</p>
+      <button v-for="notice in uiWorkbench.records" :key="notice.id" type="button" class="ui-notice" :class="{ 'is-unread': !notice.readAt }" @click="uiOpenNotice(notice)">
+        <i :class="notice.state === 'SUCCEEDED' ? 'el-icon-circle-check ui-success' : 'el-icon-warning-outline ui-danger'"></i>
+        <span><strong>{{ notice.name }}</strong><small>{{ notice.message }}</small><time>{{ notice.finishedAt }}</time></span>
+        <i class="el-icon-arrow-right"></i>
+      </button>
+      <el-button class="ui-full-width" @click="uiNotificationsVisible=false; $router.push('/datax/operations/jobs')">查看全部后台作业</el-button>
+    </div>
+  </el-drawer>
 </header>

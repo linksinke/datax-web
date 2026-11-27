@@ -1,7 +1,7 @@
 package com.wugui.datax.rpc.remoting.invoker.call;
 
 /**
- * rpc call type
+ * RPC 调用方式
  *
  * @author xuxueli 2018-10-19
  */

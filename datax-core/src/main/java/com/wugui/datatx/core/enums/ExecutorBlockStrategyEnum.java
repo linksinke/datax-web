@@ -1,7 +1,7 @@
 package com.wugui.datatx.core.enums;
 
 /**
- * Created by xuxueli on 17/5/9.
+ * 创建者：xuxueli，时间：17/5/9.
  */
 public enum ExecutorBlockStrategyEnum {
 

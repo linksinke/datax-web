@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public abstract class ExecutorRouter {
     protected static Logger logger = LoggerFactory.getLogger(ExecutorRouter.class);
 
     /**
-     * route address
+     * 选择执行器地址
      *
      * @param addressList
      * @return  ReturnT.content=address

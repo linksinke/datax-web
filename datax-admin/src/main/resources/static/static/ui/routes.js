@@ -1,5 +1,9 @@
 /* Menu titles, descriptions and editable HTML views. All paths remain compatible with saved links. */
 window.DataxRouteCatalog = [
+    {path:'/datax/project/recipes', name:'ProjectRecipes', title:'项目配置方案', group:'templates', icon:'project', view:'recipes', noCache:true, description:'保存和复用项目的连接、表字段映射与查询 SQL。'},
+    {path:'/datax/operations/jobs', name:'WorkbenchJobs', title:'后台作业', group:'operations', icon:'task-cfg', view:'operations', noCache:true, description:'跟踪生成、复制和导出进度，查看结果或重试失败作业。'},
+    {path:'/datax/operations/exports', name:'ExportRecords', title:'导出记录', group:'operations', icon:'documentation', view:'exports', noCache:true, description:'查询文件归档与下载记录，重新下载已导出的配置。'},
+    {path:'/datax/operations/audit', name:'OperationAudit', title:'操作审计', group:'operations', icon:'log', view:'audit', noCache:true, description:'按账号和操作追溯变更与处理结果。'},
     {
         path: "/dashboard",
         name: "Dashboard",
@@ -116,7 +120,7 @@ window.DataxRouteCatalog = [
 (function () {
     function load(view, require) {
         return function () {
-            return window.DataxCompatibility.load(view, require).then(function (options) {
+            return window.DataxPageComponents.load(view, require).then(function (options) {
                 return window.DataxUI.page(options, view);
             });
         };
@@ -138,14 +142,14 @@ window.DataxRouteCatalog = [
                 hidden: true,
                 children: [{
                     path: "/redirect/:path*", component: function () {
-                        return require.e("chunk-2d230fe7").then(require.bind(null, "ef3c"));
+                        return Promise.resolve(require('views/redirect/index').default);
                     }
                 }]
             },
             {path: "/login", hidden: true, component: load("login", require)},
             {
                 path: "/auth-redirect", hidden: true, component: function () {
-                    return require.e("chunk-541ff83b").then(require.bind(null, "b829"));
+                    return Promise.resolve(require('views/login/auth-redirect').default);
                 }
             },
             {path: "/404", hidden: true, component: load("not-found", require)},
@@ -154,7 +158,7 @@ window.DataxRouteCatalog = [
                 path: "/",
                 component: layout,
                 redirect: "/dashboard",
-                children: [record(window.DataxRouteCatalog[0], "dashboard", require)]
+                children: [record(window.DataxRouteCatalog.find(function(item) { return item.path === "/dashboard"; }), "dashboard", require)]
             }
         ];
     };
@@ -197,7 +201,7 @@ window.DataxRouteCatalog = [
         result.push({path: "/error/404", redirect: "/404", hidden: true});
         result.push({
             path: "/data/log", hidden: true, component: function () {
-                return require.e("chunk-69a205c2").then(require.bind(null, "ce2b"));
+                return Promise.resolve(require('views/datax/jobLog/log').default);
             }, meta: {title: "任务日志"}
         });
         result.push({path: "*", redirect: "/404", hidden: true});

@@ -20,7 +20,7 @@ import java.util.Date;
 
 
 /**
- * Created by xuxueli on 17/3/1.
+ * 创建者：xuxueli，时间：17/3/1.
  */
 public class ExecutorBizImpl implements ExecutorBiz {
     private static Logger logger = LoggerFactory.getLogger(ExecutorBizImpl.class);
@@ -32,7 +32,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
     @Override
     public ReturnT<String> idleBeat(int jobId) {
-        // isRunningOrHasQueue
+        // 检查正在运行或仍有排队请求的任务
         JobThread jobThread = JobExecutor.loadJobThread(jobId);
         if (jobThread != null && jobThread.isRunningOrHasQueue()) {
             return new ReturnT<>(ReturnT.FAIL_CODE, "job thread is running or has trigger queue.");
@@ -42,7 +42,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
     @Override
     public ReturnT<String> kill(int jobId) {
-        // kill handlerThread, and create new one
+        // 终止原处理线程并创建新线程
         JobThread jobThread = JobExecutor.loadJobThread(jobId);
         if (jobThread != null) {
             JobExecutor.removeJobThread(jobId, "scheduling center kill job.");
@@ -54,7 +54,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
     @Override
     public ReturnT<LogResult> log(long logDateTim, long logId, int fromLineNum) {
-        // log filename: logPath/yyyy-MM-dd/9999.log
+        // 日志文件路径：logPath/yyyy-MM-dd/9999.log
         String logFileName = JobFileAppender.makeLogFileName(new Date(logDateTim), logId);
 
         LogResult logResult = JobFileAppender.readLog(logFileName, fromLineNum);
@@ -63,28 +63,28 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
     @Override
     public ReturnT<String> run(TriggerParam triggerParam) {
-        // load old：jobHandler + jobThread
+        // 加载已有任务处理器和任务线程
         JobThread jobThread = JobExecutor.loadJobThread(triggerParam.getJobId());
         IJobHandler jobHandler = jobThread != null ? jobThread.getHandler() : null;
         String removeOldReason = null;
 
-        // valid：jobHandler + jobThread
+        // 校验任务处理器与任务线程
         GlueTypeEnum glueTypeEnum = GlueTypeEnum.match(triggerParam.getGlueType());
         if (GlueTypeEnum.BEAN == glueTypeEnum) {
 
-            // new jobhandler
+            // 创建任务处理器
             IJobHandler newJobHandler = JobExecutor.loadJobHandler(triggerParam.getExecutorHandler());
 
-            // valid old jobThread
+            // 校验已有任务线程
             if (jobThread != null && jobHandler != newJobHandler) {
-                // change handler, need kill old thread
+                // 处理器变更时终止旧线程
                 removeOldReason = "change jobhandler or glue type, and terminate the old job thread.";
 
                 jobThread = null;
                 jobHandler = null;
             }
 
-            // valid handler
+            // 校验任务处理器
             if (jobHandler == null) {
                 jobHandler = newJobHandler;
                 if (jobHandler == null) {
@@ -94,18 +94,18 @@ public class ExecutorBizImpl implements ExecutorBiz {
 
         } else if (GlueTypeEnum.GLUE_GROOVY == glueTypeEnum) {
 
-            // valid old jobThread
+            // 校验已有任务线程
             if (jobThread != null &&
                     !(jobThread.getHandler() instanceof GlueJobHandler
                             && ((GlueJobHandler) jobThread.getHandler()).getGlueUpdatetime() == triggerParam.getGlueUpdatetime())) {
-                // change handler or gluesource updated, need kill old thread
+                // 处理器或动态脚本变更时终止旧线程
                 removeOldReason = "change job source or glue type, and terminate the old job thread.";
 
                 jobThread = null;
                 jobHandler = null;
             }
 
-            // valid handler
+            // 校验任务处理器
             if (jobHandler == null) {
                 try {
                     IJobHandler originJobHandler = GlueFactory.getInstance().loadNewInstance(triggerParam.getGlueSource());
@@ -117,18 +117,18 @@ public class ExecutorBizImpl implements ExecutorBiz {
             }
         } else if (glueTypeEnum != null && glueTypeEnum.isScript()) {
 
-            // valid old jobThread
+            // 校验已有任务线程
             if (jobThread != null &&
                     !(jobThread.getHandler() instanceof ScriptJobHandler
                             && ((ScriptJobHandler) jobThread.getHandler()).getGlueUpdatetime() == triggerParam.getGlueUpdatetime())) {
-                // change script or gluesource updated, need kill old thread
+                // 脚本内容更新时终止旧线程
                 removeOldReason = "change job source or glue type, and terminate the old job thread.";
 
                 jobThread = null;
                 jobHandler = null;
             }
 
-            // valid handler
+            // 校验任务处理器
             if (jobHandler == null) {
                 jobHandler = new ScriptJobHandler(triggerParam.getJobId(), triggerParam.getGlueUpdatetime(), triggerParam.getGlueSource(), GlueTypeEnum.match(triggerParam.getGlueType()));
             }
@@ -136,32 +136,32 @@ public class ExecutorBizImpl implements ExecutorBiz {
             return new ReturnT<>(ReturnT.FAIL_CODE, "glueType[" + triggerParam.getGlueType() + "] is not valid.");
         }
 
-        // executor block strategy
+        // 执行器阻塞策略
         if (jobThread != null) {
             ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(triggerParam.getExecutorBlockStrategy(), null);
             if (ExecutorBlockStrategyEnum.DISCARD_LATER == blockStrategy) {
-                // discard when running
+                // 已有任务运行时丢弃本次请求
                 if (jobThread.isRunningOrHasQueue()) {
                     return new ReturnT<>(ReturnT.FAIL_CODE, "block strategy effect：" + ExecutorBlockStrategyEnum.DISCARD_LATER.getTitle());
                 }
             } else if (ExecutorBlockStrategyEnum.COVER_EARLY == blockStrategy) {
-                // kill running jobThread
+                // 终止正在运行的任务线程
                 if (jobThread.isRunningOrHasQueue()) {
                     removeOldReason = "block strategy effect：" + ExecutorBlockStrategyEnum.COVER_EARLY.getTitle();
 
                     jobThread = null;
                 }
             } else {
-                // just queue trigger
+                // 将触发请求加入队列
             }
         }
 
-        // replace thread (new or exists invalid)
+        // 原线程失效或不存在时替换任务线程
         if (jobThread == null) {
             jobThread = JobExecutor.registJobThread(triggerParam.getJobId(), jobHandler, removeOldReason);
         }
 
-        // push data to queue
+        // 将执行参数加入队列
         ReturnT<String> pushResult = jobThread.pushTriggerQueue(triggerParam);
         return pushResult;
     }

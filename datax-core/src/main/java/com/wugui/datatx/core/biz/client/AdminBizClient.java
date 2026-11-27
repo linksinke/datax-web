@@ -10,7 +10,7 @@ import com.wugui.datatx.core.util.JobRemotingUtil;
 import java.util.List;
 
 /**
- * admin api test
+ * 管理端接口客户端
  *
  * @author xuxueli 2017-07-28 22:14:52
  */
@@ -22,7 +22,7 @@ public class AdminBizClient implements AdminBiz {
         this.addressUrl = addressUrl;
         this.accessToken = accessToken;
 
-        // valid
+        // 参数校验
         if (!this.addressUrl.endsWith("/")) {
             this.addressUrl = this.addressUrl + "/";
         }

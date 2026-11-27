@@ -1,0 +1,49 @@
+<div class="ui-builder-pane">
+    <el-form class="ui-form-grid" label-position="top" :model="readerForm" :rules="rules">
+      <el-form-item label="数据源" prop="datasourceId">
+        <el-select v-model="readerForm.datasourceId" filterable @change="rDsChange">
+          <el-option
+            v-for="item in rDsList"
+            :key="item.id"
+            :label="item.datasourceName"
+            :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="表" prop="tableName">
+        <el-select v-model="readerForm.tableName" filterable @change="rTbChange">
+          <el-option v-for="item in rTbList" :key="item" :label="item" :value="item" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="mode" prop="mode">
+        <el-select v-model="readerForm.mode" placeholder="读取hbase的模式">
+          <el-option v-for="item in modeTypes" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="maxVersion">
+        <el-input v-model="readerForm.maxVersion" placeholder="多版本模式下读取的版本数,取值只能为－1或者大于1的数字" />
+      </el-form-item>
+      <el-form-item label="range">
+        <el-input v-model="readerForm.range.startRowkey" placeholder="startRowkey指定开始rowkey" />
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="readerForm.range.endRowkey" placeholder="endRowkey指定结束rowkey" />
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="readerForm.range.isBinaryRowkey" placeholder="转换方式">
+          <el-option v-for="item in binaryRowkeyTypes" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
+      <el-form-item class="ui-span-full" label="字段">
+        <el-checkbox
+          v-model="readerForm.checkAll"
+          :indeterminate="readerForm.isIndeterminate"
+          @change="rHandleCheckAllChange"
+        >全选</el-checkbox>
+        
+        <el-checkbox-group v-model="readerForm.columns" @change="rHandleCheckedChange">
+          <el-checkbox v-for="c in rColumnList" :key="c" :label="c">{{ c }}</el-checkbox>
+        </el-checkbox-group>
+      </el-form-item>
+    </el-form>
+  </div>

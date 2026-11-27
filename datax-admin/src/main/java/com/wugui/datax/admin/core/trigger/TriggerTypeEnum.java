@@ -3,7 +3,7 @@ package com.wugui.datax.admin.core.trigger;
 import com.wugui.datax.admin.core.util.I18nUtil;
 
 /**
- * trigger type enum
+ * 任务触发类型枚举
  *
  * @author xuxueli 2018-09-16 04:56:41
  */

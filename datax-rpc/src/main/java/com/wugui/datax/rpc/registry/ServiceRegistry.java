@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * service registry
+ * 服务注册接口
  *
  *  /xxl-rpc/dev/
  *              - key01(service01)
@@ -18,28 +18,28 @@ import java.util.TreeSet;
 public abstract class ServiceRegistry {
 
     /**
-     * start
+     * 启动
      */
     public abstract void start(Map<String, String> param);
 
     /**
-     * start
+     * 启动
      */
     public abstract void stop();
 
 
     /**
-     * registry service, for mult
+     * 批量注册服务
      *
-     * @param keys      service key
-     * @param value     service value/ip:port
+     * @param keys 服务唯一键集合
+     * @param value 服务地址，格式为主机与端口
      * @return
      */
     public abstract boolean registry(Set<String> keys, String value);
 
 
     /**
-     * remove service, for mult
+     * 批量注销服务
      *
      * @param keys
      * @param value
@@ -48,7 +48,7 @@ public abstract class ServiceRegistry {
     public abstract boolean remove(Set<String> keys, String value);
 
     /**
-     * discovery services, for mult
+     * 批量发现服务
      *
      * @param keys
      * @return
@@ -56,10 +56,10 @@ public abstract class ServiceRegistry {
     public abstract Map<String, TreeSet<String>> discovery(Set<String> keys);
 
     /**
-     * discovery service, for one
+     * 发现单个服务
      *
-     * @param key   service key
-     * @return      service value/ip:port
+     * @param key 服务唯一键
+     * @return 服务地址，格式为主机与端口
      */
     public abstract TreeSet<String> discovery(String key);
 

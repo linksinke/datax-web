@@ -9,7 +9,7 @@ import java.util.List;
 
 
 /**
- * job info
+ * 任务基础信息
  * @author xuxueli 2016-1-12 18:03:45
  */
 @Mapper

@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * job file clean thread
+ * 任务日志文件清理线程
  *
  * @author xuxueli 2017-12-29 16:23:43
  */
@@ -31,7 +31,7 @@ public class JobLogFileCleanThread {
 
     public void start(final long logRetentionDays) {
 
-        // limit min value
+        // 限制最小保留天数
         if (logRetentionDays < 3) {
             return;
         }
@@ -39,11 +39,11 @@ public class JobLogFileCleanThread {
         localThread = new Thread(() -> {
             while (!toStop) {
                 try {
-                    // clean log dir, over logRetentionDays
+                    // 清理超过保留天数的日志目录
                     File[] childDirs = new File(JobFileAppender.getLogPath()).listFiles();
                     if (childDirs != null && childDirs.length > 0) {
 
-                        // today
+                        // 当天统计
                         Calendar todayCal = Calendar.getInstance();
                         todayCal.set(Calendar.HOUR_OF_DAY, 0);
                         todayCal.set(Calendar.MINUTE, 0);
@@ -53,11 +53,11 @@ public class JobLogFileCleanThread {
                         Date todayDate = todayCal.getTime();
                         for (File childFile : childDirs) {
 
-                            // valid
+                            // 参数校验
                             if (!childFile.isDirectory() || childFile.getName().indexOf("-") == -1) {
                                 continue;
                             }
-                            // file create date
+                            // 日志文件创建日期
                             Date logFileCreateDate = null;
                             try {
                                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -65,7 +65,7 @@ public class JobLogFileCleanThread {
                             } catch (ParseException e) {
                                 logger.error(e.getMessage(), e);
                             }
-                            // valid
+                            // 参数校验
                             if (logFileCreateDate == null) {
                                 continue;
                             }
@@ -105,7 +105,7 @@ public class JobLogFileCleanThread {
             return;
         }
 
-        // interrupt and wait
+        // 发送中断信号并等待线程退出
         localThread.interrupt();
         try {
             localThread.join();

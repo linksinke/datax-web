@@ -16,7 +16,7 @@ public class BasicJson {
 
 
     /**
-     * object to json
+     * 将对象转换为 JSON
      *
      * @param object
      * @return
@@ -26,17 +26,17 @@ public class BasicJson {
     }
 
     /**
-     * parse json to map
+     * 将 JSON 解析为映射
      *
      * @param json
-     * @return only for filed type "null、ArrayList、LinkedHashMap、String、Long、Double、..."
+     * @return 解析后的基础对象、列表或映射
      */
     public static Map<String, Object> parseMap(String json) {
         return basicJsonReader.parseMap(json);
     }
 
     /**
-     * json to List
+     * 将 JSON 解析为列表
      *
      * @param json
      * @return
@@ -67,32 +67,32 @@ public class BasicJson {
 
 
 
-    /*// parse biz-object from map-object
+    /*// 将映射转换为业务对象
     private static <T> T parseBizObjectFromMapObject(final Map<String, Object> mapObject, Class<T> businessClass){
-        // parse class (only first level)
+        // 解析对象类型，仅处理第一层属性
         try {
             Object newItem = businessClass.newInstance();
             Field[] fieldList = basicJsonwriter.getDeclaredFields(businessClass);
             for (Field field: fieldList) {
 
-                // valid val
+                // 校验字段值
                 Object fieldValue = mapObject.get(field.getName());
                 if (fieldValue == null) {
                     continue;
                 }
 
-                // valid type
+                // 校验属性类型
                 if (field.getType() != fieldValue.getClass()) {
 
                     if (fieldValue instanceof LinkedHashMap) {
 
-                        // Map-Value >> only support "class | map"
+                        // 映射值仅支持业务对象或映射类型
                         if (field.getType() != Map.class) {
                             fieldValue = parseBizObjectFromMapObject((LinkedHashMap)fieldValue, field.getType());
                         }
                     } else if (fieldValue instanceof ArrayList) {
 
-                        // List-Value >> only support "List<Base> | List<Class>"
+                        // 列表值仅支持基础类型列表或业务对象列表
                         List<Object> fieldValueList = (ArrayList)fieldValue;
                         if (fieldValueList.size() > 0) {
 
@@ -117,12 +117,12 @@ public class BasicJson {
 
                     } else {
 
-                        // Base-Value >> support base
+                        // 基础值按基础类型转换
                         fieldValue = FieldReflectionUtil.parseValue(field.getType(), String.valueOf(fieldValue) );
                     }
                 }
 
-                // field set
+                // 设置对象字段
                 field.setAccessible(true);
                 field.set(newItem, fieldValue);
             }
@@ -133,16 +133,16 @@ public class BasicJson {
         }
     }
 
-    // parse biz-object-list from map-list
+    // 将映射列表转换为业务对象列表
     public static <T> List<T> parseBizObjectListFromMapList(List<Object> listObject, Class<T> businessClass) {
-        // valid
+        // 参数校验
         if (listObject.size() == 0) {
             return new ArrayList<>();
         }
         if (listObject.get(0).getClass() != LinkedHashMap.class) {
             throw new IllegalArgumentException("Cannot parse JSON, custom class must match LinkedHashMap");
         }
-        // parse business class
+        // 解析业务对象类型
         try {
             List<Object> newItemList = new ArrayList<>();
             for (Object oldItem: listObject) {
@@ -161,42 +161,42 @@ public class BasicJson {
 
 
     *//**
-     * parse json to <T>
+     * 将 JSON 解析为指定类型
      *
      * @param json
-     * @param businessClass     null for base-class "Integer、Long、Map ... " , other for business-class
+     * @param businessClass 业务对象类型；基础类型、列表或映射可传空
      * @param <T>
      * @return
      *//*
     public static <T> T parseObject(String json, Class<T> businessClass) {
 
-        // map object
+        // 映射对象
         Map<String, Object> mapObject = basicJsonReader.parseMap(json);
 
         if (businessClass == null || mapObject.size()==0) {
-            // parse map class, default
+            // 默认解析为映射类型
             return (T) mapObject;
         } else {
-            // parse business class
+            // 解析业务对象类型
             return parseBizObjectFromMapObject(mapObject, businessClass);
         }
     }
 
     *//**
-     * json to List<T>
+     * 将 JSON 解析为指定类型的列表
      *
      * @param json
-     * @param businessClass     null for base-class "Integer、Long、Map ... " , other for business-class
+     * @param businessClass 业务对象类型；基础类型、列表或映射可传空
      * @param <T>
      * @return
      *//*
     public static <T> List<T> parseList(String json, Class<T> businessClass) {
 
-        // list object
+        // 列表对象
         List<Object> listObject = basicJsonReader.parseList(json);
 
         if (businessClass==null || listObject.size()==0) {
-            // parse map class, default
+            // 默认解析为映射类型
             return (List<T>) listObject;
         } else {
             return parseBizObjectListFromMapList(listObject, businessClass);

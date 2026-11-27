@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * Project
+ * 项目
  *
  * @author jingwk
  * @version v2.1.12
@@ -17,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 public interface JobProjectMapper extends BaseMapper<JobProject> {
 
     /**
-     * project page
+     * 项目分页列表
      * @param page
      * @param searchName
      * @return

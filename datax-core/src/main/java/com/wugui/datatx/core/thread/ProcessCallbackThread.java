@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by jingwk on 2019/12/14.
+ * 创建者：jingwk，时间：2019/12/14.
  */
 public class ProcessCallbackThread {
     private static Logger logger = LoggerFactory.getLogger(ProcessCallbackThread.class);
@@ -31,7 +31,7 @@ public class ProcessCallbackThread {
     }
 
     /**
-     * job results callback queue
+     * 任务结果回调队列
      */
     private LinkedBlockingQueue<HandleProcessCallbackParam> callBackQueue = new LinkedBlockingQueue<>();
 
@@ -41,7 +41,7 @@ public class ProcessCallbackThread {
     }
 
     /**
-     * callback thread
+     * 回调处理线程
      */
     private Thread processCallbackThread;
     private Thread processRetryCallbackThread;
@@ -49,26 +49,26 @@ public class ProcessCallbackThread {
 
     public void start() {
 
-        // valid
+        // 参数校验
         if (JobExecutor.getAdminBizList() == null) {
             logger.warn(">>>>>>>>>>> datax-web, executor callback config fail, adminAddresses is null.");
             return;
         }
 
-        // callback
+        // 回调处理
         processCallbackThread = new Thread(() -> {
 
-            // normal callback
+            // 正常回调
             while (!toStop) {
                 try {
                     HandleProcessCallbackParam callback = getInstance().callBackQueue.take();
 
-                    // callback list param
+                    // 组装批量回调参数
                     List<HandleProcessCallbackParam> callbackParamList = new ArrayList<HandleProcessCallbackParam>();
                     int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
                     callbackParamList.add(callback);
 
-                    // callback, will retry if error
+                    // 提交回调，失败时进入重试
                     if (callbackParamList.size() > 0) {
                         doCallback(callbackParamList);
                     }
@@ -79,7 +79,7 @@ public class ProcessCallbackThread {
                 }
             }
 
-            // last callback
+            // 处理退出前的最后一批回调
             try {
                 List<HandleProcessCallbackParam> callbackParamList = new ArrayList<HandleProcessCallbackParam>();
                 int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
@@ -99,7 +99,7 @@ public class ProcessCallbackThread {
         processCallbackThread.start();
 
 
-        // retry
+        // 失败重试
         processRetryCallbackThread = new Thread(() -> {
             while (!toStop) {
                 try {
@@ -127,8 +127,8 @@ public class ProcessCallbackThread {
 
     public void toStop() {
         toStop = true;
-        // stop callback, interrupt and wait
-        if (processCallbackThread != null) {    // support empty admin address
+        // 停止回调线程并等待退出
+        if (processCallbackThread != null) {    // 兼容未配置管理端地址的情况
             processCallbackThread.interrupt();
             try {
                 processCallbackThread.join();
@@ -137,7 +137,7 @@ public class ProcessCallbackThread {
             }
         }
 
-        // stop retry, interrupt and wait
+        // 中断重试线程并等待退出
         if (processRetryCallbackThread != null) {
             processRetryCallbackThread.interrupt();
             try {
@@ -150,13 +150,13 @@ public class ProcessCallbackThread {
     }
 
     /**
-     * do callback, will retry if error
+     * 发送回调，失败后重试
      *
      * @param callbackParamList
      */
     private void doCallback(List<HandleProcessCallbackParam> callbackParamList) {
         boolean callbackRet = false;
-        // callback, will retry if error
+        // 提交回调，失败时进入重试
         for (AdminBiz adminBiz : JobExecutor.getAdminBizList()) {
             try {
                 ReturnT<String> callbackResult = adminBiz.processCallback(callbackParamList);
@@ -177,7 +177,7 @@ public class ProcessCallbackThread {
     }
 
     /**
-     * callback log
+     * 记录回调日志
      */
     private void callbackLog(List<HandleProcessCallbackParam> callbackParamList, String logContent) {
         for (HandleProcessCallbackParam callbackParam : callbackParamList) {
@@ -188,18 +188,18 @@ public class ProcessCallbackThread {
     }
 
 
-    // ---------------------- fail-callback file ----------------------
+    // 失败回调文件
 
     private static String failCallbackFilePath = JobFileAppender.getLogPath().concat(File.separator).concat("processcallbacklog").concat(File.separator);
     private static String failCallbackFileName = failCallbackFilePath.concat("datax-web-processcallback-{x}").concat(".log");
 
     private void appendFailCallbackFile(List<HandleProcessCallbackParam> handleProcessCallbackParams) {
-        // valid
+        // 参数校验
         if (handleProcessCallbackParams == null || handleProcessCallbackParams.size() == 0) {
             return;
         }
 
-        // append file
+        // 追加失败记录文件
         byte[] callbackParamList_bytes = JobExecutor.getSerializer().serialize(handleProcessCallbackParams);
 
         File callbackLogFile = new File(failCallbackFileName.replace("{x}", String.valueOf(System.currentTimeMillis())));
@@ -216,7 +216,7 @@ public class ProcessCallbackThread {
 
     private void retryFailCallbackFile() {
 
-        // valid
+        // 参数校验
         File callbackLogPath = new File(failCallbackFilePath);
         if (!callbackLogPath.exists()) {
             return;
@@ -228,7 +228,7 @@ public class ProcessCallbackThread {
             return;
         }
 
-        // load and clear file, retry
+        // 载入并清理失败文件，重新提交回调
         List<HandleProcessCallbackParam> params;
         for (File f : callbackLogPath.listFiles()) {
             byte[] ps = FileUtil.readFileContent(f);

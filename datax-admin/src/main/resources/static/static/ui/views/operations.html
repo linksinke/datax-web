@@ -1,0 +1,28 @@
+<section class="app-container ui-page">
+  <div class="ui-filter">
+    <el-select v-model="listQuery.state" clearable placeholder="全部作业状态"><el-option v-for="state in states" :key="state" :value="state" :label="uiStateName(state)"></el-option></el-select>
+    <el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span>
+    <span class="ui-hint">页面每4秒刷新一次</span><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">立即刷新</el-button>
+  </div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <el-table :data="list" v-loading="uiRead.loading" row-key="id" empty-text="暂无后台作业。生成、复制或导出后可在此查看进度和结果。">
+    <el-table-column label="后台作业" min-width="240"><template slot-scope="scope"><strong class="ui-row-title">{{ scope.row.name }}</strong><small class="ui-cell-secondary">{{ scope.row.id }}</small></template></el-table-column>
+    <el-table-column label="状态" width="115"><template slot-scope="scope"><el-tag size="small" :type="uiStateType(scope.row.state)">{{ uiStateName(scope.row.state) }}</el-tag></template></el-table-column>
+    <el-table-column label="处理阶段" min-width="200"><template slot-scope="scope"><span>{{ scope.row.message }}</span></template></el-table-column>
+    <el-table-column prop="createdAt" label="提交时间" min-width="170"></el-table-column><el-table-column prop="finishedAt" label="结束时间" min-width="170"></el-table-column>
+    <el-table-column label="操作" width="170" fixed="right"><template slot-scope="scope"><div class="ui-row-actions">
+      <el-button type="text" :loading="uiBusy('details-' + scope.row.id)" @click="uiDetails(scope.row)">详情</el-button>
+      <el-button v-if="scope.row.state === 'QUEUED'" type="text" :loading="uiBusy('cancel-' + scope.row.id)" @click="uiCancel(scope.row)">取消排队</el-button>
+      <el-button v-if="['FAILED','CANCELLED'].includes(scope.row.state)" type="text" :loading="uiBusy('retry-' + scope.row.id)" @click="uiRetry(scope.row)">重试</el-button>
+    </div></template></el-table-column>
+  </el-table>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+  <el-dialog class="ui-dialog" title="后台作业详情" :visible.sync="detailVisible" width="720px" top="8vh">
+    <template v-if="detail"><h3>{{ detail.name }}</h3><dl class="ui-definition"><dt>作业标识</dt><dd class="ui-code">{{ detail.id }}</dd><dt>状态</dt><dd><el-tag :type="uiStateType(detail.state)">{{ uiStateName(detail.state) }}</el-tag></dd><dt>处理说明</dt><dd>{{ detail.message }}</dd><dt>提交时间</dt><dd>{{ detail.createdAt }}</dd><dt>结束时间</dt><dd>{{ detail.finishedAt || '尚未结束' }}</dd></dl><div v-if="detail.result" class="ui-result-summary"><strong>处理结果</strong>
+      <p v-if="detail.result.batchCode">批次编码：{{ detail.result.batchCode }}</p><p v-if="detail.result.templateCount">已生成 {{ detail.result.templateCount }} 份配置</p>
+      <p v-if="detail.result.fileName">文件：{{ detail.result.fileName }}</p><p v-if="detail.result.fileCount">包含 {{ detail.result.fileCount }} 份配置 · {{ uiBytes(detail.result.fileSize) }}</p>
+      <p v-if="detail.kind.indexOf('COPY_') === 0">副本已保存，可打开结果继续维护。</p>
+    </div></template>
+    <div slot="footer"><el-button @click="detailVisible=false">关闭</el-button><el-button v-if="detail && detail.result" type="primary" @click="uiOpenResult">{{ detail.result.exportId ? '下载导出文件' : '打开处理结果' }}</el-button></div>
+  </el-dialog>
+</section>

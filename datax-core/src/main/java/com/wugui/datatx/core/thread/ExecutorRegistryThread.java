@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by xuxueli on 17/3/2.
+ * 创建者：xuxueli，时间：17/3/2.
  */
 public class ExecutorRegistryThread {
     private static Logger logger = LoggerFactory.getLogger(ExecutorRegistryThread.class);
@@ -26,7 +26,7 @@ public class ExecutorRegistryThread {
     private volatile boolean toStop = false;
     public void start(final String appName, final String address){
 
-        // valid
+        // 参数校验
         if (appName==null || appName.trim().length()==0) {
             logger.warn(">>>>>>>>>>> datax-web, executor registry config fail, appName is null.");
             return;
@@ -38,7 +38,7 @@ public class ExecutorRegistryThread {
 
         registryThread = new Thread(() -> {
 
-            // registry
+            // 注册执行节点
             while (!toStop) {
                 try {
                     RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address, OSUtils.cpuUsage(),OSUtils.memoryUsage(),OSUtils.loadAverage());
@@ -75,7 +75,7 @@ public class ExecutorRegistryThread {
                 }
             }
 
-            // registry remove
+            // 注销执行节点
             try {
                 RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address);
                 for (AdminBiz adminBiz: JobExecutor.getAdminBizList()) {
@@ -111,7 +111,7 @@ public class ExecutorRegistryThread {
 
     public void toStop() {
         toStop = true;
-        // interrupt and wait
+        // 发送中断信号并等待线程退出
         registryThread.interrupt();
         try {
             registryThread.join();

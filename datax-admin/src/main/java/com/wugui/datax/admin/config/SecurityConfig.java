@@ -20,7 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)

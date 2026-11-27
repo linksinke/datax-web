@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * request
+ * 请求对象
  *
  * @author xuxueli 2015-10-29 19:39:12
  */

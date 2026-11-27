@@ -6,6 +6,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import com.wugui.datax.admin.core.util.OperationActor;
 
 import java.util.Date;
 
@@ -31,6 +32,6 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
     }
 
     private String getCurrentUser() {
-        return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        return OperationActor.current();
     }
 }

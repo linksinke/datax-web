@@ -34,7 +34,7 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * core job action for xxl-job
+ * 调度任务核心业务
  *
  * @author xuxueli 2016-5-28 15:30:33
  */
@@ -61,11 +61,11 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
     @Override
     public Map<String, Object> pageList(int start, int length, int jobGroup, int triggerStatus, String jobDesc, String glueType, int userId, Integer[] projectIds) {
 
-        // page list
+        // 分页查询列表
         List<JobInfo> list = baseMapper.pageList(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
         int list_count = baseMapper.pageListCount(start, length, jobGroup, triggerStatus, jobDesc, glueType, userId, projectIds);
 
-        // package result
+        // 组装分页结果
         Map<String, Object> maps = new HashMap<>();
         maps.put("recordsTotal", list_count);        // 总记录数
         maps.put("recordsFiltered", list_count);    // 过滤后的总记录数
@@ -80,7 +80,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
 
     @Override
     public ReturnT<String> add(JobInfo jobInfo) {
-        // valid
+        // 参数校验
         JobGroup group = jobGroupMapper.selectById(jobInfo.getJobGroup());
         if (group == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_choose") + I18nUtil.getString("jobinfo_field_jobgroup")));
@@ -115,12 +115,12 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
             jobInfo.setReplaceParamType(DateFormatUtils.TIMESTAMP);
         }
 
-        // fix "\r" in shell
+        // 移除 Shell 脚本中的回车符
         if (GlueTypeEnum.GLUE_SHELL == GlueTypeEnum.match(jobInfo.getGlueType()) && jobInfo.getGlueSource() != null) {
             jobInfo.setGlueSource(jobInfo.getGlueSource().replaceAll("\r", ""));
         }
 
-        // ChildJobId valid
+        // 校验子任务编号
         if (jobInfo.getChildJobId() != null && jobInfo.getChildJobId().trim().length() > 0) {
             String[] childJobIds = jobInfo.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
@@ -136,7 +136,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
                 }
             }
 
-            // join , avoid "xxx,,"
+            // 拼接任务编号，避免出现连续逗号
             String temp = "";
             for (String item : childJobIds) {
                 temp += item + ",";
@@ -146,7 +146,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
             jobInfo.setChildJobId(temp);
         }
 
-        // add in db
+        // 将任务保存到管理库
         jobInfo.setAddTime(new Date());
         jobInfo.setJobJson(jobInfo.getJobJson());
         jobInfo.setUpdateTime(new Date());
@@ -171,7 +171,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
     @Override
     public ReturnT<String> update(JobInfo jobInfo) {
 
-        // valid
+        // 参数校验
         if (!CronExpression.isValidExpression(jobInfo.getJobCron())) {
             return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_invalid"));
         }
@@ -195,7 +195,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorBlockStrategy") + I18nUtil.getString("system_invalid")));
         }
 
-        // ChildJobId valid
+        // 校验子任务编号
         if (jobInfo.getChildJobId() != null && jobInfo.getChildJobId().trim().length() > 0) {
             String[] childJobIds = jobInfo.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
@@ -211,7 +211,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
                 }
             }
 
-            // join , avoid "xxx,,"
+            // 拼接任务编号，避免出现连续逗号
             String temp = "";
             for (String item : childJobIds) {
                 temp += item + ",";
@@ -221,13 +221,13 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
             jobInfo.setChildJobId(temp);
         }
 
-        // group valid
+        // 校验执行器分组
         JobGroup jobGroup = jobGroupMapper.selectById(jobInfo.getJobGroup());
         if (jobGroup == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_invalid")));
         }
 
-        // stage job info
+        // 保存当前任务配置
         JobInfo exists_jobInfo = getById(jobInfo.getId());
         if (exists_jobInfo == null) {
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));
@@ -333,7 +333,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
             jobLogSuccessCount = jobLogReport.getSucCount();
         }
 
-        // executor count
+        // 执行器数量
         Set<String> executorAddressSet = new HashSet<>();
         List<JobGroup> groupList = jobGroupMapper.selectList(Wrappers.<JobGroup>lambdaQuery().orderByAsc(JobGroup::getOrder));
 
@@ -357,7 +357,7 @@ public class JobServiceImpl extends ServiceImpl<JobInfoMapper, JobInfo> implemen
 
     @Override
     public ReturnT<Map<String, Object>> chartInfo() {
-        // process
+        // 任务执行过程
         List<String> triggerDayList = new ArrayList<String>();
         List<Integer> triggerDayCountRunningList = new ArrayList<Integer>();
         List<Integer> triggerDayCountSucList = new ArrayList<Integer>();

@@ -9,13 +9,13 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * xxl-job log for glue, used to track job code process
+ * 任务脚本版本日志，用于追踪脚本修改
  *
  * @author xuxueli 2016-5-19 17:57:46
  */
 @Data
 @TableName("job_logglue")
-public class JobLogGlue {
+public class JobLogGlue extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private int id;

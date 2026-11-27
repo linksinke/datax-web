@@ -33,7 +33,7 @@ import java.util.Properties;
 
 
 /**
- * jdbc utils
+ * JDBC 数据访问工具
  *
  * @author jingwk
  * @ClassName JdbcUtils
@@ -484,7 +484,7 @@ public final class JdbcUtils implements  JdbcConstants {
             try {
                 clazz = classLoader.loadClass(driverClassName);
             } catch (ClassNotFoundException e) {
-                // skip
+                // 跳过当前记录
             }
         }
 
@@ -495,7 +495,7 @@ public final class JdbcUtils implements  JdbcConstants {
                     clazz = contextLoader.loadClass(driverClassName);
                 }
             } catch (ClassNotFoundException e) {
-                // skip
+                // 跳过当前记录
             }
         }
 

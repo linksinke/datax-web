@@ -24,6 +24,23 @@ import java.util.Date;
 @TableName("job_jdbc_datasource")
 public class JobDatasource extends Model<JobDatasource> {
 
+    /** 创建时间，由管理库自动维护。 */
+    @TableField(value = "created_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private Date createdAt;
+    /** 创建账号，由管理库自动维护。 */
+    @TableField(value = "created_by", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String createdBy;
+    /** 修改时间，由管理库自动维护。 */
+    @TableField(value = "updated_at", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private Date updatedAt;
+    /** 修改账号，由管理库自动维护。 */
+    @TableField(value = "updated_by", insertStrategy = FieldStrategy.NEVER, updateStrategy = FieldStrategy.NEVER)
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String updatedBy;
+
     /** 自增主键 */
     @TableId
     @ApiModelProperty(value = "自增主键")
@@ -55,7 +72,7 @@ public class JobDatasource extends Model<JobDatasource> {
     @ApiModelProperty(value = "密码")
     private String jdbcPassword;
 
-    /** jdbc url */
+    /** 数据库连接地址 */
     @ApiModelProperty(value = "jdbc url")
     private String jdbcUrl;
 

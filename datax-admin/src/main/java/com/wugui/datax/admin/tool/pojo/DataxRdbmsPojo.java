@@ -52,7 +52,7 @@ public class DataxRdbmsPojo {
     private String splitPk;
 
     /**
-     * where
+     * 读取过滤条件
      */
     private String whereParam;
 }

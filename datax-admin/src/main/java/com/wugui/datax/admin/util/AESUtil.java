@@ -101,7 +101,7 @@ public class AESUtil {
         return null;
     }
 
-    /** Supports both encrypted database results and values already decoded by a MyBatis type handler. */
+    /** 兼容管理库密文及已由 MyBatis 类型处理器解密的值。 */
     public static String plaintextForExport(String value) {
         if (value == null || value.length() < 24 || value.length() % 4 != 0) return value;
         try {
@@ -110,7 +110,7 @@ public class AESUtil {
             KeyGenerator keygen = getKeyGenerator();
             SecretKey key = new SecretKeySpec(keygen.generateKey().getEncoded(), KEY_ALGORITHM);
             byte[] plaintext = decrypt(key, ciphertext);
-            // Arbitrary plaintext passwords can resemble Base64. Invalid ciphertext/UTF-8 stays literal.
+            // 明文密码可能类似 Base64；无效密文或非 UTF-8 内容按原值保留。
             return StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                     .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(plaintext)).toString();
         } catch (Exception ignored) {

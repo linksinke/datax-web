@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * file tool
+ * 文件操作工具
  *
  * @author xuxueli 2017-12-29 17:56:48
  */
@@ -18,7 +18,7 @@ public class FileUtil {
 
 
     /**
-     * delete recursively
+     * 递归删除目录或文件
      *
      * @param root
      * @return
@@ -40,7 +40,7 @@ public class FileUtil {
 
 
     public static void deleteFile(String fileName) {
-        // file
+        // 文件操作
         File file = new File(fileName);
         if (file.exists()) {
             file.delete();
@@ -50,12 +50,12 @@ public class FileUtil {
 
     public static void writeFileContent(File file, byte[] data) {
 
-        // file
+        // 文件操作
         if (!file.exists()) {
             file.getParentFile().mkdirs();
         }
 
-        // append file content
+        // 追加文件内容
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
@@ -101,7 +101,7 @@ public class FileUtil {
 
     /*public static void appendFileLine(String fileName, String content) {
 
-        // file
+        // 文件操作
         File file = new File(fileName);
         if (!file.exists()) {
             try {
@@ -112,13 +112,13 @@ public class FileUtil {
             }
         }
 
-        // content
+        // 文件内容
         if (content == null) {
             content = "";
         }
         content += "\r\n";
 
-        // append file content
+        // 追加文件内容
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file, true);
@@ -142,13 +142,13 @@ public class FileUtil {
 
         List<String> result = new ArrayList<>();
 
-        // valid log file
+        // 校验日志文件
         File file = new File(fileName);
         if (!file.exists()) {
             return result;
         }
 
-        // read file
+        // 读取文件
         StringBuffer logContentBuffer = new StringBuffer();
         int toLineNum = 0;
         LineNumberReader reader = null;

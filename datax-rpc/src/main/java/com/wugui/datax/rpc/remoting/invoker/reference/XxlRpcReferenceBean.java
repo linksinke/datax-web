@@ -27,16 +27,16 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * rpc reference bean, use by api
+ * 通过编程接口创建的 RPC 服务引用
  *
  * @author xuxueli 2015-10-29 20:18:32
  */
 public class XxlRpcReferenceBean {
     private static final Logger logger = LoggerFactory.getLogger(XxlRpcReferenceBean.class);
-    // [tips01: save 30ms/100invoke. why why why??? with this logger, it can save lots of time.]
+    // 避免在高频调用路径中执行额外的日志构建
 
 
-    // ---------------------- config ----------------------
+    // 配置参数
 
     private Class<? extends Client> client = NettyClient.class;
     private Class<? extends Serializer> serializer = HessianSerializer.class;
@@ -56,7 +56,7 @@ public class XxlRpcReferenceBean {
     private XxlRpcInvokerFactory invokerFactory = null;
 
 
-    // set
+    // 设置配置
     public void setClient(Class<? extends Client> client) {
         this.client = client;
     }
@@ -102,7 +102,7 @@ public class XxlRpcReferenceBean {
     }
 
 
-    // get
+    // 获取配置
     public Serializer getSerializerInstance() {
         return serializerInstance;
     }
@@ -120,14 +120,14 @@ public class XxlRpcReferenceBean {
     }
 
 
-    // ---------------------- initClient ----------------------
+    // 客户端初始化
 
     private Client clientInstance = null;
     private Serializer serializerInstance = null;
 
     public XxlRpcReferenceBean initClient() throws Exception {
 
-        // valid
+        // 参数校验
         if (this.client == null) {
             throw new XxlRpcException("xxl-rpc reference client missing.");
         }
@@ -150,10 +150,10 @@ public class XxlRpcReferenceBean {
             this.invokerFactory = XxlRpcInvokerFactory.getInstance();
         }
 
-        // init serializerInstance
+        // 初始化序列化器实例
         this.serializerInstance = serializer.newInstance();
 
-        // init Client
+        // 初始化客户端
         clientInstance = client.newInstance();
         clientInstance.init(this);
 
@@ -161,26 +161,26 @@ public class XxlRpcReferenceBean {
     }
 
 
-    // ---------------------- util ----------------------
+    // 辅助方法
 
     public Object getObject() throws Exception {
 
-        // initClient
+        // 初始化客户端
         initClient();
 
-        // newProxyInstance
+        // 创建动态代理
         return Proxy.newProxyInstance(Thread.currentThread()
                         .getContextClassLoader(), new Class[]{iface},
                 (proxy, method, args) -> {
 
-                    // method param
+                    // 方法调用参数
                     String className = method.getDeclaringClass().getName();    // iface.getName()
                     String varsion_ = version;
                     String methodName = method.getName();
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     Object[] parameters = args;
 
-                    // filter for generic
+                    // 识别泛化调用
                     if (className.equals(XxlRpcGenericService.class.getName()) && methodName.equals("invoke")) {
 
                         Class<?>[] paramTypes = null;
@@ -201,22 +201,22 @@ public class XxlRpcReferenceBean {
                         parameters = (Object[]) args[4];
                     }
 
-                    // filter method like "Object.toString()"
+                    // 过滤 Object.toString 等本地对象方法
                     if (className.equals(Object.class.getName())) {
                         logger.info(">>>>>>>>>>> xxl-rpc proxy class-method not support [{}#{}]", className, methodName);
                         throw new XxlRpcException("xxl-rpc proxy class-method not support");
                     }
 
-                    // address
+                    // 服务地址
                     String finalAddress = address;
                     if (finalAddress == null || finalAddress.trim().length() == 0) {
                         if (invokerFactory != null && invokerFactory.getServiceRegistry() != null) {
-                            // discovery
+                            // 发现服务地址
                             String serviceKey = XxlRpcProviderFactory.makeServiceKey(className, varsion_);
                             TreeSet<String> addressSet = invokerFactory.getServiceRegistry().discovery(serviceKey);
-                            // load balance
+                            // 选择负载均衡策略
                             if (addressSet == null || addressSet.size() == 0) {
-                                // pass
+                                // 跳过无需处理的调用
                             } else if (addressSet.size() == 1) {
                                 finalAddress = addressSet.first();
                             } else {
@@ -229,7 +229,7 @@ public class XxlRpcReferenceBean {
                         throw new XxlRpcException("xxl-rpc reference bean[" + className + "] address empty");
                     }
 
-                    // request
+                    // 请求对象
                     XxlRpcRequest xxlRpcRequest = new XxlRpcRequest();
                     xxlRpcRequest.setRequestId(UUID.randomUUID().toString());
                     xxlRpcRequest.setCreateMillisTime(System.currentTimeMillis());
@@ -240,15 +240,15 @@ public class XxlRpcReferenceBean {
                     xxlRpcRequest.setParameters(parameters);
                     xxlRpcRequest.setVersion(version);
 
-                    // send
+                    // 发送请求
                     if (CallType.SYNC == callType) {
-                        // future-response set
+                        // 登记异步响应
                         XxlRpcFutureResponse futureResponse = new XxlRpcFutureResponse(invokerFactory, xxlRpcRequest, null);
                         try {
-                            // do invoke
+                            // 发起远程调用
                             clientInstance.asyncSend(finalAddress, xxlRpcRequest);
 
-                            // future get
+                            // 等待异步调用结果
                             XxlRpcResponse xxlRpcResponse = futureResponse.get(timeout, TimeUnit.MILLISECONDS);
                             if (xxlRpcResponse.getErrorMsg() != null) {
                                 throw new XxlRpcException(xxlRpcResponse.getErrorMsg());
@@ -259,25 +259,25 @@ public class XxlRpcReferenceBean {
 
                             throw (e instanceof XxlRpcException) ? e : new XxlRpcException(e);
                         } finally {
-                            // future-response remove
+                            // 移除异步响应
                             futureResponse.removeInvokerFuture();
                         }
                     } else if (CallType.FUTURE == callType) {
-                        // future-response set
+                        // 登记异步响应
                         XxlRpcFutureResponse futureResponse = new XxlRpcFutureResponse(invokerFactory, xxlRpcRequest, null);
                         try {
-                            // invoke future set
+                            // 登记异步调用上下文
                             XxlRpcInvokeFuture invokeFuture = new XxlRpcInvokeFuture(futureResponse);
                             XxlRpcInvokeFuture.setFuture(invokeFuture);
 
-// do invoke
+// 发起远程调用
                             clientInstance.asyncSend(finalAddress, xxlRpcRequest);
 
                             return null;
                         } catch (Exception e) {
                             logger.info(">>>>>>>>>>> xxl-rpc, invoke error, address:{}, XxlRpcRequest{}", finalAddress, xxlRpcRequest);
 
-                            // future-response remove
+                            // 移除异步响应
                             futureResponse.removeInvokerFuture();
 
                             throw (e instanceof XxlRpcException) ? e : new XxlRpcException(e);
@@ -285,7 +285,7 @@ public class XxlRpcReferenceBean {
 
                     } else if (CallType.CALLBACK == callType) {
 
-                        // get callback
+                        // 获取调用回调
                         XxlRpcInvokeCallback finalInvokeCallback = invokeCallback;
                         XxlRpcInvokeCallback threadInvokeCallback = XxlRpcInvokeCallback.getCallback();
                         if (threadInvokeCallback != null) {
@@ -295,14 +295,14 @@ public class XxlRpcReferenceBean {
                             throw new XxlRpcException("xxl-rpc XxlRpcInvokeCallback（CallType=" + CallType.CALLBACK.name() + "） cannot be null.");
                         }
 
-                        // future-response set
+                        // 登记异步响应
                         XxlRpcFutureResponse futureResponse = new XxlRpcFutureResponse(invokerFactory, xxlRpcRequest, finalInvokeCallback);
                         try {
                             clientInstance.asyncSend(finalAddress, xxlRpcRequest);
                         } catch (Exception e) {
                             logger.info(">>>>>>>>>>> xxl-rpc, invoke error, address:{}, XxlRpcRequest{}", finalAddress, xxlRpcRequest);
 
-                            // future-response remove
+                            // 移除异步响应
                             futureResponse.removeInvokerFuture();
 
                             throw (e instanceof XxlRpcException) ? e : new XxlRpcException(e);

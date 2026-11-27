@@ -20,14 +20,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * provider
+ * 服务提供方工厂
  *
  * @author xuxueli 2015-10-31 22:54:27
  */
 public class XxlRpcProviderFactory {
 	private static final Logger logger = LoggerFactory.getLogger(XxlRpcProviderFactory.class);
 
-	// ---------------------- config ----------------------
+	// 配置参数
 
 	private Class<? extends Server> server = NettyServer.class;
 	private Class<? extends Serializer> serializer = HessianSerializer.class;
@@ -35,14 +35,14 @@ public class XxlRpcProviderFactory {
 	private int corePoolSize = 60;
 	private int maxPoolSize = 300;
 
-	private String ip = null;					// for registry
-	private int port = 7080;					// default port
+	private String ip = null;					// 服务注册配置
+	private int port = 7080;					// 默认监听端口
 	private String accessToken = null;
 
 	private Class<? extends ServiceRegistry> serviceRegistry = null;
 	private Map<String, String> serviceRegistryParam = null;
 
-	// set
+	// 设置配置
 	public void setServer(Class<? extends Server> server) {
 		this.server = server;
 	}
@@ -73,7 +73,7 @@ public class XxlRpcProviderFactory {
 		this.serviceRegistryParam = serviceRegistryParam;
 	}
 
-	// get
+	// 获取配置
 	public Serializer getSerializerInstance() {
 		return serializerInstance;
 	}
@@ -87,7 +87,7 @@ public class XxlRpcProviderFactory {
 		return maxPoolSize;
 	}
 
-	// ---------------------- start / stop ----------------------
+	// 启动与停止
 
 	private Server serverInstance;
 	private Serializer serializerInstance;
@@ -96,7 +96,7 @@ public class XxlRpcProviderFactory {
 
 	public void start() throws Exception {
 
-		// valid
+		// 参数校验
 		if (this.server == null) {
 			throw new XxlRpcException("xxl-rpc provider server missing.");
 		}
@@ -117,16 +117,16 @@ public class XxlRpcProviderFactory {
 			throw new XxlRpcException("xxl-rpc provider port["+ this.port +"] is used.");
 		}
 
-		// init serializerInstance
+		// 初始化序列化器实例
 		this.serializerInstance = serializer.newInstance();
 
-		// start server
+		// 启动服务端
 		serviceAddress = IpUtil.getIpPort(this.ip, port);
 		serverInstance = server.newInstance();
-		serverInstance.setStartedCallback(new BaseCallback() {		// serviceRegistry started
+		serverInstance.setStartedCallback(new BaseCallback() {		// 服务注册组件已启动
 			@Override
 			public void run() throws Exception {
-				// start registry
+				// 启动注册服务
 				if (serviceRegistry != null) {
 					serviceRegistryInstance = serviceRegistry.newInstance();
 					serviceRegistryInstance.start(serviceRegistryParam);
@@ -136,10 +136,10 @@ public class XxlRpcProviderFactory {
 				}
 			}
 		});
-		serverInstance.setStopedCallback(new BaseCallback() {		// serviceRegistry stoped
+		serverInstance.setStopedCallback(new BaseCallback() {		// 服务注册组件已停止
 			@Override
 			public void run() {
-				// stop registry
+				// 停止注册服务
 				if (serviceRegistryInstance != null) {
 					if (serviceData.size() > 0) {
 						serviceRegistryInstance.remove(serviceData.keySet(), serviceAddress);
@@ -153,15 +153,15 @@ public class XxlRpcProviderFactory {
 	}
 
 	public void  stop() throws Exception {
-		// stop server
+		// 停止服务端
 		serverInstance.stop();
 	}
 
 
-	// ---------------------- server invoke ----------------------
+	// 服务端调用
 
 	/**
-	 * init local rpc service map
+	 * 初始化本地 RPC 服务映射
 	 */
 	private Map<String, Object> serviceData = new HashMap<String, Object>();
 	public Map<String, Object> getServiceData() {
@@ -169,7 +169,7 @@ public class XxlRpcProviderFactory {
 	}
 
 	/**
-	 * make service key
+	 * 生成服务唯一键
 	 *
 	 * @param iface
 	 * @param version
@@ -184,7 +184,7 @@ public class XxlRpcProviderFactory {
 	}
 
 	/**
-	 * add service
+	 * 注册服务实现
 	 *
 	 * @param iface
 	 * @param version
@@ -198,22 +198,22 @@ public class XxlRpcProviderFactory {
 	}
 
 	/**
-	 * invoke service
+	 * 调用服务实现
 	 *
 	 * @param xxlRpcRequest
 	 * @return
 	 */
 	public XxlRpcResponse invokeService(XxlRpcRequest xxlRpcRequest) {
 
-		//  make response
+		//  创建调用响应
 		XxlRpcResponse xxlRpcResponse = new XxlRpcResponse();
 		xxlRpcResponse.setRequestId(xxlRpcRequest.getRequestId());
 
-		// match service bean
+		// 匹配服务实现对象
 		String serviceKey = makeServiceKey(xxlRpcRequest.getClassName(), xxlRpcRequest.getVersion());
 		Object serviceBean = serviceData.get(serviceKey);
 
-		// valid
+		// 参数校验
 		if (serviceBean == null) {
 			xxlRpcResponse.setErrorMsg("The serviceKey["+ serviceKey +"] not found.");
 			return xxlRpcResponse;
@@ -229,7 +229,7 @@ public class XxlRpcProviderFactory {
 		}
 
 		try {
-			// invoke
+			// 执行调用
 			Class<?> serviceClass = serviceBean.getClass();
 			String methodName = xxlRpcRequest.getMethodName();
 			Class<?>[] parameterTypes = xxlRpcRequest.getParameterTypes();
@@ -245,7 +245,7 @@ public class XxlRpcProviderFactory {
 
 			xxlRpcResponse.setResult(result);
 		} catch (Throwable t) {
-			// catch error
+			// 捕获并处理异常
 			logger.error("xxl-rpc provider invokeService error.", t);
 			xxlRpcResponse.setErrorMsg(ThrowableUtil.toString(t));
 		}

@@ -325,7 +325,7 @@ public abstract class BaseQueryTool implements QueryToolInterface {
                         while (rows.next()) {
                             String table = rows.getString(1), column = rows.getString(2);
                             List<String> requested = schema.getValue().get(table);
-                            // MySQL on Windows may normalize identifier case in information_schema.
+                            // Windows 上的 MySQL 可能会统一元数据中的表名大小写。
                             if (requested == null) {
                                 for (String name : names) {
                                     if (name.equalsIgnoreCase(table)) {
@@ -466,38 +466,20 @@ public abstract class BaseQueryTool implements QueryToolInterface {
     @Override
     public List<String> getColumnsByQuerySql(String querySql) throws SQLException {
 
-        List<String> res = Lists.newArrayList();
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            querySql = querySql.replace(";", "");
-            //拼装sql语句，在后面加上 where 1=0 即可
-            String sql = querySql.concat(" where 1=0");
-            //判断是否已有where，如果是，则加 and 1=0
-            //从最后一个 ) 开始找 where，或者整个语句找
-            if (querySql.contains(")")) {
-                if (querySql.substring(querySql.indexOf(")")).contains("where")) {
-                    sql = querySql.concat(" and 1=0");
-                }
-            } else {
-                if (querySql.contains("where")) {
-                    sql = querySql.concat(" and 1=0");
+        String sql = com.wugui.datax.admin.core.util.SelectSqlPolicy.expand(querySql, null, currentDatabase);
+        List<String> columns = new ArrayList<>();
+        // 派生表限制零行，保留原查询的 WHERE、排序与大小写；使用输出别名作为映射字段。
+        synchronized (connection) {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM (" + sql + ") datax_metadata WHERE 1=0")) {
+                statement.setQueryTimeout(10);
+                try (ResultSet rows = statement.executeQuery()) {
+                    ResultSetMetaData metadata = rows.getMetaData();
+                    for (int index = 1; index <= metadata.getColumnCount(); index++) columns.add(metadata.getColumnLabel(index));
                 }
             }
-            //获取所有字段
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(sql);
-            ResultSetMetaData metaData = rs.getMetaData();
-
-            int columnCount = metaData.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                res.add(metaData.getColumnName(i));
-            }
-        } finally {
-            JdbcUtils.close(rs);
-            JdbcUtils.close(stmt);
         }
-        return res;
+        if (new HashSet<>(columns).size() != columns.size()) throw new IllegalArgumentException("查询存在同名输出列，请使用AS设置不同别名");
+        return columns;
     }
 
     @Override

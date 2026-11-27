@@ -23,7 +23,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 /**
- * netty_http
+ * 基于 Netty 的 HTTP 通信
  *
  * @author xuxueli 2015-11-24 22:25:15
  */
@@ -42,7 +42,7 @@ public class NettyHttpConnectClient extends ConnectClient {
         final NettyHttpConnectClient thisClient = this;
 
         if (!address.toLowerCase().startsWith("http")) {
-            address = "http://" + address;    // IP:PORT, need parse to url
+            address = "http://" + address;    // 将主机和端口转换为请求地址
         }
 
         this.address = address;
@@ -59,7 +59,7 @@ public class NettyHttpConnectClient extends ConnectClient {
                     @Override
                     public void initChannel(SocketChannel channel) throws Exception {
                         channel.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, Beat.BEAT_INTERVAL, TimeUnit.SECONDS))   // beat N, close if fail
+                                .addLast(new IdleStateHandler(0, 0, Beat.BEAT_INTERVAL, TimeUnit.SECONDS))   // 发送周期心跳，失败时关闭连接
                                 .addLast(new HttpClientCodec())
                                 .addLast(new HttpObjectAggregator(NettyConstant.MAX_LENGTH))
                                 .addLast(new NettyHttpClientHandler(xxlRpcInvokerFactory, serializer, thisClient));
@@ -71,7 +71,7 @@ public class NettyHttpConnectClient extends ConnectClient {
 
         this.serializer = serializer;
 
-        // valid
+        // 参数校验
         if (!isValidate()) {
             close();
             return;

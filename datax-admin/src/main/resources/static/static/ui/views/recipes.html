@@ -1,0 +1,11 @@
+<section class="app-container ui-page">
+  <div class="ui-filter"><el-input v-model="listQuery.keyword" clearable prefix-icon="el-icon-search" placeholder="方案名称或项目名称" @keyup.enter.native="uiSearch"></el-input><el-select v-model="listQuery.projectId" clearable filterable placeholder="全部项目"><el-option v-for="project in projects" :key="project.id" :value="project.id" :label="project.name"></el-option></el-select><el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新</el-button><el-button type="primary" icon="el-icon-plus" @click="uiCreate">新建项目方案</el-button></div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <el-table :data="list" v-loading="uiRead.loading" row-key="id" empty-text="暂无项目方案。在配置向导中选择项目，保存数据源、映射或查询SQL后即可重复使用。">
+    <el-table-column label="配置方案" min-width="230"><template slot-scope="scope"><strong class="ui-row-title">{{ scope.row.name }}</strong><small class="ui-cell-secondary">{{ scope.row.description || '未填写说明' }}</small></template></el-table-column>
+    <el-table-column prop="projectName" label="关联项目" min-width="160"></el-table-column><el-table-column label="读取方式" width="130"><template slot-scope="scope"><el-tag size="small" type="info">{{ scope.row.mode === 'QUERY' ? '查询SQL' : '字段映射' }}</el-tag></template></el-table-column>
+    <el-table-column prop="updatedBy" label="修改人" width="120"></el-table-column><el-table-column prop="updatedAt" label="更新时间" min-width="170"></el-table-column>
+    <el-table-column label="操作" width="265" fixed="right"><template slot-scope="scope"><div class="ui-row-actions"><el-button type="text" @click="uiUse(scope.row)">载入配置</el-button><el-button type="text" :loading="uiBusy('generate-' + scope.row.id)" @click="uiGenerate(scope.row)">生成批次</el-button><el-button type="text" :loading="uiBusy('copy-' + scope.row.id)" @click="uiCopy(scope.row)">复制</el-button><el-button type="text" class="ui-danger" :loading="uiBusy('delete-' + scope.row.id)" @click="uiRemove(scope.row)">删除</el-button></div></template></el-table-column>
+  </el-table>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+</section>

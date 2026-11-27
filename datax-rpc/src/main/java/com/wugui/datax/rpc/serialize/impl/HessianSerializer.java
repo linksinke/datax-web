@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * hessian serialize
+ * Hessian 序列化
  * @author xuxueli 2015-9-26 02:53:29
  */
 public class HessianSerializer extends Serializer {

@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.TreeSet;
 
 /**
- * random
+ * 随机选择
  *
  * @author xuxueli 2018-12-04
  */
@@ -16,10 +16,10 @@ public class XxlRpcLoadBalanceRandomStrategy extends XxlRpcLoadBalance {
 
     @Override
     public String route(String serviceKey, TreeSet<String> addressSet) {
-        // arr
+        // 候选地址数组
         String[] addressArr = addressSet.toArray(new String[addressSet.size()]);
 
-        // random
+        // 随机选择
         String finalAddress = addressArr[random.nextInt(addressSet.size())];
         return finalAddress;
     }

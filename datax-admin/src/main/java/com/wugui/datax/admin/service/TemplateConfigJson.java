@@ -5,7 +5,7 @@ import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.wugui.datax.admin.dto.DataXJsonBuildDto;
 
-/** Reflective codecs for configuration DTOs whose accessors can change during an IDE hot reload. */
+/** 通过反射读写配置对象，兼容 IDE 热加载后访问方法变化。 */
 public final class TemplateConfigJson {
     private TemplateConfigJson() {
     }
@@ -18,7 +18,7 @@ public final class TemplateConfigJson {
         return JSON.parseObject(text, DataXJsonBuildDto.class, readerConfig());
     }
 
-    // Use fresh, scoped caches: the global cache may already contain an incompatible ASM serializer.
+    // 使用局部新缓存，避免复用热加载前不兼容的 ASM 序列化器。
     static SerializeConfig writerConfig() {
         SerializeConfig config = new SerializeConfig();
         config.setAsmEnable(false);

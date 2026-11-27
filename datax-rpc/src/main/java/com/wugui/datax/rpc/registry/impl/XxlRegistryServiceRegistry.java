@@ -9,7 +9,7 @@ import java.util.*;
 
 */
 /**
- * service registry for "xxl-registry v1.0.1"
+ * 基于 XXL Registry 1.0.1 的服务注册实现
  *
  * @author xuxueli 2018-11-30
  *//*
@@ -34,7 +34,7 @@ public class XxlRegistryServiceRegistry extends ServiceRegistry {
         String biz = param.get(BIZ);
         String env = param.get(ENV);
 
-        // fill
+        // 填充服务记录
         biz = (biz != null && biz.trim().length() > 0) ? biz : "default";
         env = (env != null && env.trim().length() > 0) ? env : "default";
 

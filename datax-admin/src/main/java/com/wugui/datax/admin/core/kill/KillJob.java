@@ -9,15 +9,17 @@ import com.wugui.datax.admin.core.trigger.JobTrigger;
 import java.util.Date;
 
 /**
- * datax-job trigger
- * Created by jingwk on 2019/12/15.
+ * DataX 任务触发处理
+ * 创建者：jingwk，时间：2019/12/15.
  */
 public class KillJob {
 
     /**
-     * @param logId
-     * @param address
-     * @param processId
+     * 触发任务
+     *
+     * @param logId 日志ID
+     * @param address 执行器地址
+     * @param processId 进程ID
      */
     public static ReturnT<String> trigger(long logId, Date triggerTime, String address, String processId) {
         ReturnT<String> triggerResult;

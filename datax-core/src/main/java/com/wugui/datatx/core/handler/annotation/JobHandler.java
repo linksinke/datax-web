@@ -3,7 +3,7 @@ package com.wugui.datatx.core.handler.annotation;
 import java.lang.annotation.*;
 
 /**
- * annotation for job handler
+ * 任务处理器注解
  * @author 2016-5-17 21:06:49
  */
 @Target({ElementType.TYPE})

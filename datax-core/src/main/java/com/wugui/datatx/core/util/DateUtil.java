@@ -12,13 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * date util
+ * 日期处理工具
  *
  * @author xuxueli 2018-08-19 01:24:11
  */
 public class DateUtil {
 
-    // ---------------------- format parse ----------------------
+    // 日期格式化与解析
     private static Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -47,7 +47,7 @@ public class DateUtil {
     }
 
     /**
-     * format datetime. like "yyyy-MM-dd"
+     * 格式化日期，例如 yyyy-MM-dd
      *
      * @param date
      * @return
@@ -58,7 +58,7 @@ public class DateUtil {
     }
 
     /**
-     * format date. like "yyyy-MM-dd HH:mm:ss"
+     * 格式化日期时间，例如 yyyy-MM-dd HH:mm:ss
      *
      * @param date
      * @return
@@ -69,7 +69,7 @@ public class DateUtil {
     }
 
     /**
-     * format date
+     * 格式化日期
      *
      * @param date
      * @param patten
@@ -81,7 +81,7 @@ public class DateUtil {
     }
 
     /**
-     * parse date string, like "yyyy-MM-dd HH:mm:s"
+     * 解析日期时间字符串
      *
      * @param dateString
      * @return
@@ -92,7 +92,7 @@ public class DateUtil {
     }
 
     /**
-     * parse datetime string, like "yyyy-MM-dd HH:mm:ss"
+     * 解析日期时间，例如 yyyy-MM-dd HH:mm:ss
      *
      * @param dateString
      * @return
@@ -103,7 +103,7 @@ public class DateUtil {
     }
 
     /**
-     * parse date
+     * 解析日期
      *
      * @param dateString
      * @param pattern
@@ -121,7 +121,7 @@ public class DateUtil {
     }
 
 
-    // ---------------------- add date ----------------------
+    // 日期偏移计算
 
     public static Date addYears(final Date date, final int amount) {
         return add(date, Calendar.YEAR, amount);

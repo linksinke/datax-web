@@ -12,7 +12,7 @@ import java.text.DecimalFormat;
 
 
 /**
- * os utils
+ * 操作系统资源工具
  */
 public class OSUtils {
 
@@ -28,8 +28,8 @@ public class OSUtils {
 
 
     /**
-     * get memory usage
-     * Keep 2 decimal
+     * 获取内存使用率
+     * 保留两位小数
      *
      * @return percent %
      */
@@ -43,11 +43,11 @@ public class OSUtils {
 
 
     /**
-     * get available physical memory size
+     * 获取可用物理内存大小
      * <p>
-     * Keep 2 decimal
+     * 保留两位小数
      *
-     * @return available Physical Memory Size, unit: G
+     * @return 可用物理内存，单位GB
      */
     public static double availablePhysicalMemorySize() {
         GlobalMemory memory = hal.getMemory();
@@ -60,11 +60,11 @@ public class OSUtils {
     }
 
     /**
-     * get total physical memory size
+     * 获取物理内存总量
      * <p>
-     * Keep 2 decimal
+     * 保留两位小数
      *
-     * @return available Physical Memory Size, unit: G
+     * @return 可用物理内存，单位GB
      */
     public static double totalMemorySize() {
         GlobalMemory memory = hal.getMemory();
@@ -77,9 +77,9 @@ public class OSUtils {
 
 
     /**
-     * load average
+     * 获取系统平均负载
      *
-     * @return load average
+     * @return 系统平均负载
      */
     public static double loadAverage() {
         double loadAverage = hal.getProcessor().getSystemLoadAverage();
@@ -91,9 +91,9 @@ public class OSUtils {
     }
 
     /**
-     * get cpu usage
+     * 获取处理器使用率
      *
-     * @return cpu usage
+     * @return 处理器使用率
      */
     public static double cpuUsage() {
         CentralProcessor processor = hal.getProcessor();
@@ -107,12 +107,12 @@ public class OSUtils {
 
 
     /**
-     * check memory and cpu usage
+     * 检查内存与处理器使用情况
      *
-     * @return check memory and cpu usage
+     * @return 内存与处理器是否超出使用阈值
      */
     public static Boolean checkResource(double systemCpuLoad, double systemReservedMemory) {
-        // judging usage
+        // 判断资源使用率是否超限
         double loadAverage = OSUtils.loadAverage();
         //
         double availablePhysicalMemorySize = OSUtils.availablePhysicalMemorySize();

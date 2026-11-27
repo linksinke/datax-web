@@ -6,14 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * i client
+ * RPC 客户端接口
  * @author xuxueli 2015-11-24 22:18:10
  */
 public abstract class Client {
 	protected static final Logger logger = LoggerFactory.getLogger(Client.class);
 
 
-	// ---------------------- init ----------------------
+	// 初始化
 
 	protected volatile XxlRpcReferenceBean xxlRpcReferenceBean;
 
@@ -22,10 +22,10 @@ public abstract class Client {
 	}
 
 
-    // ---------------------- send ----------------------
+    // 发送请求
 
 	/**
-	 * async send, bind requestId and future-response
+	 * 异步发送请求，并关联请求编号与等待结果
 	 *
 	 * @param address
 	 * @param xxlRpcRequest

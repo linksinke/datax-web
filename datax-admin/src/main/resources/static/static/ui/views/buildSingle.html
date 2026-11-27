@@ -1,4 +1,5 @@
 <section class="app-container ui-page ui-build">
+  <p class="ui-wizard-intro">依次配置读写连接与字段映射，再选择调度模板。创建后可在任务列表中配置执行计划。</p>
   <el-steps :active="active - 1" finish-status="success" align-center>
     <el-step title="选择源库" description="Reader">
     </el-step>
@@ -58,7 +59,7 @@
     <datax-json-code-editor v-model="configJson" :read-only="!!uiPending.save" @save="uiSaveBuiltTask" @format="uiFormatJson('configJson')">
     </datax-json-code-editor>
   </div>
-  <div class="ui-build-actions">
+  <div class="ui-build-actions ui-wizard-footer">
     <el-button v-if="active > 1" :disabled="uiPending.save || uiPending.build" @click="last">上一步</el-button>
     <el-button v-if="active < 4" type="primary" :loading="uiPending.build" @click="uiNext">{{ active === 3 ? '生成 JSON 并继续' : '下一步' }}</el-button>
     <el-button v-else type="primary" :loading="uiPending.save" :disabled="uiPending.build" @click="uiSaveBuiltTask">创建同步任务</el-button>

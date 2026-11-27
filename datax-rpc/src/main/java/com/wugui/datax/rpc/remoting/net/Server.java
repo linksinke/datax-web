@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * server
+ * RPC 服务端
  *
  * @author xuxueli 2015-11-24 20:59:49
  */
@@ -27,7 +27,7 @@ public abstract class Server {
 
 
 	/**
-	 * start server
+	 * 启动服务端
 	 *
 	 * @param xxlRpcProviderFactory
 	 * @throws Exception
@@ -35,7 +35,7 @@ public abstract class Server {
 	public abstract void start(final XxlRpcProviderFactory xxlRpcProviderFactory) throws Exception;
 
 	/**
-	 * callback when started
+	 * 服务启动完成回调
 	 */
 	public void onStarted() {
 		if (startedCallback != null) {
@@ -48,14 +48,14 @@ public abstract class Server {
 	}
 
 	/**
-	 * stop server
+	 * 停止服务端
 	 *
 	 * @throws Exception
 	 */
 	public abstract void stop() throws Exception;
 
 	/**
-	 * callback when stoped
+	 * 服务停止回调
 	 */
 	public void onStopped() {
 		if (stopedCallback != null) {

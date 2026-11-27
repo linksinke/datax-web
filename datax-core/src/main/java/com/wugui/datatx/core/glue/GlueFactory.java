@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * glue factory, product class/object by name
+ * 动态脚本工厂，按名称生成类和对象
  *
  * @author xuxueli 2016-1-2 20:02:27
  */
@@ -33,13 +33,13 @@ public class GlueFactory {
 
 
     /**
-     * groovy class loader
+     * Groovy 类加载器
      */
     private GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
     private ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * load new instance, prototype
+     * 每次创建新的处理器实例
      *
      * @param codeSource
      * @return
@@ -82,12 +82,12 @@ public class GlueFactory {
     }
 
     /**
-     * inject service of bean field
+     * 向对象字段注入服务
      *
      * @param instance
      */
     public void injectService(Object instance) {
-        // do something
+        // 预留扩展处理
     }
 
 }

@@ -5,19 +5,19 @@ import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datatx.core.biz.model.TriggerParam;
 
 /**
- * Created by xuxueli on 17/3/1.
+ * 创建者：xuxueli，时间：17/3/1.
  */
 public interface ExecutorBiz {
 
     /**
-     * beat
+     * 检测心跳
      *
      * @return
      */
     ReturnT<String> beat();
 
     /**
-     * idle beat
+     * 检测执行器空闲状态
      *
      * @param jobId
      * @return
@@ -25,7 +25,7 @@ public interface ExecutorBiz {
     ReturnT<String> idleBeat(int jobId);
 
     /**
-     * kill
+     * 终止任务
      *
      * @param jobId
      * @return
@@ -33,7 +33,7 @@ public interface ExecutorBiz {
     ReturnT<String> kill(int jobId);
 
     /**
-     * log
+     * 执行日志
      *
      * @param logDateTim
      * @param logId
@@ -43,7 +43,7 @@ public interface ExecutorBiz {
     ReturnT<LogResult> log(long logDateTim, long logId, int fromLineNum);
 
     /**
-     * run
+     * 运行任务
      *
      * @param triggerParam
      * @return

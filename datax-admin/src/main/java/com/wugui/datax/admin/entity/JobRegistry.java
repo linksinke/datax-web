@@ -9,11 +9,11 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * Created by xuxueli on 16/9/30.
+ * 创建者：xuxueli，时间：16/9/30.
  */
 @Data
 @TableName("job_registry")
-public class JobRegistry {
+public class JobRegistry extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private int id;

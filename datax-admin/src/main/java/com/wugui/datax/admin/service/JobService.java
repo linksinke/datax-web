@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * core job action for datax-web
+ * DataX Web 任务管理服务
  *
  * @author xuxueli 2016-5-28 15:30:33
  */
 public interface JobService extends IService<JobInfo> {
 
     /**
-     * page list
+     * 分页查询列表
      *
      * @param start
      * @param length
@@ -34,7 +34,7 @@ public interface JobService extends IService<JobInfo> {
     List<JobInfo> list();
 
     /**
-     * add job
+     * 新增任务
      *
      * @param jobInfo
      * @return
@@ -42,7 +42,7 @@ public interface JobService extends IService<JobInfo> {
     ReturnT<String> add(JobInfo jobInfo);
 
     /**
-     * update job
+     * 更新任务
      *
      * @param jobInfo
      * @return
@@ -50,7 +50,7 @@ public interface JobService extends IService<JobInfo> {
     ReturnT<String> update(JobInfo jobInfo);
 
     /**
-     * remove job
+     * 删除任务
      * *
      *
      * @param id
@@ -59,7 +59,7 @@ public interface JobService extends IService<JobInfo> {
     ReturnT<String> remove(int id);
 
     /**
-     * start job
+     * 启动任务调度
      *
      * @param id
      * @return
@@ -67,7 +67,7 @@ public interface JobService extends IService<JobInfo> {
     ReturnT<String> start(int id);
 
     /**
-     * stop job
+     * 停止任务调度
      *
      * @param id
      * @return
@@ -75,21 +75,21 @@ public interface JobService extends IService<JobInfo> {
     ReturnT<String> stop(int id);
 
     /**
-     * dashboard info
+     * 运行概览统计
      *
      * @return
      */
     Map<String, Object> dashboardInfo();
 
     /**
-     * chart info
+     * 运行趋势统计
      *
      * @return
      */
     ReturnT<Map<String, Object>> chartInfo();
 
     /**
-     * batch add
+     * 批量新增任务
      * @param dto
      * @return
      */

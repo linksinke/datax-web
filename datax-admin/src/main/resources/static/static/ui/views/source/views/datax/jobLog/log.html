@@ -1,0 +1,6 @@
+<div>
+    <div style="background-color: #304156; padding:10px 0; text-align:right;"><el-button type="primary" style="margin-right:20px;" @click="loadLog">刷新日志</el-button></div>
+    <div class="log-container">
+      <pre :loading="logLoading" v-text="logContent" />
+    </div>
+  </div>

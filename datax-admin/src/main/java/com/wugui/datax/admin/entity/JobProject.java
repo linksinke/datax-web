@@ -13,11 +13,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by jingwk on 2020/05/24
+ * 创建者：jingwk，时间：2020/05/24
  */
 @Data
 @TableName("job_project")
-public class JobProject {
+public class JobProject extends AuditFields {
 
     @ApiModelProperty("项目Id")
     @TableId(type = IdType.AUTO)
@@ -46,7 +46,7 @@ public class JobProject {
     private String userName;
 
     //************** 非数据库字段 **************/
-    /** Null on legacy update requests means keep existing bindings. */
+    /** 旧版修改请求未传绑定列表时，保留已有数据源绑定。 */
     @TableField(exist = false)
     private List<Long> datasourceIds;
 

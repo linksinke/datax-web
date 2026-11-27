@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -19,10 +20,11 @@ import java.util.Map;
 import static com.wugui.datatx.core.biz.model.ReturnT.FAIL_CODE;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @RestController
 @RequestMapping("/api/user")
+@PreAuthorize("hasRole('ADMIN')")
 @Api(tags = "用户信息接口")
 public class UserController {
 
@@ -39,11 +41,11 @@ public class UserController {
                                                  @RequestParam(required = false, defaultValue = "10") int size,
                                                  String username) {
 
-        // page list
+        // 分页查询列表
         List<JobUser> list = jobUserMapper.pageList((current - 1) * size, size, username);
         int recordsTotal = jobUserMapper.pageListCount((current - 1) * size, size, username);
 
-        // package result
+        // 组装分页结果
         Map<String, Object> maps = new HashMap<>();
         maps.put("recordsTotal", recordsTotal);        // 总记录数
         maps.put("recordsFiltered", recordsTotal);    // 过滤后的总记录数
@@ -55,7 +57,7 @@ public class UserController {
     @ApiOperation("用户列表")
     public ReturnT<List<JobUser>> list(String username) {
 
-        // page list
+        // 分页查询列表
         List<JobUser> list = jobUserMapper.findAll(username);
         return new ReturnT<>(list);
     }
@@ -70,7 +72,7 @@ public class UserController {
     @ApiOperation("添加用户")
     public ReturnT<String> add(@RequestBody JobUser jobUser) {
 
-        // valid username
+        // 校验用户名
         if (!StringUtils.hasText(jobUser.getUsername())) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_please_input") + I18nUtil.getString("user_username"));
         }
@@ -78,7 +80,7 @@ public class UserController {
         if (!(jobUser.getUsername().length() >= 4 && jobUser.getUsername().length() <= 20)) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_length_limit") + "[4-20]");
         }
-        // valid password
+        // 校验密码
         if (!StringUtils.hasText(jobUser.getPassword())) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_please_input") + I18nUtil.getString("user_password"));
         }
@@ -89,13 +91,13 @@ public class UserController {
         jobUser.setPassword(bCryptPasswordEncoder.encode(jobUser.getPassword()));
 
 
-        // check repeat
+        // 检查重复记录
         JobUser existUser = jobUserMapper.loadByUserName(jobUser.getUsername());
         if (existUser != null) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("user_username_repeat"));
         }
 
-        // write
+        // 写入结果
         jobUserMapper.insert(jobUser);
         return ReturnT.SUCCESS;
     }
@@ -116,7 +118,7 @@ public class UserController {
         } else {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_no_blank") + "密码");
         }
-        // write
+        // 写入结果
         jobUserMapper.updateById(jobUser);
         return ReturnT.SUCCESS;
     }
@@ -139,7 +141,7 @@ public class UserController {
         if (!(password.length() >= 4 && password.length() <= 20)) {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("system_length_limit") + "[4-20]");
         }
-        // do write
+        // 执行写入
         JobUser existUser = jobUserMapper.loadByUserName(jobUser.getUsername());
         existUser.setPassword(bCryptPasswordEncoder.encode(password));
         jobUserMapper.updateById(existUser);

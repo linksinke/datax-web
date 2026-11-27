@@ -8,7 +8,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.util.Map;
 
-/** Stable property order for generated templates, without changing values or array order. */
+/** 按固定属性顺序输出模板，保留字段值和数组顺序。 */
 public final class TemplateJsonLayout {
     private TemplateJsonLayout() {
     }
@@ -72,7 +72,7 @@ public final class TemplateJsonLayout {
         for (String name : names) {
             if (source.containsKey(name)) result.put(name, source.get(name));
         }
-        // Preserve additional plugin settings in their original order instead of discarding them.
+        // 保留插件扩展配置及其原有顺序。
         for (Map.Entry<String, Object> entry : source.entrySet()) {
             if (!result.containsKey(entry.getKey())) result.put(entry.getKey(), entry.getValue());
         }

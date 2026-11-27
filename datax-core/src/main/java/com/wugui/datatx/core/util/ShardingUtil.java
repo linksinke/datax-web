@@ -1,7 +1,7 @@
 package com.wugui.datatx.core.util;
 
 /**
- * sharding vo
+ * 任务分片信息
  *
  * @author xuxueli 2017-07-25 21:26:38
  */
@@ -11,8 +11,8 @@ public class ShardingUtil {
 
     public static class ShardingVO {
 
-        private int index;  // sharding index
-        private int total;  // sharding total
+        private int index;  // 分片序号
+        private int total;  // 分片总数
 
         public ShardingVO(int index, int total) {
             this.index = index;

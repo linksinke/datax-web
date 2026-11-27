@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Jackson util
+ * Jackson 序列化工具
  * 
- * 1、obj need private and set/get；
- * 2、do not support inner class；
+ * 对象属性应设为私有并提供访问方法
+ * 不支持非静态内部类
  * 
  * @author xuxueli 2015-9-25 18:02:56
  */
@@ -27,10 +27,10 @@ public class JacksonUtil {
     }
 
     /**
-     * bean、array、List、Map --> json
+     * 将对象、数组、列表和映射序列化为 JSON
      * 
      * @param obj
-     * @return json string
+     * @return JSON 格式文本
      * @throws Exception
      */
     public static String writeValueAsString(Object obj) {
@@ -47,7 +47,7 @@ public class JacksonUtil {
     }
 
     /**
-     * string --> bean、Map、List(array)
+     * 将 JSON 字符串解析为对象、映射或列表
      * 
      * @param jsonStr
      * @param clazz
@@ -68,7 +68,7 @@ public class JacksonUtil {
     }
 
 	/**
-	 * string --> List<Bean>...
+	 * 将 JSON 字符串解析为对象列表
 	 *
 	 * @param jsonStr
 	 * @param parametrized

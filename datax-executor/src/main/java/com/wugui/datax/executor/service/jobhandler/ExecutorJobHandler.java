@@ -1,7 +1,5 @@
 package com.wugui.datax.executor.service.jobhandler;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.IdUtil;
 import com.wugui.datatx.core.biz.model.HandleProcessCallbackParam;
 import com.wugui.datatx.core.biz.model.ReturnT;
 import com.wugui.datatx.core.biz.model.TriggerParam;
@@ -17,6 +15,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.FutureTask;
 
 import static com.wugui.datax.executor.service.command.BuildCommand.buildDataXExecutorCmd;
@@ -47,8 +50,14 @@ public class ExecutorJobHandler extends IJobHandler {
         Thread errThread = null;
         String tmpFilePath;
         LogStatistics logStatistics = null;
-        //Generate JSON temporary file
-        tmpFilePath = generateTemJsonFile(trigger.getJobJson());
+        // Do not launch DataX unless the job configuration was successfully written and closed.
+        try {
+            tmpFilePath = generateTemJsonFile(trigger.getJobJson(), SystemUtils.getDataXHomePath());
+        } catch (IOException | InvalidPathException e) {
+            JobLogger.log("JSON 临时文件写入失败：{}", e.getMessage());
+            JobLogger.log(e);
+            return new ReturnT<>(IJobHandler.FAIL.getCode(), "JSON 临时文件写入失败：" + e.getMessage());
+        }
 
         try {
             String[] cmdarrayFinal = buildDataXExecutorCmd(trigger, tmpFilePath,dataXPyPath);
@@ -86,8 +95,11 @@ public class ExecutorJobHandler extends IJobHandler {
                 errThread.interrupt();
             }
             //  删除临时文件
-            if (FileUtil.exist(tmpFilePath)) {
-                FileUtil.del(new File(tmpFilePath));
+            try {
+                Files.deleteIfExists(Paths.get(tmpFilePath));
+            } catch (IOException e) {
+                JobLogger.log("JSON 临时文件清理失败：{}", tmpFilePath);
+                JobLogger.log(e);
             }
         }
         if (exitValue == 0) {
@@ -99,23 +111,34 @@ public class ExecutorJobHandler extends IJobHandler {
 
 
 
-    private String generateTemJsonFile(String jobJson) {
-        String tmpFilePath;
-        String dataXHomePath = SystemUtils.getDataXHomePath();
-        if (StringUtils.isNotEmpty(dataXHomePath)) {
-            jsonPath = dataXHomePath + DEFAULT_JSON;
+    String generateTemJsonFile(String jobJson, String dataXHomePath) throws IOException {
+        if (StringUtils.isBlank(jobJson)) {
+            throw new IOException("任务 JSON 不能为空");
         }
-        if (!FileUtil.exist(jsonPath)) {
-            FileUtil.mkdir(jsonPath);
+        Path directory;
+        if (StringUtils.isNotBlank(dataXHomePath)) {
+            directory = Paths.get(dataXHomePath, DEFAULT_JSON);
+        } else {
+            if (StringUtils.isBlank(jsonPath)) {
+                throw new IOException("未配置 JSON 临时文件目录 datax.executor.jsonpath");
+            }
+            directory = Paths.get(jsonPath);
         }
-        tmpFilePath = jsonPath + "jobTmp-" + IdUtil.simpleUUID() + ".conf";
-        // 根据json写入到临时本地文件
-        try (PrintWriter writer = new PrintWriter(tmpFilePath, "UTF-8")) {
-            writer.println(jobJson);
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            JobLogger.log("JSON 临时文件写入异常：" + e.getMessage());
+        // Resolve once against the executor working directory for both mkdir and file writing.
+        directory = directory.toAbsolutePath().normalize();
+        Files.createDirectories(directory);
+        Path temporaryFile = Files.createTempFile(directory, "jobTmp-", ".conf");
+        try {
+            Files.write(temporaryFile, jobJson.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            try {
+                Files.deleteIfExists(temporaryFile);
+            } catch (IOException cleanupException) {
+                e.addSuppressed(cleanupException);
+            }
+            throw e;
         }
-        return tmpFilePath;
+        return temporaryFile.toString();
     }
 
 }

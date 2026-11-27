@@ -9,7 +9,7 @@ import java.io.StringWriter;
 public class ThrowableUtil {
 
     /**
-     * parse error to string
+     * 将异常堆栈转换为文本
      *
      * @param e
      * @return

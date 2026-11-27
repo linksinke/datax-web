@@ -6,7 +6,7 @@ import com.wugui.datatx.core.handler.IJobHandler;
 import com.wugui.datatx.core.log.JobLogger;
 
 /**
- * glue job handler
+ * 动态脚本任务处理器
  * @author xuxueli 2016-5-19 21:05:45
  */
 public class GlueJobHandler extends IJobHandler {

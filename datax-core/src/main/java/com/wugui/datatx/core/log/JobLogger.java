@@ -11,7 +11,7 @@ import java.io.StringWriter;
 import java.util.Date;
 
 /**
- * Created by xuxueli on 17/4/28.
+ * 创建者：xuxueli，时间：17/4/28.
  */
 public class JobLogger {
     private static Logger logger = LoggerFactory.getLogger("datax-web logger");
@@ -19,7 +19,7 @@ public class JobLogger {
 
 
     /**
-     * append log
+     * 追加日志
      *
      * @param call
      * @param appendLog
@@ -43,10 +43,10 @@ public class JobLogger {
     }
 
     /**
-     * append log with pattern
+     * 按占位符格式追加日志
      *
-     * @param appendLogPattern   like "aaa {} bbb {} ccc"
-     * @param appendLogArguments like "111, true"
+     * @param appendLogPattern 日志格式，例如 aaa {} bbb {} ccc
+     * @param appendLogArguments 填充到占位符的参数，例如 111、true
      */
     public static void log(String appendLogPattern, Object... appendLogArguments) {
 
@@ -63,7 +63,7 @@ public class JobLogger {
     }
 
     /**
-     * append exception stack
+     * 追加异常堆栈
      *
      * @param e
      */

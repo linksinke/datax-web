@@ -5,7 +5,7 @@ import com.wugui.datax.rpc.remoting.net.common.ConnectClient;
 import com.wugui.datax.rpc.remoting.net.params.XxlRpcRequest;
 
 /**
- * netty_http client
+ * 基于 Netty 的 HTTP 客户端
  *
  * @author xuxueli 2015-11-24 22:25:15
  */

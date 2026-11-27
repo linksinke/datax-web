@@ -13,10 +13,10 @@ import java.util.List;
 public interface AdminBiz {
 
 
-    // ---------------------- callback ----------------------
+    // 回调接口
 
     /**
-     * callback
+     * 回调处理
      *
      * @param callbackParamList
      * @return
@@ -24,17 +24,17 @@ public interface AdminBiz {
     ReturnT<String> callback(List<HandleCallbackParam> callbackParamList);
 
     /**
-     * processCallback
+     * 进程结果回调
      *
      * @param processCallbackParamList
      * @return
      */
     ReturnT<String> processCallback(List<HandleProcessCallbackParam> processCallbackParamList);
 
-    // ---------------------- registry ----------------------
+    // 注册接口
 
     /**
-     * registry
+     * 注册执行节点
      *
      * @param registryParam
      * @return
@@ -42,7 +42,7 @@ public interface AdminBiz {
     ReturnT<String> registry(RegistryParam registryParam);
 
     /**
-     * registry remove
+     * 注销执行节点
      *
      * @param registryParam
      * @return

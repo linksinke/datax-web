@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * netty rpc server
+ * Netty RPC 服务端
  *
  * @author xuxueli 2015-10-29 18:17:14
  */
@@ -37,7 +37,7 @@ public class NettyServer extends Server {
             @Override
             public void run() {
 
-                // param
+                // 整理调用参数
                 final ThreadPoolExecutor serverHandlerPool = ThreadPoolUtil.makeServerThreadPool(
                         NettyServer.class.getSimpleName(),
                         xxlRpcProviderFactory.getCorePoolSize(),
@@ -46,7 +46,7 @@ public class NettyServer extends Server {
                 EventLoopGroup workerGroup = new NioEventLoopGroup();
 
                 try {
-                    // start server
+                    // 启动服务端
                     ServerBootstrap bootstrap = new ServerBootstrap();
                     bootstrap.group(bossGroup, workerGroup)
                             .channel(NioServerSocketChannel.class)
@@ -54,7 +54,7 @@ public class NettyServer extends Server {
                                 @Override
                                 public void initChannel(SocketChannel channel) throws Exception {
                                     channel.pipeline()
-                                            .addLast(new IdleStateHandler(0,0, Beat.BEAT_INTERVAL*3, TimeUnit.SECONDS))     // beat 3N, close if idle
+                                            .addLast(new IdleStateHandler(0,0, Beat.BEAT_INTERVAL*3, TimeUnit.SECONDS))     // 连续三个心跳周期空闲时关闭连接
                                             .addLast(new NettyDecoder(XxlRpcRequest.class, xxlRpcProviderFactory.getSerializerInstance()))
                                             .addLast(new NettyEncoder(XxlRpcResponse.class, xxlRpcProviderFactory.getSerializerInstance()))
                                             .addLast(new NettyServerHandler(xxlRpcProviderFactory, serverHandlerPool));
@@ -63,13 +63,13 @@ public class NettyServer extends Server {
                             .childOption(ChannelOption.TCP_NODELAY, true)
                             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-                    // bind
+                    // 绑定监听端口
                     ChannelFuture future = bootstrap.bind(xxlRpcProviderFactory.getPort()).sync();
 
                     logger.info(">>>>>>>>>>> xxl-rpc remoting server start success, nettype = {}, port = {}", NettyServer.class.getName(), xxlRpcProviderFactory.getPort());
                     onStarted();
 
-                    // wait util stop
+                    // 等待服务停止
                     future.channel().closeFuture().sync();
 
                 } catch (Exception e) {
@@ -80,9 +80,9 @@ public class NettyServer extends Server {
                     }
                 } finally {
 
-                    // stop
+                    // 停止运行
                     try {
-                        serverHandlerPool.shutdown();    // shutdownNow
+                        serverHandlerPool.shutdown();    // 立即关闭线程池
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
@@ -104,12 +104,12 @@ public class NettyServer extends Server {
     @Override
     public void stop() throws Exception {
 
-        // destroy server thread
+        // 关闭服务线程
         if (thread != null && thread.isAlive()) {
             thread.interrupt();
         }
 
-        // on stop
+        // 服务停止回调
         onStopped();
         logger.info(">>>>>>>>>>> xxl-rpc remoting server destroy success.");
     }

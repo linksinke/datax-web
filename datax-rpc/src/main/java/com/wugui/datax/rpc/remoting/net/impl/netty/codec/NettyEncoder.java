@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
- * encoder
+ * 消息编码器
  *
  * @author xuxueli 2015-10-29 19:43:00
  */

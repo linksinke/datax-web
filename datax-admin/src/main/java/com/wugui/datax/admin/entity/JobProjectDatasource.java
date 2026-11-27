@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @TableName("job_project_datasource")
-public class JobProjectDatasource {
+public class JobProjectDatasource extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private Long id;

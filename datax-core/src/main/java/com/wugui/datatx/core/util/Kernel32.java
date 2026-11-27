@@ -4,7 +4,7 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 /**
- * Kernel32
+ * Windows 内核接口
  *
  * @author jingwk
  * @version 1.0

@@ -12,7 +12,7 @@ import org.springframework.context.ApplicationContextAware;
 import java.util.Map;
 
 /**
- * xxl-rpc provider (for spring)
+ * Spring 环境下的 RPC 服务提供方
  *
  * @author xuxueli 2018-10-18 18:09:20
  */
@@ -24,11 +24,11 @@ public class XxlRpcSpringProviderFactory extends XxlRpcProviderFactory implement
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(XxlRpcService.class);
         if (serviceBeanMap!=null && serviceBeanMap.size()>0) {
             for (Object serviceBean : serviceBeanMap.values()) {
-                // valid
+                // 参数校验
                 if (serviceBean.getClass().getInterfaces().length ==0) {
                     throw new XxlRpcException("xxl-rpc, service(XxlRpcService) must inherit interface.");
                 }
-                // add service
+                // 注册服务实现
                 XxlRpcService xxlRpcService = serviceBean.getClass().getAnnotation(XxlRpcService.class);
 
                 String iface = serviceBean.getClass().getInterfaces()[0].getName();
@@ -38,7 +38,7 @@ public class XxlRpcSpringProviderFactory extends XxlRpcProviderFactory implement
             }
         }
 
-        // TODO，addServices by api + prop
+        // 待完善：支持通过编程接口及属性注册服务
 
     }
 

@@ -5,7 +5,7 @@ import com.wugui.datax.admin.entity.JobDatasource;
 import java.sql.SQLException;
 
 /**
- * hive
+ * Hive 结构查询
  *
  * @author wenkaijing
  * @version 2.0

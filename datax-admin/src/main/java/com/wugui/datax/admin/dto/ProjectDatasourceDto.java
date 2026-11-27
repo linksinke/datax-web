@@ -2,7 +2,7 @@ package com.wugui.datax.admin.dto;
 
 import lombok.Data;
 
-/** Connection summary only; project APIs must never return database credentials. */
+/** 仅返回连接摘要，项目接口不得返回数据库凭据。 */
 @Data
 public class ProjectDatasourceDto {
     private Integer projectId;

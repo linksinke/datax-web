@@ -20,7 +20,7 @@ public class SpringGlueFactory extends GlueFactory {
 
 
     /**
-     * inject action of spring
+     * 使用 Spring 容器完成依赖注入
      * @param instance
      */
     @Override
@@ -40,7 +40,7 @@ public class SpringGlueFactory extends GlueFactory {
             }
 
             Object fieldBean = null;
-            // with bean-id, bean could be found by both @Resource and @Autowired, or bean could only be found by @Autowired
+            // 优先按名称查找 Bean，找不到时按字段类型注入
 
             if (AnnotationUtils.getAnnotation(field, Resource.class) != null) {
                 try {

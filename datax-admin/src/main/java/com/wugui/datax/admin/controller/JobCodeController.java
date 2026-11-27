@@ -19,7 +19,7 @@ import java.util.Date;
 import static com.wugui.datatx.core.biz.model.ReturnT.FAIL_CODE;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @RestController
 @RequestMapping("/jobcode")
@@ -35,7 +35,7 @@ public class JobCodeController {
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ApiOperation("保存任务状态")
     public ReturnT<String> save(Model model, int id, String glueSource, String glueRemark) {
-        // valid
+        // 参数校验
         if (glueRemark == null) {
             return new ReturnT<>(FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_glue_remark")));
         }
@@ -47,7 +47,7 @@ public class JobCodeController {
             return new ReturnT<>(FAIL_CODE, I18nUtil.getString("jobinfo_glue_jobid_invalid"));
         }
 
-        // update new code
+        // 更新脚本代码
         existsJobInfo.setGlueSource(glueSource);
         existsJobInfo.setGlueRemark(glueRemark);
         existsJobInfo.setGlueUpdatetime(new Date());
@@ -55,7 +55,7 @@ public class JobCodeController {
         existsJobInfo.setUpdateTime(new Date());
         jobInfoMapper.updateById(existsJobInfo);
 
-        // log old code
+        // 保存旧脚本版本
         JobLogGlue jobLogGlue = new JobLogGlue();
         jobLogGlue.setJobId(existsJobInfo.getId());
         jobLogGlue.setGlueType(existsJobInfo.getGlueType());
@@ -66,7 +66,7 @@ public class JobCodeController {
         jobLogGlue.setUpdateTime(new Date());
         jobLogGlueMapper.insert(jobLogGlue);
 
-        // remove code backup more than 30
+        // 最多保留30个脚本备份
         jobLogGlueMapper.removeOld(existsJobInfo.getId(), 30);
 
         return ReturnT.SUCCESS;

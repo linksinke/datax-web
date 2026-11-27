@@ -25,22 +25,22 @@ public class JobScheduler {
 
 
     public void init() throws Exception {
-        // init i18n
+        // 初始化国际化资源
         initI18n();
 
-        // admin registry monitor run
+        // 启动执行器注册监控
         JobRegistryMonitorHelper.getInstance().start();
 
-        // admin monitor run
+        // 启动任务失败监控
         JobFailMonitorHelper.getInstance().start();
 
-        // admin trigger pool start
+        // 启动调度触发线程池
         JobTriggerPoolHelper.toStart();
 
-        // admin log report start
+        // 启动日志报表线程
         JobLogReportHelper.getInstance().start();
 
-        // start-schedule
+        // 启动任务调度
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init datax-web admin success.");
@@ -49,19 +49,19 @@ public class JobScheduler {
 
     public void destroy() throws Exception {
 
-        // stop-schedule
+        // 停止任务调度
         JobScheduleHelper.getInstance().toStop();
 
-        // admin log report stop
+        // 停止日志报表线程
         JobLogReportHelper.getInstance().toStop();
 
-        // admin trigger pool stop
+        // 停止调度触发线程池
         JobTriggerPoolHelper.toStop();
 
-        // admin monitor stop
+        // 停止失败监控
         JobFailMonitorHelper.getInstance().toStop();
 
-        // admin registry stop
+        // 停止注册监控
         JobRegistryMonitorHelper.getInstance().toStop();
 
     }
@@ -74,23 +74,23 @@ public class JobScheduler {
         }
     }
 
-    // ---------------------- executor-client ----------------------
+    // 执行器客户端
     private static ConcurrentMap<String, ExecutorBiz> executorBizRepository = new ConcurrentHashMap<>();
 
     public static ExecutorBiz getExecutorBiz(String address) throws Exception {
-        // valid
+        // 参数校验
         if (address == null || address.trim().length() == 0) {
             return null;
         }
 
-        // load-cache
+        // 读取客户端缓存
         address = address.trim();
         ExecutorBiz executorBiz = executorBizRepository.get(address);
         if (executorBiz != null) {
             return executorBiz;
         }
 
-        // set-cache
+        // 更新客户端缓存
         XxlRpcReferenceBean referenceBean = new XxlRpcReferenceBean();
         referenceBean.setClient(NettyHttpClient.class);
         referenceBean.setSerializer(HessianSerializer.class);

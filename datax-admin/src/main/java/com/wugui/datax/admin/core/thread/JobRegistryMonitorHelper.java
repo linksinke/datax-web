@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * job registry instance
+ * 执行器注册监控实例
  * @author xuxueli 2016-10-02 19:10:24
  */
 public class JobRegistryMonitorHelper {
@@ -28,17 +28,17 @@ public class JobRegistryMonitorHelper {
 		registryThread = new Thread(() -> {
 			while (!toStop) {
 				try {
-					// auto registry group
+					// 自动注册的执行器分组
 					List<JobGroup> groupList = JobAdminConfig.getAdminConfig().getJobGroupMapper().findByAddressType(0);
 					if (groupList!=null && !groupList.isEmpty()) {
 
-						// remove dead address (admin/executor)
+						// 移除管理端和执行器失效地址
 						List<Integer> ids = JobAdminConfig.getAdminConfig().getJobRegistryMapper().findDead(RegistryConfig.DEAD_TIMEOUT, new Date());
 						if (ids!=null && ids.size()>0) {
 							JobAdminConfig.getAdminConfig().getJobRegistryMapper().removeDead(ids);
 						}
 
-						// fresh online address (admin/executor)
+						// 刷新管理端和执行器在线地址
 						HashMap<String, List<String>> appAddressMap = new HashMap<>();
 						List<JobRegistry> list = JobAdminConfig.getAdminConfig().getJobRegistryMapper().findAll(RegistryConfig.DEAD_TIMEOUT, new Date());
 						if (list != null) {
@@ -58,7 +58,7 @@ public class JobRegistryMonitorHelper {
 							}
 						}
 
-						// fresh group address
+						// 刷新执行器分组地址
 						for (JobGroup group: groupList) {
 							List<String> registryList = appAddressMap.get(group.getAppName());
 							String addressListStr = null;
@@ -96,7 +96,7 @@ public class JobRegistryMonitorHelper {
 
 	public void toStop(){
 		toStop = true;
-		// interrupt and wait
+		// 发送中断信号并等待线程退出
 		registryThread.interrupt();
 		try {
 			registryThread.join();

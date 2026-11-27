@@ -1,13 +1,13 @@
 package com.wugui.datatx.core.enums;
 
 /**
- * increment type
+ * 增量同步类型
  */
 public enum IncrementTypeEnum {
     /**
-     * 2 TIME
+     * 按时间增量
      * 1 ID
-     * 3 PARTITION
+     * 按分区增量
      */
     TIME(2, "时间"),
     ID(1, "自增主键"),

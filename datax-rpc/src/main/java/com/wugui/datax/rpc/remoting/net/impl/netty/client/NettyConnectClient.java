@@ -22,7 +22,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import java.util.concurrent.TimeUnit;
 
 /**
- * netty pooled client
+ * 池化 Netty 连接客户端
  *
  * @author xuxueli
  */
@@ -50,7 +50,7 @@ public class NettyConnectClient extends ConnectClient {
                     @Override
                     public void initChannel(SocketChannel channel) throws Exception {
                         channel.pipeline()
-                                .addLast(new IdleStateHandler(0,0, Beat.BEAT_INTERVAL, TimeUnit.SECONDS))    // beat N, close if fail
+                                .addLast(new IdleStateHandler(0,0, Beat.BEAT_INTERVAL, TimeUnit.SECONDS))    // 发送周期心跳，失败时关闭连接
                                 .addLast(new NettyEncoder(XxlRpcRequest.class, serializer))
                                 .addLast(new NettyDecoder(XxlRpcResponse.class, serializer))
                                 .addLast(new NettyClientHandler(xxlRpcInvokerFactory, thisClient));
@@ -61,7 +61,7 @@ public class NettyConnectClient extends ConnectClient {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
         this.channel = bootstrap.connect(host, port).sync().channel();
 
-        // valid
+        // 参数校验
         if (!isValidate()) {
             close();
             return;

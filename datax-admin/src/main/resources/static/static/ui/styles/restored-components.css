@@ -1,0 +1,186 @@
+/* Cron 复选框间距仅作用于 Cron 组件。 */
+.cron .el-checkbox + .el-checkbox { margin-left: 10px; }
+
+/* components/Cron/index */
+.cron {
+  text-align: left;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.12), 0 0 6px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* components/Pagination/index */
+
+.pagination-container[data-source-5d78516a] {
+  background: #fff;
+  padding: 32px 16px;
+}
+.pagination-container.hidden[data-source-5d78516a] {
+  display: none;
+}
+
+/* components/JsonEditor/index */
+
+.json-editor[data-source-2cd181f2] {
+  height: 100%;
+  position: relative;
+}
+.json-editor[data-source-2cd181f2] .CodeMirror {
+  height: auto;
+  min-height: 300px;
+}
+.json-editor[data-source-2cd181f2] .CodeMirror-scroll {
+  min-height: 300px;
+}
+.json-editor[data-source-2cd181f2] .cm-s-rubyblue span.cm-string {
+  color: #F08047;
+}
+
+/* components/ShellEditor/index */
+
+.shell-editor[data-source-a6504f7d] {
+  height: 100%;
+  position: relative;
+}
+.shell-editor[data-source-a6504f7d] .CodeMirror {
+  height: auto;
+  min-height: 300px;
+}
+.shell-editor[data-source-a6504f7d] .CodeMirror-scroll {
+  min-height: 300px;
+}
+.shell-editor[data-source-a6504f7d] .cm-s-rubyblue span.cm-string {
+  color: #F08047;
+}
+
+/* components/PythonEditor/index */
+
+.python-editor[data-source-39495f39] {
+  height: 100%;
+  position: relative;
+}
+.python-editor[data-source-39495f39] .CodeMirror {
+  height: auto;
+  min-height: 300px;
+}
+.python-editor[data-source-39495f39] .CodeMirror-scroll {
+  min-height: 300px;
+}
+.python-editor[data-source-39495f39] .cm-s-rubyblue span.cm-string {
+  color: #F08047;
+}
+
+/* components/PowershellEditor/index */
+
+.powershell-editor[data-source-14e97238] {
+  height: 100%;
+  position: relative;
+}
+.powershell-editor[data-source-14e97238] .CodeMirror {
+  height: auto;
+  min-height: 300px;
+}
+.powershell-editor[data-source-14e97238] .CodeMirror-scroll {
+  min-height: 300px;
+}
+.powershell-editor[data-source-14e97238] .cm-s-rubyblue span.cm-string {
+  color: #F08047;
+}
+
+/* components/Hamburger/index */
+
+.hamburger[data-source-bf31b547] {
+  display: inline-block;
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+}
+.hamburger.is-active[data-source-bf31b547] {
+  transform: rotate(180deg);
+}
+
+/* layout/components/Sidebar/Logo */
+
+.sidebar-logo-container[data-source-b2b40dd1] {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  background: #2b2f3a;
+  text-align: center;
+  overflow: hidden;
+}
+.sidebar-logo-container .sidebar-logo-link[data-source-b2b40dd1] {
+  height: 100%;
+  width: 100%;
+}
+.sidebar-logo-container .sidebar-logo-link .sidebar-logo[data-source-b2b40dd1] {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+  margin-right: 12px;
+}
+.sidebar-logo-container .sidebar-logo-link .sidebar-title[data-source-b2b40dd1] {
+  display: inline-block;
+  margin: 0;
+  color: #fff;
+  font-weight: 600;
+  line-height: 50px;
+  font-size: 14px;
+  font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+  vertical-align: middle;
+}
+.sidebar-logo-container.collapse .sidebar-logo[data-source-b2b40dd1] {
+  margin-right: 0px;
+}
+
+/* layout/components/TagsView/ScrollPane */
+
+.scroll-container[data-source-0d2f32af] {
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+.scroll-container[data-source-0d2f32af] .el-scrollbar__bar {
+  bottom: 0px;
+}
+.scroll-container[data-source-0d2f32af] .el-scrollbar__wrap {
+  height: 70px;
+}
+
+/* components/SvgIcon/index */
+
+.svg-icon[data-source-86be2817] {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+.svg-external-icon[data-source-86be2817] {
+  background-color: currentColor;
+  mask-size: cover !important;
+  display: inline-block;
+}
+
+/* views/datax/jobLog/log */
+
+.log-container[data-source-5098ef3f] {
+  background: #f5f5f5;
+  height: 500px;
+  overflow: scroll;
+  margin: 20px;
+  border: 1px solid #ddd;
+}
+.log-container pre[data-source-5098ef3f] {
+  display: block;
+  padding: 10px;
+  margin: 0 0 10.5px;
+  word-break: break-all;
+  word-wrap: break-word;
+  color: #334851;
+  background-color: #f5f5f5;
+  border-radius: 1px;
+}

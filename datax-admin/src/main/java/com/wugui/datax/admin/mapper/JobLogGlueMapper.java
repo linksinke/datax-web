@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * job log for glue
+ * 脚本版本日志
  *
  * @author xuxueli 2016-5-19 18:04:56
  */

@@ -5,7 +5,7 @@ import com.wugui.datax.admin.entity.JobDatasource;
 import java.sql.SQLException;
 
 /**
- * TODO
+ * 待完善
  *
  * @author zhouhongfa@gz-yibo.com
  * @ClassName PostgresqlQueryTool

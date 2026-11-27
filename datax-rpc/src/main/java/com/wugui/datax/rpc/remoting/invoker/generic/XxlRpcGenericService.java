@@ -6,12 +6,12 @@ package com.wugui.datax.rpc.remoting.invoker.generic;
 public interface XxlRpcGenericService {
 
     /**
-     * generic invoke
+     * 泛化调用接口
      *
-     * @param iface          iface name
-     * @param version        iface version
-     * @param method         method name
-     * @param parameterTypes parameter types, limit base type like "int、java.lang.Integer、java.util.List、java.util.Map ..."
+     * @param iface 服务接口全名
+     * @param version 服务接口版本
+     * @param method 服务方法名称
+     * @param parameterTypes 参数类型名称，使用基础类型或完整类名
      * @param args
      * @return
      */

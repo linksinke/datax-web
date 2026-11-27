@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class ConnectClient {
     protected static transient Logger logger = LoggerFactory.getLogger(ConnectClient.class);
 
-    // ---------------------- iface ----------------------
+    // 连接接口
 
     public abstract void init(String address, final Serializer serializer, final XxlRpcInvokerFactory xxlRpcInvokerFactory) throws Exception;
 
@@ -28,20 +28,20 @@ public abstract class ConnectClient {
     public abstract void send(XxlRpcRequest xxlRpcRequest) throws Exception;
 
 
-    // ---------------------- client pool map ----------------------
+    // 客户端连接池
 
     /**
-     * async send
+     * 异步发送请求
      */
     public static void asyncSend(XxlRpcRequest xxlRpcRequest, String address,
                                  Class<? extends ConnectClient> connectClientImpl,
                                  final XxlRpcReferenceBean xxlRpcReferenceBean) throws Exception {
 
-        // client pool	[tips03 : may save 35ms/100invoke if move it to constructor, but it is necessary. cause by ConcurrentHashMap.get]
+        // 按地址缓存连接客户端
         ConnectClient clientPool = ConnectClient.getPool(address, connectClientImpl, xxlRpcReferenceBean);
 
         try {
-            // do invoke
+            // 发起远程调用
             clientPool.send(xxlRpcRequest);
         } catch (Exception e) {
             throw e;
@@ -49,19 +49,19 @@ public abstract class ConnectClient {
 
     }
 
-    private static volatile ConcurrentMap<String, ConnectClient> connectClientMap;        // (static) alread addStopCallBack
+    private static volatile ConcurrentMap<String, ConnectClient> connectClientMap;        // 静态容器中已登记停止回调
     private static volatile ConcurrentMap<String, Object> connectClientLockMap = new ConcurrentHashMap<>();
 
     private static ConnectClient getPool(String address, Class<? extends ConnectClient> connectClientImpl,
                                          final XxlRpcReferenceBean xxlRpcReferenceBean) throws Exception {
 
-        // init base compont, avoid repeat init
+        // 初始化基础组件，避免重复启动
         if (connectClientMap == null) {
             synchronized (ConnectClient.class) {
                 if (connectClientMap == null) {
-                    // init
+                    // 初始化
                     connectClientMap = new ConcurrentHashMap<String, ConnectClient>();
-                    // stop callback
+                    // 停止回调线程
                     xxlRpcReferenceBean.getInvokerFactory().addStopCallBack(new BaseCallback() {
                         @Override
                         public void run() throws Exception {
@@ -78,35 +78,35 @@ public abstract class ConnectClient {
             }
         }
 
-        // get-valid client
+        // 获取有效客户端连接
         ConnectClient connectClient = connectClientMap.get(address);
         if (connectClient != null && connectClient.isValidate()) {
             return connectClient;
         }
 
-        // lock
+        // 同步锁
         Object clientLock = connectClientLockMap.get(address);
         if (clientLock == null) {
             connectClientLockMap.putIfAbsent(address, new Object());
             clientLock = connectClientLockMap.get(address);
         }
 
-        // remove-create new client
+        // 移除失效客户端并重新创建
         synchronized (clientLock) {
 
-            // get-valid client, avlid repeat
+            // 加锁后再次检查有效客户端
             connectClient = connectClientMap.get(address);
             if (connectClient != null && connectClient.isValidate()) {
                 return connectClient;
             }
 
-            // remove old
+            // 移除旧记录
             if (connectClient != null) {
                 connectClient.close();
                 connectClientMap.remove(address);
             }
 
-            // set pool
+            // 更新客户端连接池
             ConnectClient connectClient_new = connectClientImpl.newInstance();
             try {
                 connectClient_new.init(address, xxlRpcReferenceBean.getSerializerInstance(), xxlRpcReferenceBean.getInvokerFactory());

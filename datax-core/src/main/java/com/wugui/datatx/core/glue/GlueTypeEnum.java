@@ -1,7 +1,7 @@
 package com.wugui.datatx.core.glue;
 
 /**
- * Created by xuxueli on 17/4/26.
+ * 创建者：xuxueli，时间：17/4/26.
  */
 public enum GlueTypeEnum {
 

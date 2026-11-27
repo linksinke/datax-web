@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @RestController
 @RequestMapping("/api/jobGroup")
@@ -44,7 +44,7 @@ public class JobGroupController {
     @PostMapping("/save")
     @ApiOperation("新建执行器")
     public ReturnT<String> save(@RequestBody JobGroup jobGroup) {
-        // valid
+        // 参数校验
         if (jobGroup.getAppName() == null || jobGroup.getAppName().trim().length() == 0) {
             return new ReturnT<String>(500, (I18nUtil.getString("system_please_input") + "AppName"));
         }
@@ -73,7 +73,7 @@ public class JobGroupController {
     @ApiOperation("更新执行器")
     @PostMapping("/update")
     public ReturnT<String> update(@RequestBody JobGroup jobGroup) {
-        // valid
+        // 参数校验
         if (jobGroup.getAppName() == null || jobGroup.getAppName().trim().length() == 0) {
             return new ReturnT<String>(500, (I18nUtil.getString("system_please_input") + "AppName"));
         }
@@ -138,7 +138,7 @@ public class JobGroupController {
     @PostMapping("/remove")
     @ApiOperation("移除执行器")
     public ReturnT<String> remove(int id) {
-        // valid
+        // 参数校验
         int count = jobInfoMapper.pageListCount(0, 10, id, -1, null, null, 0, null);
         if (count > 0) {
             return new ReturnT<>(500, I18nUtil.getString("jobgroup_del_limit_0"));

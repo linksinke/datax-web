@@ -2,7 +2,7 @@ package com.wugui.datax.admin.util;
 
 
 /**
- * JdbcConstants
+ * JDBC 数据库类型常量
  *
  * @author jingwk
  * @ClassName JdbcConstants
@@ -87,7 +87,7 @@ public interface JdbcConstants {
     String TERADATA_DRIVER            = "com.teradata.jdbc.TeraDriver";
 
     /**
-     * Log4JDBC
+     * JDBC 日志代理驱动
      */
     String LOG4JDBC                   = "log4jdbc";
     String LOG4JDBC_DRIVER            = "net.sf.log4jdbc.DriverSpy";
@@ -117,7 +117,7 @@ public interface JdbcConstants {
     String CLICKHOUSE                 = "clickhouse";
     String CLICKHOUSE_DRIVER          = "ru.yandex.clickhouse.ClickHouseDriver";
 
-    // for HBase2.X and Phoenix5.X
+    // 适配 HBase 2.X 与 Phoenix 5.X
     String HBASE20XSQL = "hbase20xsql";
     String HBASE20XSQL_DRIVER = "org.apache.phoenix.jdbc.PhoenixDriver";
 

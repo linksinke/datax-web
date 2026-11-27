@@ -80,36 +80,36 @@ public class DataxJsonHelper implements DataxJsonInterface {
      */
     private BaseDataxPlugin writerPlugin;
     /**
-     * hive reader
+     * Hive 读取配置
      */
     private HiveReaderDto hiveReaderDto;
     /**
-     * hive writer
+     * Hive 写入配置
      */
     private HiveWriterDto hiveWriterDto;
     /**
-     * hbase reader
+     * HBase 读取配置
      */
     private HbaseReaderDto hbaseReaderDto;
     /**
-     * hbase writer
+     * HBase 写入配置
      */
     private HbaseWriterDto hbaseWriterDto;
     /**
-     * rdbms reader
+     * 关系型数据库读取配置
      */
     private RdbmsReaderDto rdbmsReaderDto;
     /**
-     * rdbms writer
+     * 关系型数据库写入配置
      */
     private RdbmsWriterDto rdbmsWriterDto;
 
     /**
-     * mongodb reader
+     * MongoDB 读取配置
      */
     private MongoDBReaderDto mongoDBReaderDto;
     /**
-     * mongodb writer
+     * MongoDB 写入配置
      */
     private MongoDBWriterDto mongoDBWriterDto;
 
@@ -170,7 +170,7 @@ public class DataxJsonHelper implements DataxJsonInterface {
         this.rdbmsWriterDto = dataxJsonDto.getRdbmsWriter();
         this.hbaseWriterDto = dataxJsonDto.getHbaseWriter();
         this.mongoDBWriterDto = dataxJsonDto.getMongoDBWriter();
-        // writer
+        // 写入端配置
         String datasource = readerDatasource.getDatasource();
         this.writerColumns = convertKeywordsColumns(datasource, this.writerColumns);
         if (MYSQL.equals(datasource)) {
@@ -294,7 +294,7 @@ public class DataxJsonHelper implements DataxJsonInterface {
         if (StringUtils.isNotBlank(rdbmsReaderDto.getQuerySql())) {
             dataxPluginPojo.setQuerySql(rdbmsReaderDto.getQuerySql());
         }
-        //where
+        //读取过滤条件
         if (StringUtils.isNotBlank(rdbmsReaderDto.getWhereParams())) {
             dataxPluginPojo.setWhereParam(rdbmsReaderDto.getWhereParams());
         }

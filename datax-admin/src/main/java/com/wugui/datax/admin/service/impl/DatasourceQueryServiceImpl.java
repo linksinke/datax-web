@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**
- * datasource query
+ * 数据源结构查询
  *
  * @author zhouhongfa@gz-yibo.com
  * @ClassName JdbcDatasourceQueryServiceImpl

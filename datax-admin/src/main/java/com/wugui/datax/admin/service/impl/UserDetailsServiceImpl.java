@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
- * UserDetailsServiceImpl
+ * 登录用户信息加载服务
  * @author jingwk
  * @since 2019-03-15
  * @version v2.1.1

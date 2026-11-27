@@ -1,7 +1,7 @@
 package com.wugui.datax.rpc.remoting.net.params;
 
 /**
- * beat for keep-alive
+ * 连接保活心跳
  *
  * @author xuxueli 2019-09-27
  */

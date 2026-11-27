@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
- * netty server handler
+ * Netty 服务端请求处理器
  *
  * @author xuxueli 2015-10-29 20:07:37
  */
@@ -34,25 +34,25 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<XxlRpcReques
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final XxlRpcRequest xxlRpcRequest) throws Exception {
 
-        // filter beat
+        // 过滤心跳消息
         if (Beat.BEAT_ID.equalsIgnoreCase(xxlRpcRequest.getRequestId())){
             logger.debug(">>>>>>>>>>> xxl-rpc provider netty server read beat-ping.");
             return;
         }
 
-        // do invoke
+        // 发起远程调用
         try {
             serverHandlerPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    // invoke + response
+                    // 调用服务并返回响应
                     XxlRpcResponse xxlRpcResponse = xxlRpcProviderFactory.invokeService(xxlRpcRequest);
 
                     ctx.writeAndFlush(xxlRpcResponse);
                 }
             });
         } catch (Exception e) {
-            // catch error
+            // 捕获并处理异常
             XxlRpcResponse xxlRpcResponse = new XxlRpcResponse();
             xxlRpcResponse.setRequestId(xxlRpcRequest.getRequestId());
             xxlRpcResponse.setErrorMsg(ThrowableUtil.toString(e));
@@ -71,7 +71,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<XxlRpcReques
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent){
-            ctx.channel().close();      // beat 3N, close if idle
+            ctx.channel().close();      // 连续三个心跳周期空闲时关闭连接
             logger.debug(">>>>>>>>>>> xxl-rpc provider netty server close an idle channel.");
         } else {
             super.userEventTriggered(ctx, evt);

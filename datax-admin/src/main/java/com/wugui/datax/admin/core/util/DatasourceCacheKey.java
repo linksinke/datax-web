@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/** Connection caches must distinguish databases, credentials and datasource types, not display names. */
+/** 连接缓存键包含数据库、凭据和数据源类型，避免同名连接串用。 */
 public final class DatasourceCacheKey {
     private DatasourceCacheKey() {
     }

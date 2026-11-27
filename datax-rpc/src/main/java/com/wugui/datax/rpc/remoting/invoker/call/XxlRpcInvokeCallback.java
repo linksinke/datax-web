@@ -11,12 +11,12 @@ public abstract class XxlRpcInvokeCallback<T> {
     public abstract void onFailure(Throwable exception);
 
 
-    // ---------------------- thread invoke callback ----------------------
+    // 线程级回调上下文
 
     private static ThreadLocal<XxlRpcInvokeCallback> threadInvokerFuture = new ThreadLocal<XxlRpcInvokeCallback>();
 
     /**
-     * get callback
+     * 获取调用回调
      *
      * @return
      */
@@ -27,7 +27,7 @@ public abstract class XxlRpcInvokeCallback<T> {
     }
 
     /**
-     * set future
+     * 设置异步调用结果
      *
      * @param invokeCallback
      */
@@ -36,7 +36,7 @@ public abstract class XxlRpcInvokeCallback<T> {
     }
 
     /**
-     * remove future
+     * 清理异步调用结果
      */
     public static void removeCallback() {
         threadInvokerFuture.remove();

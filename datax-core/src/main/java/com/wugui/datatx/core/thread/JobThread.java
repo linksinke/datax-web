@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 
 /**
- * handler thread
+ * 任务处理线程
  *
  * @author xuxueli 2016-1-16 19:52:47
  */
@@ -34,13 +34,13 @@ public class JobThread extends Thread {
     private int jobId;
     private IJobHandler handler;
     private LinkedBlockingQueue<TriggerParam> triggerQueue;
-    private Set<Long> triggerLogIdSet;        // avoid repeat trigger for the same TRIGGER_LOG_ID
+    private Set<Long> triggerLogIdSet;        // 防止同一触发日志编号重复入队
 
     private volatile boolean toStop = false;
     private String stopReason;
 
     private boolean running = false;    // if running job
-    private int idleTimes = 0;            // idel times
+    private int idleTimes = 0;            // 连续空闲次数
 
 
     public JobThread(int jobId, IJobHandler handler) {
@@ -55,13 +55,13 @@ public class JobThread extends Thread {
     }
 
     /**
-     * new trigger to queue
+     * 将新的触发请求加入队列
      *
      * @param triggerParam
      * @return
      */
     public ReturnT<String> pushTriggerQueue(TriggerParam triggerParam) {
-        // avoid repeat
+        // 防止重复提交
         if (triggerLogIdSet.contains(triggerParam.getLogId())) {
             logger.info(">>>>>>>>>>> repeate trigger job, logId:{}", triggerParam.getLogId());
             return new ReturnT<>(ReturnT.FAIL_CODE, "repeate trigger job, logId:" + triggerParam.getLogId());
@@ -73,7 +73,7 @@ public class JobThread extends Thread {
     }
 
     /**
-     * kill job thread
+     * 终止任务线程
      *
      * @param stopReason
      */
@@ -88,7 +88,7 @@ public class JobThread extends Thread {
     }
 
     /**
-     * is running job
+     * 判断任务是否正在执行
      *
      * @return
      */
@@ -99,14 +99,14 @@ public class JobThread extends Thread {
     @Override
     public void run() {
 
-        // init
+        // 初始化
         try {
             handler.init();
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
 
-        // execute
+        // 执行任务
         while (!toStop) {
             running = false;
             idleTimes++;
@@ -114,23 +114,23 @@ public class JobThread extends Thread {
             TriggerParam tgParam = null;
             ReturnT<String> executeResult = null;
             try {
-                // to check toStop signal, we need cycle, so wo cannot use queue.take(), instand of poll(timeout)
+                // 使用带超时的轮询，保证线程可以定期检查停止信号
                 tgParam = triggerQueue.poll(3L, TimeUnit.SECONDS);
                 if (tgParam != null) {
                     running = true;
                     idleTimes = 0;
                     triggerLogIdSet.remove(tgParam.getLogId());
 
-                    // log filename, like "logPath/yyyy-MM-dd/9999.log"
+                    // 日志文件路径示例：logPath/yyyy-MM-dd/9999.log
                     String logFileName = JobFileAppender.makeLogFileName(new Date(tgParam.getLogDateTime()), tgParam.getLogId());
                     JobFileAppender.contextHolder.set(logFileName);
                     ShardingUtil.setShardingVo(new ShardingUtil.ShardingVO(tgParam.getBroadcastIndex(), tgParam.getBroadcastTotal()));
 
-                    // execute
+                    // 执行任务
                     JobLogger.log("<br>----------- datax-web job execute start -----------<br>----------- Param:" + tgParam.getExecutorParams());
 
                     if (tgParam.getExecutorTimeout() > 0) {
-                        // limit timeout
+                        // 限制任务执行时间
                         Thread futureThread = null;
                         try {
                             final TriggerParam tgParamT = tgParam;
@@ -149,7 +149,7 @@ public class JobThread extends Thread {
                             futureThread.interrupt();
                         }
                     } else {
-                        // just execute
+                        // 直接执行任务
                         executeResult = handler.execute(tgParam);
                     }
 
@@ -160,13 +160,13 @@ public class JobThread extends Thread {
                                 (executeResult != null && executeResult.getMsg() != null && executeResult.getMsg().length() > 50000)
                                         ? executeResult.getMsg().substring(0, 50000).concat("...")
                                         : executeResult.getMsg());
-                        executeResult.setContent(null);    // limit obj size
+                        executeResult.setContent(null);    // 限制结果对象大小
                     }
                     JobLogger.log("<br>----------- datax-web job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
 
                 } else {
                     if (idleTimes > 30) {
-                        if (triggerQueue.size() == 0) {    // avoid concurrent trigger causes jobId-lost
+                        if (triggerQueue.size() == 0) {    // 保留任务日志上下文，避免并发触发时编号丢失
                             JobExecutor.removeJobThread(jobId, "executor idel times over limit.");
                         }
                     }
@@ -185,12 +185,12 @@ public class JobThread extends Thread {
             } finally {
                 // 终止操作暂不监控状态
                 if (tgParam != null && tgParam.getJobId() != -1) {
-                    // callback handler info
+                    // 回调任务处理结果
                     if (!toStop) {
-                        // commonm
+                        // 普通执行结果
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(tgParam.getLogId(), tgParam.getLogDateTime(), executeResult));
                     } else {
-                        // is killed
+                        // 任务已被终止
                         ReturnT<String> stopResult = new ReturnT<String>(ReturnT.FAIL_CODE, stopReason + " [job running, killed]");
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(tgParam.getLogId(), tgParam.getLogDateTime(), stopResult));
                     }
@@ -198,17 +198,17 @@ public class JobThread extends Thread {
             }
         }
 
-        // callback trigger request in queue
+        // 回调队列中尚未执行的触发请求
         while (triggerQueue != null && triggerQueue.size() > 0) {
             TriggerParam triggerParam = triggerQueue.poll();
             if (triggerParam != null) {
-                // is killed
+                // 任务已被终止
                 ReturnT<String> stopResult = new ReturnT<String>(ReturnT.FAIL_CODE, stopReason + " [job not executed, in the job queue, killed.]");
                 TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTime(), stopResult));
             }
         }
 
-        // destroy
+        // 释放资源
         try {
             handler.destroy();
         } catch (Throwable e) {

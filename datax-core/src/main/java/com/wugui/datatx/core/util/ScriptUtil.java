@@ -18,19 +18,19 @@ import java.util.List;
  * 3、暂时脚本执行日志只能在脚本执行结束后一次性获取，无法保证实时性；因此为确保日志实时性，可改为将脚本打印的日志存储在指定的日志文件上；
  * 4、python 异常输出优先级高于标准输出，体现在Log文件中，因此推荐通过logging方式打日志保持和异常信息一致；否则用prinf日志顺序会错乱
  * <p>
- * Created by xuxueli on 17/2/25.
+ * 创建者：xuxueli，时间：17/2/25.
  */
 public class ScriptUtil {
 
     /**
-     * make script file
+     * 生成脚本文件
      *
      * @param scriptFileName
      * @param content
      * @throws IOException
      */
     public static void markScriptFile(String scriptFileName, String content) throws IOException {
-        // make file,   filePath/gluesource/666-123456789.py
+        // 生成任务脚本，例如 filePath/gluesource/666-123456789.py
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(scriptFileName);
@@ -60,10 +60,10 @@ public class ScriptUtil {
         Thread inputThread = null;
         Thread errThread = null;
         try {
-            // file
+            // 文件操作
             fileOutputStream = new FileOutputStream(logFile, true);
 
-            // command
+            // 执行命令
             List<String> cmdarray = new ArrayList<>();
             cmdarray.add(command);
             cmdarray.add(scriptFile);
@@ -74,15 +74,15 @@ public class ScriptUtil {
             }
             String[] cmdarrayFinal = cmdarray.toArray(new String[cmdarray.size()]);
 
-            // process-exec
+            // 启动子进程
             final Process process = Runtime.getRuntime().exec(cmdarrayFinal);
 
             String prcsId = ProcessUtil.getProcessId(process);
             JobLogger.log("------------------Process id: " + prcsId);
-            //update task process id
+            //更新任务进程编号
             HandleProcessCallbackParam prcs = new HandleProcessCallbackParam(logId, logDateTime, prcsId);
             ProcessCallbackThread.pushCallBack(prcs);
-            // log-thread
+            // 日志采集线程
             final FileOutputStream finalFileOutputStream = fileOutputStream;
             inputThread = new Thread(() -> {
                 try {
@@ -101,10 +101,10 @@ public class ScriptUtil {
             inputThread.start();
             errThread.start();
 
-            // process-wait
-            int exitValue = process.waitFor();      // exit code: 0=success, 1=error
+            // 等待子进程结束
+            int exitValue = process.waitFor();      // 退出码：0表示成功，1表示失败
 
-            // log-thread join
+            // 等待日志线程采集完成
             inputThread.join();
             errThread.join();
 
@@ -198,18 +198,18 @@ public class ScriptUtil {
             fileOutputStream = new FileOutputStream(logFile, true);
             PumpStreamHandler streamHandler = new PumpStreamHandler(fileOutputStream, fileOutputStream, null);
 
-            // command
+            // 执行命令
             CommandLine commandline = new CommandLine(command);
             commandline.addArgument(scriptFile);
             if (params!=null && params.length>0) {
                 commandline.addArguments(params);
             }
 
-            // exec
+            // 执行命令
             DefaultExecutor exec = new DefaultExecutor();
             exec.setExitValues(null);
             exec.setStreamHandler(streamHandler);
-            int exitValue = exec.execute(commandline);  // exit code: 0=success, 1=error
+            int exitValue = exec.execute(commandline);  // 退出码：0表示成功，1表示失败
             return exitValue;
         } catch (Exception e) {
             JobLogger.log(e);

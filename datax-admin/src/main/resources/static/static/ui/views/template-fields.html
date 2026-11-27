@@ -1,4 +1,9 @@
 <div class="ui-template-fields">
+    <el-steps :active="editor.uiStep" finish-status="success" simple class="ui-template-steps">
+        <el-step title="项目与方案"></el-step><el-step title="读写连接"></el-step><el-step title="映射与生成"></el-step>
+    </el-steps>
+    <section v-show="editor.uiStep === 0" class="ui-form-section">
+    <header class="ui-section-intro"><h3>选择项目，复用已有配置</h3><p>方案保存实际连接、模拟库结构、表字段顺序及 SQL；生成时分配新的批次编码。</p></header>
     <div class="ui-form-grid" style="padding-top: 20px">
         <el-form-item :label="editor.id ? '模板名称' : '批次说明（选填）'">
             <el-input v-model="editor.name" :maxlength="100" placeholder="例如：生产库迁移；批次编码自动生成">
@@ -13,20 +18,38 @@
             </el-select>
         </el-form-item>
     </div>
+    <div class="ui-form-grid">
+      <el-form-item label="已保存的项目方案">
+        <el-select :value="editor.uiRecipeId" :disabled="!editor.projectId || !!editor.id" filterable clearable placeholder="先选择项目，或从空白配置开始" @input="editor.uiLoadRecipe($event)">
+          <el-option v-for="recipe in editor.uiRecipes" :key="recipe.id" :label="recipe.name" :value="recipe.id"></el-option>
+        </el-select>
+        <p v-if="editor.uiRecipeError" class="ui-danger">{{ editor.uiRecipeError }}</p>
+      </el-form-item>
+      <el-form-item label="读取方式">
+        <el-radio-group v-model="editor.uiReadMode" @change="editor.uiModeChanged">
+          <el-radio-button label="MAPPING">表字段映射</el-radio-button><el-radio-button label="QUERY">SELECT 查询</el-radio-button>
+        </el-radio-group>
+        <p class="ui-hint">查询模式按 SQL 输出别名与目标字段的顺序配对。</p>
+      </el-form-item>
+    </div>
+    </section>
     <el-alert v-if="editor.projectError" :title="editor.projectError" type="warning" :closable="false">
     </el-alert>
     <el-alert v-if="editor.projectId && !editor.projectLoading && !editor.projectError && !editor.runtimeSources.length"
               title="该项目暂无可用的关系型数据源，请绑定后刷新。" type="warning" :closable="false">
     </el-alert>
-    <div class="ui-filter">
+    <div v-show="editor.uiStep > 0" class="ui-filter">
         <el-button @click="editor.$router.push('/datax/datasource/jdbcDatasource')">数据源管理</el-button>
         <el-button @click="editor.refreshSources">刷新数据源</el-button>
         <el-button @click="editor.refreshMetadata">刷新模拟表结构</el-button>
         <el-button @click="editor.matchTables">补齐同名表配对</el-button>
     </div>
-    <div class="datax-config-sides">
+    <header v-show="editor.uiStep === 1" class="ui-section-intro"><h3>实际连接与表结构来源分别配置</h3><p>实际连接写入 JSON；模拟库仅用于读取结构，可选择本地可连接的数据库。</p></header>
+    <header v-show="editor.uiStep === 2" class="ui-section-intro"><h3>配对表和字段</h3><p>左右同序号对应一份 JSON。点击表名调整字段，字段按顺序写入目标表。</p></header>
+    <div v-show="editor.uiStep > 0" class="datax-config-sides">
         <el-card v-for="side in ['reader', 'writer']" :key="side" shadow="never" class="datax-config-side">
             <strong slot="header">{{ side === 'reader' ? '源库 Reader' : '目标库 Writer' }}</strong>
+            <div v-show="editor.uiStep === 1">
             <el-form-item label="实际数据源（写入 JSON）">
                 <el-select :value="editor[side + 'DatasourceId']" filterable style="width: 100%"
                            :loading="editor.projectLoading"
@@ -52,6 +75,8 @@
                     </el-option>
                 </el-select>
             </el-form-item>
+            </div>
+            <div v-show="editor.uiStep === 2">
             <el-form-item v-if="editor.id" label="当前模拟表">
                 <el-select :value="editor.uiSelection(side) ? editor.uiSelection(side).metadataTable : null" filterable
                            style="width: 100%" @input="editor.uiSelectCurrentTable(side, $event)">
@@ -101,6 +126,19 @@
                     <el-input v-model="editor.uiSelection(side).actualTable">
                     </el-input>
                 </el-form-item>
+                <el-collapse v-if="side === 'writer'" class="ui-query-panel"><el-collapse-item title="当前表的前后置 SQL（可覆盖默认值）" name="writer-sql">
+                  <el-form-item label="当前表前置 SQL"><el-input :value="editor.uiSelection(side).preSql || editor.options.preSql" type="textarea" :rows="3" resize="none" class="ui-code" @input="editor.$set(editor.uiSelection(side), 'preSql', $event)"></el-input></el-form-item>
+                  <el-form-item label="当前表后置 SQL"><el-input :value="editor.uiSelection(side).postSql || editor.options.postSql" type="textarea" :rows="3" resize="none" class="ui-code" @input="editor.$set(editor.uiSelection(side), 'postSql', $event)"></el-input></el-form-item>
+                  <p class="ui-hint">使用 <code v-pre>{{table}}</code> 表示实际目标表；语句仅写入配置，随 DataX 任务执行。</p>
+                </el-collapse-item></el-collapse>
+                <div v-if="side === 'reader' && editor.uiReadMode === 'QUERY'" class="ui-query-panel">
+                    <el-form-item label="读取 SQL（仅 SELECT）">
+                        <el-input :value="editor.uiSelection(side).querySql || editor.options.querySql" type="textarea" :rows="6" resize="none" class="ui-code"
+                          :placeholder="'SELECT id AS id, name AS name FROM ' + '{' + '{table}' + '}'" @input="editor.$set(editor.uiSelection(side), 'querySql', $event); editor.uiQueryChanged(editor.uiActivePair(side))"></el-input>
+                        <p class="ui-hint">使用 <code v-pre>{{table}}</code> 表示当前表；读取字段时替换成模拟表，生成 JSON 时替换成实际表。</p>
+                    </el-form-item>
+                    <el-button size="small" :loading="!!editor.uiPending['query-columns']" @click="editor.uiReadActiveQuery">读取查询输出字段</el-button>
+                </div>
                 <p v-if="editor.uiSelection(side).loading" class="ui-hint">正在读取字段…</p>
                 <el-alert v-if="editor.uiSelection(side).error" :title="editor.uiSelection(side).error" type="warning"
                           :closable="false">
@@ -129,8 +167,10 @@
                 </div>
             </section>
             <p v-else class="ui-hint">点击表名选择字段；未展开的表默认使用全部字段。</p>
+            </div>
         </el-card>
     </div>
+    <section v-show="editor.uiStep === 2">
     <header class="ui-panel-title" style="margin-top: 24px">
         <h3>表配对（{{ editor.pairs.length }} 组）</h3>
     </header>
@@ -170,16 +210,16 @@
                     <el-input v-model="editor.options.readerSplitPk">
                     </el-input>
                 </el-form-item>
-                <el-form-item class="ui-span-full" label="自定义读取 SQL">
-                    <el-input v-model="editor.options.querySql" type="textarea" :rows="2" resize="none"
+                <el-form-item v-if="editor.uiReadMode === 'QUERY'" class="ui-span-full" label="所有表默认读取 SQL（可在单表中覆盖）">
+                    <el-input v-model="editor.options.querySql" @input="editor.uiModeChanged" type="textarea" :rows="2" resize="none"
                               placeholder="留空时读取所选表">
                     </el-input>
                 </el-form-item>
-                <el-form-item label="前置 SQL">
+                <el-form-item label="所有表默认前置 SQL">
                     <el-input v-model="editor.options.preSql" type="textarea" :rows="2" resize="none">
                     </el-input>
                 </el-form-item>
-                <el-form-item label="后置 SQL">
+                <el-form-item label="所有表默认后置 SQL">
                     <el-input v-model="editor.options.postSql" type="textarea" :rows="2" resize="none">
                     </el-input>
                 </el-form-item>
@@ -187,7 +227,15 @@
         </el-collapse-item>
     </el-collapse>
     <p class="ui-hint">文件名：序号_读取插件2写入插件_源表%2%目标表.json</p>
-    <div class="ui-build-actions">
+    </section>
+    <div class="ui-build-actions ui-wizard-footer">
+        <el-button v-if="editor.uiStep > 0" @click="editor.uiStep--">上一步</el-button>
+        <span class="ui-hint">{{ editor.pairs.length }} 组表配对</span>
+        <span class="ui-filter-spacer"></span>
+        <el-button v-if="editor.uiStep === 2" :disabled="!editor.projectId" :loading="!!editor.uiPending['recipe-save']" @click="editor.uiSaveRecipe(false)">{{ editor.uiRecipeId ? '更新项目方案' : '保存项目方案' }}</el-button>
+        <el-button v-if="editor.uiStep === 2 && editor.uiRecipeId" @click="editor.uiSaveRecipe(true)">另存方案</el-button>
+        <el-button v-if="editor.uiStep < 2" type="primary" @click="editor.uiNextStep">下一步</el-button>
+        <template v-else>
         <span class="ui-hint"
               style="margin-right: auto">{{ editor.progress || (editor.dirty ? '有未保存的修改' : '') }}</span>
         <el-button :loading="editor.downloading" :disabled="!editor.results.length || editor.needsGenerate"
@@ -195,7 +243,8 @@
         </el-button>
         <el-button @click="editor.showBatch">查看批次</el-button>
         <el-button type="primary" :loading="editor.generating" :disabled="editor.busy || !!editor.error"
-                   @click="editor.generate">{{ editor.id ? '重新生成 JSON' : '生成并保存批次' }}
+                   @click="editor.generate">{{ editor.id ? '重新生成 JSON' : '提交后台生成' }}
         </el-button>
+        </template>
     </div>
 </div>

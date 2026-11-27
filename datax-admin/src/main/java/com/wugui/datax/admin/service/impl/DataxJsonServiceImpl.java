@@ -38,9 +38,9 @@ public class DataxJsonServiceImpl implements DataxJsonService {
     @Override
     public String buildJobJson(DataXJsonBuildDto dataXJsonBuildDto) {
         DataxJsonHelper dataxJsonHelper = new DataxJsonHelper();
-        // reader
+        // 读取端配置
         JobDatasource readerDatasource = jobJdbcDatasourceService.getById(dataXJsonBuildDto.getReaderDatasourceId());
-        // reader plugin init
+        // 初始化读取插件
         dataxJsonHelper.initReader(dataXJsonBuildDto, readerDatasource);
         JobDatasource writerDatasource = jobJdbcDatasourceService.getById(dataXJsonBuildDto.getWriterDatasourceId());
         dataxJsonHelper.initWriter(dataXJsonBuildDto, writerDatasource);

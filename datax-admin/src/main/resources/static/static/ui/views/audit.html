@@ -1,0 +1,13 @@
+<section class="app-container ui-page">
+  <div class="ui-filter"><el-input v-model="listQuery.keyword" clearable prefix-icon="el-icon-search" placeholder="账号、操作或资源地址" @keyup.enter.native="uiSearch"></el-input><el-button @click="uiSearch">查询</el-button><el-button @click="uiReset">重置</el-button><span class="ui-filter-spacer"></span><el-button icon="el-icon-refresh" :loading="uiRead.loading" @click="uiRefresh">刷新日志</el-button></div>
+  <ui-data-state :state="uiPageState" @retry="uiRefresh"></ui-data-state>
+  <el-table :data="list" v-loading="uiRead.loading" row-key="id" empty-text="暂无操作记录。保存、删除、复制、导出和后台处理会自动留痕。">
+    <el-table-column prop="createdAt" label="操作时间" min-width="170"></el-table-column><el-table-column prop="actor" label="操作账号" min-width="120"></el-table-column>
+    <el-table-column prop="action" label="操作" min-width="240" show-overflow-tooltip></el-table-column>
+    <el-table-column label="结果" width="90"><template slot-scope="scope"><el-tag size="small" :type="scope.row.result === 'SUCCESS' ? 'success' : 'danger'">{{ scope.row.result === 'SUCCESS' ? '成功' : '失败' }}</el-tag></template></el-table-column>
+    <el-table-column label="耗时" width="100"><template slot-scope="scope">{{ scope.row.durationMs }} ms</template></el-table-column><el-table-column prop="requestId" label="追踪标识" min-width="230" show-overflow-tooltip></el-table-column>
+    <el-table-column label="操作" width="80" fixed="right"><template slot-scope="scope"><el-button type="text" @click="uiDetails(scope.row)">详情</el-button></template></el-table-column>
+  </el-table>
+  <ui-pagination :total="total" :current.sync="listQuery.current" :size.sync="listQuery.size" :updated-at="uiRead.updatedAt" @change="uiRefresh"></ui-pagination>
+  <el-dialog class="ui-dialog" title="操作记录详情" :visible.sync="detailVisible" width="760px"><dl v-if="detail" class="ui-definition"><dt>操作账号</dt><dd>{{ detail.actor }}</dd><dt>操作</dt><dd>{{ detail.action }}</dd><dt>资源</dt><dd class="ui-code">{{ detail.resource }}</dd><dt>结果说明</dt><dd>{{ detail.message }}</dd><dt>客户端</dt><dd>{{ detail.clientAddress || '后台作业' }}</dd><dt>追踪标识</dt><dd class="ui-code">{{ detail.requestId }}</dd></dl><div slot="footer"><el-button @click="detailVisible=false">关闭</el-button></div></el-dialog>
+</section>

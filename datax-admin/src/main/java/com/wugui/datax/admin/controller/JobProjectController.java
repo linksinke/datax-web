@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * project manage controller
+ * 项目管理控制器
  *
  * @author jingwk 2020-05-24 16:13:16
  */
@@ -45,7 +45,7 @@ public class JobProjectController extends BaseController {
     }
 
     /**
-     * Get all project
+     * 获取全部有效项目
      *
      * @return
      */

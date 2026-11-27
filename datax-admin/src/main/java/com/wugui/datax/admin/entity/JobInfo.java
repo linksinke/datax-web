@@ -7,13 +7,13 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * xxl-job info
+ * 调度任务信息
  *
  * @author jingwk  2019-11-17 14:25:49
  */
 @Data
 @TableName("job_info")
-public class JobInfo {
+public class JobInfo extends AuditFields {
 
     @ApiModelProperty("主键ID")
     @TableId(type = IdType.AUTO)

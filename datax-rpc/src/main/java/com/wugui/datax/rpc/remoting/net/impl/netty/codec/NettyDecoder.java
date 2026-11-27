@@ -8,7 +8,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.List;
 
 /**
- * decoder
+ * 消息解码器
  *
  * @author xuxueli 2015-10-29 19:02:36
  */
@@ -34,7 +34,7 @@ public class NettyDecoder extends ByteToMessageDecoder {
         }
         if (in.readableBytes() < dataLength) {
             in.resetReaderIndex();
-            return;	// fix 1024k buffer splice limix
+            return;	// 允许按完整报文长度拼接接收缓冲区
         }
         byte[] data = new byte[dataLength];
         in.readBytes(data);

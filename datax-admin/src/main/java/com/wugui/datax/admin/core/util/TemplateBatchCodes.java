@@ -6,7 +6,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Database row locking makes daily codes unique across requests and admin instances. */
+/** 使用数据库行锁，保证同一天的批次编码在并发请求和多个管理端之间唯一。 */
 public final class TemplateBatchCodes {
     public static final ZoneId ZONE = ZoneId.of("Asia/Shanghai");
 

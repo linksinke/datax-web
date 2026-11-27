@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by xuxueli on 16/7/22.
+ * 创建者：xuxueli，时间：16/7/22.
  */
 public class TriggerCallbackThread {
     private static Logger logger = LoggerFactory.getLogger(TriggerCallbackThread.class);
@@ -31,7 +31,7 @@ public class TriggerCallbackThread {
     }
 
     /**
-     * job results callback queue
+     * 任务结果回调队列
      */
     private LinkedBlockingQueue<HandleCallbackParam> callBackQueue = new LinkedBlockingQueue<>();
 
@@ -41,7 +41,7 @@ public class TriggerCallbackThread {
     }
 
     /**
-     * callback thread
+     * 回调处理线程
      */
     private Thread triggerCallbackThread;
     private Thread triggerRetryCallbackThread;
@@ -49,26 +49,26 @@ public class TriggerCallbackThread {
 
     public void start() {
 
-        // valid
+        // 参数校验
         if (JobExecutor.getAdminBizList() == null) {
             logger.warn(">>>>>>>>>>> datax-web, executor callback config fail, adminAddresses is null.");
             return;
         }
 
-        // callback
+        // 回调处理
         triggerCallbackThread = new Thread(() -> {
 
-            // normal callback
+            // 正常回调
             while (!toStop) {
                 try {
                     HandleCallbackParam callback = getInstance().callBackQueue.take();
 
-                    // callback list param
+                    // 组装批量回调参数
                     List<HandleCallbackParam> callbackParamList = new ArrayList<HandleCallbackParam>();
                     int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
                     callbackParamList.add(callback);
 
-                    // callback, will retry if error
+                    // 提交回调，失败时进入重试
                     if (callbackParamList.size() > 0) {
                         doCallback(callbackParamList);
                     }
@@ -79,7 +79,7 @@ public class TriggerCallbackThread {
                 }
             }
 
-            // last callback
+            // 处理退出前的最后一批回调
             try {
                 List<HandleCallbackParam> callbackParamList = new ArrayList<HandleCallbackParam>();
                 int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
@@ -99,7 +99,7 @@ public class TriggerCallbackThread {
         triggerCallbackThread.start();
 
 
-        // retry
+        // 失败重试
         triggerRetryCallbackThread = new Thread(() -> {
             while (!toStop) {
                 try {
@@ -127,8 +127,8 @@ public class TriggerCallbackThread {
 
     public void toStop() {
         toStop = true;
-        // stop callback, interrupt and wait
-        if (triggerCallbackThread != null) {    // support empty admin address
+        // 停止回调线程并等待退出
+        if (triggerCallbackThread != null) {    // 兼容未配置管理端地址的情况
             triggerCallbackThread.interrupt();
             try {
                 triggerCallbackThread.join();
@@ -137,7 +137,7 @@ public class TriggerCallbackThread {
             }
         }
 
-        // stop retry, interrupt and wait
+        // 中断重试线程并等待退出
         if (triggerRetryCallbackThread != null) {
             triggerRetryCallbackThread.interrupt();
             try {
@@ -150,13 +150,13 @@ public class TriggerCallbackThread {
     }
 
     /**
-     * do callback, will retry if error
+     * 发送回调，失败后重试
      *
      * @param callbackParamList
      */
     private void doCallback(List<HandleCallbackParam> callbackParamList) {
         boolean callbackRet = false;
-        // callback, will retry if error
+        // 提交回调，失败时进入重试
         for (AdminBiz adminBiz : JobExecutor.getAdminBizList()) {
             try {
                 ReturnT<String> callbackResult = adminBiz.callback(callbackParamList);
@@ -177,7 +177,7 @@ public class TriggerCallbackThread {
     }
 
     /**
-     * callback log
+     * 记录回调日志
      */
     private void callbackLog(List<HandleCallbackParam> callbackParamList, String logContent) {
         for (HandleCallbackParam c : callbackParamList) {
@@ -188,18 +188,18 @@ public class TriggerCallbackThread {
     }
 
 
-    // ---------------------- fail-callback file ----------------------
+    // 失败回调文件
 
     private static String failCallbackFilePath = JobFileAppender.getLogPath().concat(File.separator).concat("callbacklog").concat(File.separator);
     private static String failCallbackFileName = failCallbackFilePath.concat("datax-web-callback-{x}").concat(".log");
 
     private void appendFailCallbackFile(List<HandleCallbackParam> callbackParamList) {
-        // valid
+        // 参数校验
         if (callbackParamList == null || callbackParamList.size() == 0) {
             return;
         }
 
-        // append file
+        // 追加失败记录文件
         byte[] callbackParamList_bytes = JobExecutor.getSerializer().serialize(callbackParamList);
 
         File callbackLogFile = new File(failCallbackFileName.replace("{x}", String.valueOf(System.currentTimeMillis())));
@@ -216,7 +216,7 @@ public class TriggerCallbackThread {
 
     private void retryFailCallbackFile() {
 
-        // valid
+        // 参数校验
         File callbackLogPath = new File(failCallbackFilePath);
         if (!callbackLogPath.exists()) {
             return;
@@ -228,7 +228,7 @@ public class TriggerCallbackThread {
             return;
         }
 
-        // load and clear file, retry
+        // 载入并清理失败文件，重新提交回调
         List<HandleCallbackParam> params;
         for (File f : callbackLogPath.listFiles()) {
             byte[] ps = FileUtil.readFileContent(f);

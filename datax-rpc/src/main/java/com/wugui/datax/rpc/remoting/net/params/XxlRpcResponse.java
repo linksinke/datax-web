@@ -3,7 +3,7 @@ package com.wugui.datax.rpc.remoting.net.params;
 import java.io.Serializable;
 
 /**
- * response
+ * 调用响应
  *
  * @author xuxueli 2015-10-29 19:39:54
  */

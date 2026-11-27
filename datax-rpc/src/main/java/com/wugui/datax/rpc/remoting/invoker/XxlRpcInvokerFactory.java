@@ -15,14 +15,14 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 /**
- * xxl-rpc invoker factory, init service-registry
+ * RPC 调用方工厂，负责初始化注册服务
  *
  * @author xuxueli 2018-10-19
  */
 public class XxlRpcInvokerFactory {
     private static Logger logger = LoggerFactory.getLogger(XxlRpcInvokerFactory.class);
 
-    // ---------------------- default instance ----------------------
+    // 默认调用方实例
 
     private static volatile XxlRpcInvokerFactory instance = new XxlRpcInvokerFactory(LocalServiceRegistry.class, null);
 
@@ -31,9 +31,9 @@ public class XxlRpcInvokerFactory {
     }
 
 
-    // ---------------------- config ----------------------
+    // 配置参数
 
-    private Class<? extends ServiceRegistry> serviceRegistryClass;          // class.forname
+    private Class<? extends ServiceRegistry> serviceRegistryClass;          // 按名称加载类
     private Map<String, String> serviceRegistryParam;
 
 
@@ -46,10 +46,10 @@ public class XxlRpcInvokerFactory {
     }
 
 
-    // ---------------------- start / stop ----------------------
+    // 启动与停止
 
     public void start() throws Exception {
-        // start registry
+        // 启动注册服务
         if (serviceRegistryClass != null) {
             serviceRegistry = serviceRegistryClass.newInstance();
             serviceRegistry.start(serviceRegistryParam);
@@ -57,12 +57,12 @@ public class XxlRpcInvokerFactory {
     }
 
     public void stop() throws Exception {
-        // stop registry
+        // 停止注册服务
         if (serviceRegistry != null) {
             serviceRegistry.stop();
         }
 
-        // stop callback
+        // 停止回调线程
         if (stopCallbackList.size() > 0) {
             for (BaseCallback callback : stopCallbackList) {
                 try {
@@ -73,12 +73,12 @@ public class XxlRpcInvokerFactory {
             }
         }
 
-        // stop CallbackThreadPool
+        // 停止回调线程池
         stopCallbackThreadPool();
     }
 
 
-    // ---------------------- service registry ----------------------
+    // 服务注册
 
     private ServiceRegistry serviceRegistry;
 
@@ -87,7 +87,7 @@ public class XxlRpcInvokerFactory {
     }
 
 
-    // ---------------------- service registry ----------------------
+    // 服务注册
 
     private List<BaseCallback> stopCallbackList = new ArrayList<BaseCallback>();
 
@@ -96,9 +96,9 @@ public class XxlRpcInvokerFactory {
     }
 
 
-    // ---------------------- future-response pool ----------------------
+    // 异步响应容器
 
-    // XxlRpcFutureResponseFactory
+    // 异步响应管理
 
     private ConcurrentMap<String, XxlRpcFutureResponse> futureResponsePool = new ConcurrentHashMap<String, XxlRpcFutureResponse>();
 
@@ -112,16 +112,16 @@ public class XxlRpcInvokerFactory {
 
     public void notifyInvokerFuture(String requestId, final XxlRpcResponse xxlRpcResponse) {
 
-        // get
+        // 获取配置
         final XxlRpcFutureResponse futureResponse = futureResponsePool.get(requestId);
         if (futureResponse == null) {
             return;
         }
 
-        // notify
+        // 通知等待线程
         if (futureResponse.getInvokeCallback() != null) {
 
-            // callback type
+            // 回调调用方式
             try {
                 executeResponseCallback(() -> {
                     if (xxlRpcResponse.getErrorMsg() != null) {
@@ -135,17 +135,17 @@ public class XxlRpcInvokerFactory {
             }
         } else {
 
-            // other nomal type
+            // 其他普通调用方式
             futureResponse.setResponse(xxlRpcResponse);
         }
 
-        // do remove
+        // 移除已完成请求
         futureResponsePool.remove(requestId);
 
     }
 
 
-    // ---------------------- response callback ThreadPool ----------------------
+    // 响应回调线程池
 
     private ThreadPoolExecutor responseCallbackThreadPool = null;
 
@@ -163,7 +163,7 @@ public class XxlRpcInvokerFactory {
                             r -> new Thread(r, "xxl-rpc, XxlRpcInvokerFactory-responseCallbackThreadPool-" + r.hashCode()),
                             (r, executor) -> {
                                 throw new XxlRpcException("xxl-rpc Invoke Callback Thread pool is EXHAUSTED!");
-                            });        // default maxThreads 300, minThreads 60
+                            });        // 默认最大线程数300、最小线程数60
                 }
             }
         }

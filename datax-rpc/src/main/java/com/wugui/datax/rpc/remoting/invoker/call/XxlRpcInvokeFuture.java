@@ -22,7 +22,7 @@ public class XxlRpcInvokeFuture implements Future {
     }
 
     public void stop() {
-        // remove-InvokerFuture
+        // 移除异步调用上下文
         futureResponse.removeInvokerFuture();
     }
 
@@ -54,7 +54,7 @@ public class XxlRpcInvokeFuture implements Future {
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         try {
-            // future get
+            // 等待异步调用结果
             XxlRpcResponse xxlRpcResponse = futureResponse.get(timeout, unit);
             if (xxlRpcResponse.getErrorMsg() != null) {
                 throw new XxlRpcException(xxlRpcResponse.getErrorMsg());
@@ -66,12 +66,12 @@ public class XxlRpcInvokeFuture implements Future {
     }
 
 
-    // ---------------------- thread invoke future ----------------------
+    // 线程级异步调用上下文
 
     private static ThreadLocal<XxlRpcInvokeFuture> threadInvokerFuture = new ThreadLocal<XxlRpcInvokeFuture>();
 
     /**
-     * get future
+     * 获取异步调用结果
      *
      * @param type
      * @param <T>
@@ -84,7 +84,7 @@ public class XxlRpcInvokeFuture implements Future {
     }
 
     /**
-     * set future
+     * 设置异步调用结果
      *
      * @param future
      */
@@ -93,7 +93,7 @@ public class XxlRpcInvokeFuture implements Future {
     }
 
     /**
-     * remove future
+     * 清理异步调用结果
      */
     public static void removeFuture() {
         threadInvokerFuture.remove();

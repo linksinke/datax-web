@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- * net util
+ * 网络工具
  *
  * @author xuxueli 2017-11-29 17:00:25
  */
@@ -15,7 +15,7 @@ public class NetUtil {
     private static Logger logger = LoggerFactory.getLogger(NetUtil.class);
 
     /**
-     * find avaliable port
+     * 查找可用端口
      *
      * @param defaultPort
      * @return
@@ -41,7 +41,7 @@ public class NetUtil {
     }
 
     /**
-     * check port used
+     * 检查端口是否已占用
      *
      * @param port
      * @return

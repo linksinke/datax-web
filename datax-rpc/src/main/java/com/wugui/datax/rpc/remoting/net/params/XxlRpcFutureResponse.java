@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * call back future
+ * 异步回调结果
  *
  * @author xuxueli 2015-11-5 14:26:37
  */
@@ -18,15 +18,15 @@ public class XxlRpcFutureResponse implements Future<XxlRpcResponse> {
 
     private XxlRpcInvokerFactory invokerFactory;
 
-    // net data
+    // 网络传输数据
     private XxlRpcRequest request;
     private XxlRpcResponse response;
 
-    // future lock
+    // 异步结果同步锁
     private boolean done = false;
     private Object lock = new Object();
 
-    // callback, can be null
+    // 可选的完成回调
     private XxlRpcInvokeCallback invokeCallback;
 
 
@@ -35,12 +35,12 @@ public class XxlRpcFutureResponse implements Future<XxlRpcResponse> {
         this.request = request;
         this.invokeCallback = invokeCallback;
 
-        // set-InvokerFuture
+        // 关联异步调用上下文
         setInvokerFuture();
     }
 
 
-    // ---------------------- response pool ----------------------
+    // 响应容器
 
     public void setInvokerFuture() {
         this.invokerFactory.setInvokerFuture(request.getRequestId(), this);
@@ -51,7 +51,7 @@ public class XxlRpcFutureResponse implements Future<XxlRpcResponse> {
     }
 
 
-    // ---------------------- get ----------------------
+    // 结果读取
 
     public XxlRpcRequest getRequest() {
         return request;
@@ -62,7 +62,7 @@ public class XxlRpcFutureResponse implements Future<XxlRpcResponse> {
     }
 
 
-    // ---------------------- for invoke back ----------------------
+    // 调用完成回调
 
     public void setResponse(XxlRpcResponse response) {
         this.response = response;
@@ -73,17 +73,17 @@ public class XxlRpcFutureResponse implements Future<XxlRpcResponse> {
     }
 
 
-    // ---------------------- for invoke ----------------------
+    // 调用方等待
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        // TODO
+        // 待完善
         return false;
     }
 
     @Override
     public boolean isCancelled() {
-        // TODO
+        // 待完善
         return false;
     }
 

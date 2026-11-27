@@ -21,6 +21,7 @@
     </div>
     <div class="ui-filter" style="padding-top: 16px">
       <el-button type="primary" :loading="saving" :disabled="busy || !uiCurrentResult || !!jsonError" @click="saveSingle">保存当前 JSON</el-button>
+      <el-button :disabled="busy || !uiCurrentResult" @click="uiCopyCurrent">复制模板</el-button>
       <el-button :disabled="busy || !uiCurrentResult" @click="format">格式化</el-button>
       <el-button :disabled="busy || !uiCurrentResult || !!jsonError" @click="downloadOne">下载当前文件</el-button>
       <el-button :loading="downloading" :disabled="busy || !uiCurrentResult" @click="downloadAll">下载整个批次</el-button>

@@ -16,6 +16,9 @@ import java.util.List;
 @Data
 public class DataXJsonBuildDto implements Serializable {
 
+    /** 配置所属项目；实际读写连接必须已绑定到该项目。 */
+    private Integer projectId;
+
     private Long readerDatasourceId;
 
     private List<String> readerTables;
@@ -44,7 +47,7 @@ public class DataXJsonBuildDto implements Serializable {
 
     private MongoDBWriterDto mongoDBWriter;
 
-    /** Template metadata is read from these optional local connections, never from the runtime connections. */
+    /** 模板表结构来自可连接的模拟库，与写入运行配置的实际数据源分开。 */
     private Long readerMetadataDatasourceId;
     private Long writerMetadataDatasourceId;
     private String readerMetadataTable;

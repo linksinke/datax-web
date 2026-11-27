@@ -7,7 +7,7 @@ import com.wugui.datax.admin.core.route.ExecutorRouter;
 import java.util.List;
 
 /**
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteLast extends ExecutorRouter {
 

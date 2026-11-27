@@ -14,7 +14,7 @@ import java.util.List;
 import static com.wugui.datatx.core.util.Constants.SPLIT_COMMA;
 
 /**
- * Created by jingwk on 2019/12/01
+ * 创建者：jingwk，时间：2019/12/01
  */
 public class JwtTokenUtils {
 

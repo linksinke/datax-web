@@ -7,7 +7,7 @@ import com.wugui.datax.admin.dto.ProjectDatasourceDto;
 import java.util.List;
 
 /**
- * Job project
+ * 任务所属项目
  *
  * @author jingwk
  * @version v2.1.2
@@ -16,7 +16,7 @@ import java.util.List;
 public interface JobProjectService extends IService<JobProject> {
 
     /**
-     * project page
+     * 项目分页列表
      * @param pageSize
      * @param pageNo
      * @param searchName

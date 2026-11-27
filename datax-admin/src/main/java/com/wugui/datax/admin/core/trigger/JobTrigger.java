@@ -27,22 +27,22 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * xxl-job trigger
- * Created by xuxueli on 17/7/13.
+ * 任务调度触发器
+ * 创建者：xuxueli，时间：17/7/13.
  */
 public class JobTrigger {
     private static Logger logger = LoggerFactory.getLogger(JobTrigger.class);
 
     /**
-     * trigger job
+     * 触发指定任务
      *
      * @param jobId
      * @param triggerType
-     * @param failRetryCount        >=0: use this param
-     *                              <0: use param from job info config
+     * @param failRetryCount 大于等于0时使用传入的重试次数
+     *                              小于0时使用任务配置中的重试次数
      * @param executorShardingParam
-     * @param executorParam         null: use job param
-     *                              not null: cover job param
+     * @param executorParam 执行参数，为空时沿用任务参数
+     *                              传入参数非空时覆盖任务参数
      */
     public static void trigger(int jobId, TriggerTypeEnum triggerType, int failRetryCount, String executorShardingParam, String executorParam) {
         JobInfo jobInfo = JobAdminConfig.getAdminConfig().getJobInfoMapper().selectById(jobId);
@@ -61,7 +61,7 @@ public class JobTrigger {
         int finalFailRetryCount = failRetryCount >= 0 ? failRetryCount : jobInfo.getExecutorFailRetryCount();
         JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().selectById(jobInfo.getJobGroup());
 
-        // sharding param
+        // 分片执行参数
         int[] shardingParam = null;
         if (executorShardingParam != null) {
             String[] shardingArr = executorShardingParam.split("/");
@@ -96,23 +96,23 @@ public class JobTrigger {
     }
 
     /**
-     * @param group               job group, registry list may be empty
+     * @param group 执行器分组，允许注册列表为空
      * @param jobInfo
      * @param finalFailRetryCount
      * @param triggerType
-     * @param index               sharding index
-     * @param total               sharding index
+     * @param index 分片序号
+     * @param total 分片总数
      */
     private static void processTrigger(JobGroup group, JobInfo jobInfo, int finalFailRetryCount, TriggerTypeEnum triggerType, int index, int total) {
 
         TriggerParam triggerParam = new TriggerParam();
 
-        // param
-        ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(jobInfo.getExecutorBlockStrategy(), ExecutorBlockStrategyEnum.SERIAL_EXECUTION);  // block strategy
-        ExecutorRouteStrategyEnum executorRouteStrategyEnum = ExecutorRouteStrategyEnum.match(jobInfo.getExecutorRouteStrategy(), null);    // route strategy
+        // 整理调用参数
+        ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(jobInfo.getExecutorBlockStrategy(), ExecutorBlockStrategyEnum.SERIAL_EXECUTION);  // 阻塞处理策略
+        ExecutorRouteStrategyEnum executorRouteStrategyEnum = ExecutorRouteStrategyEnum.match(jobInfo.getExecutorRouteStrategy(), null);    // 执行器路由策略
         String shardingParam = (ExecutorRouteStrategyEnum.SHARDING_BROADCAST == executorRouteStrategyEnum) ? String.valueOf(index).concat("/").concat(String.valueOf(total)) : null;
 
-        // 1、save log-id
+        // 创建执行日志编号
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.set(Calendar.MILLISECOND, 0);
@@ -126,7 +126,7 @@ public class JobTrigger {
         JobAdminConfig.getAdminConfig().getJobLogMapper().insert(jobLog);
         logger.debug(">>>>>>>>>>> datax-web trigger start, jobId:{}", jobLog.getId());
 
-        // 2、init trigger-param
+        // 初始化触发参数
         triggerParam.setJobId(jobInfo.getId());
         triggerParam.setExecutorHandler(jobInfo.getExecutorHandler());
         triggerParam.setExecutorParams(jobInfo.getExecutorParam());
@@ -141,7 +141,7 @@ public class JobTrigger {
         triggerParam.setBroadcastTotal(total);
         triggerParam.setJobJson(jobInfo.getJobJson());
 
-        //increment parameter
+        //增量同步参数
         Integer incrementType = jobInfo.getIncrementType();
         if (incrementType != null) {
             triggerParam.setIncrementType(incrementType);
@@ -159,10 +159,10 @@ public class JobTrigger {
             }
             triggerParam.setReplaceParam(jobInfo.getReplaceParam());
         }
-        //jvm parameter
+        //虚拟机参数
         triggerParam.setJvmParam(jobInfo.getJvmParam());
 
-        // 3、init address
+        // 初始化执行器地址
         String address = null;
         ReturnT<String> routeAddressResult = null;
         if (group.getRegistryList() != null && !group.getRegistryList().isEmpty()) {
@@ -182,7 +182,7 @@ public class JobTrigger {
             routeAddressResult = new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobconf_trigger_address_empty"));
         }
 
-        // 4、trigger remote executor
+        // 触发远程执行器
         ReturnT<String> triggerResult = null;
         if (address != null) {
             triggerResult = runExecutor(triggerParam, address);
@@ -190,7 +190,7 @@ public class JobTrigger {
             triggerResult = new ReturnT<String>(ReturnT.FAIL_CODE, null);
         }
 
-        // 5、collection trigger info
+        // 汇总触发结果
         StringBuffer triggerMsgSb = new StringBuffer();
         triggerMsgSb.append(I18nUtil.getString("jobconf_trigger_type")).append("：").append(triggerType.getTitle());
         triggerMsgSb.append("<br>").append(I18nUtil.getString("jobconf_trigger_admin_adress")).append("：").append(IpUtil.getIp());
@@ -208,7 +208,7 @@ public class JobTrigger {
         triggerMsgSb.append("<br><br><span style=\"color:#00c0ef;\" > >>>>>>>>>>>" + I18nUtil.getString("jobconf_trigger_run") + "<<<<<<<<<<< </span><br>")
                 .append((routeAddressResult != null && routeAddressResult.getMsg() != null) ? routeAddressResult.getMsg() + "<br><br>" : "").append(triggerResult.getMsg() != null ? triggerResult.getMsg() : "");
 
-        // 6、save log trigger-info
+        // 保存触发日志
         jobLog.setExecutorAddress(address);
         jobLog.setExecutorHandler(jobInfo.getExecutorHandler());
         jobLog.setExecutorParam(jobInfo.getExecutorParam());
@@ -228,7 +228,7 @@ public class JobTrigger {
     }
 
     /**
-     * run executor
+     * 调用执行器运行任务
      *
      * @param triggerParam
      * @param address

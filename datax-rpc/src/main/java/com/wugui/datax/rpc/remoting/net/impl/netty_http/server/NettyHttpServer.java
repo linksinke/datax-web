@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * netty_http
+ * 基于 Netty 的 HTTP 通信
  *
  * @author xuxueli 2015-11-24 22:25:15
  */
@@ -33,7 +33,7 @@ public class NettyHttpServer extends Server {
     public void start(final XxlRpcProviderFactory xxlRpcProviderFactory) {
 
         thread = new Thread(() -> {
-            // param
+            // 整理调用参数
             final ThreadPoolExecutor serverHandlerPool = ThreadPoolUtil.makeServerThreadPool(
                     NettyHttpServer.class.getSimpleName(),
                     xxlRpcProviderFactory.getCorePoolSize(),
@@ -42,7 +42,7 @@ public class NettyHttpServer extends Server {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
 
             try {
-                // start server
+                // 启动服务端
                 ServerBootstrap bootstrap = new ServerBootstrap();
                 bootstrap.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
@@ -50,21 +50,21 @@ public class NettyHttpServer extends Server {
                             @Override
                             public void initChannel(SocketChannel channel) {
                                 channel.pipeline()
-                                        .addLast(new IdleStateHandler(0, 0, Beat.BEAT_INTERVAL * 3, TimeUnit.SECONDS))  // beat 3N, close if idle
+                                        .addLast(new IdleStateHandler(0, 0, Beat.BEAT_INTERVAL * 3, TimeUnit.SECONDS))  // 连续三个心跳周期空闲时关闭连接
                                         .addLast(new HttpServerCodec())
-                                        .addLast(new HttpObjectAggregator(NettyConstant.MAX_LENGTH))  // merge request & reponse to FULL
+                                        .addLast(new HttpObjectAggregator(NettyConstant.MAX_LENGTH))  // 聚合完整 HTTP 请求与响应
                                         .addLast(new NettyHttpServerHandler(xxlRpcProviderFactory, serverHandlerPool));
                             }
                         })
                         .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-                // bind
+                // 绑定监听端口
                 ChannelFuture future = bootstrap.bind(xxlRpcProviderFactory.getPort()).sync();
 
                 logger.info(">>>>>>>>>>> xxl-rpc remoting server start success, nettype = {}, port = {}", NettyHttpServer.class.getName(), xxlRpcProviderFactory.getPort());
                 onStarted();
 
-                // wait util stop
+                // 等待服务停止
                 future.channel().closeFuture().sync();
 
             } catch (InterruptedException e) {
@@ -75,9 +75,9 @@ public class NettyHttpServer extends Server {
                 }
             } finally {
 
-                // stop
+                // 停止运行
                 try {
-                    serverHandlerPool.shutdown();    // shutdownNow
+                    serverHandlerPool.shutdown();    // 立即关闭线程池
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -90,18 +90,18 @@ public class NettyHttpServer extends Server {
             }
 
         });
-        thread.setDaemon(true);    // daemon, service jvm, user thread leave >>> daemon leave >>> jvm leave
+        thread.setDaemon(true);    // 守护线程随非守护线程结束而退出，不阻止虚拟机关闭
         thread.start();
     }
 
     @Override
     public void stop() {
-        // destroy server thread
+        // 关闭服务线程
         if (thread != null && thread.isAlive()) {
             thread.interrupt();
         }
 
-        // on stop
+        // 服务停止回调
         onStopped();
         logger.info(">>>>>>>>>>> xxl-rpc remoting server destroy success.");
     }

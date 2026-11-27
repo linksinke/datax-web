@@ -61,12 +61,12 @@ public class BasicJsonReader {
         try {
             return Long.valueOf(json);
         } catch (NumberFormatException ex) {
-            // ignore
+            // 忽略当前异常并继续
         }
         try {
             return Double.valueOf(json);
         } catch (NumberFormatException ex) {
-            // ignore
+            // 忽略当前异常并继续
         }
         return json;
     }
@@ -83,7 +83,7 @@ public class BasicJsonReader {
         return map;
     }
 
-    // append start
+    // 写入起始标记
     private static String[] split(String toSplit, String delimiter) {
         if (toSplit != null && !toSplit.isEmpty() && delimiter != null && !delimiter.isEmpty()) {
             int offset = toSplit.indexOf(delimiter);
@@ -162,7 +162,7 @@ public class BasicJsonReader {
         return list;
     }
 
-    // plugin util
+    // 序列化辅助方法
     private static String trimTrailingCharacter(String string, char c) {
         if (string.length() > 0 && string.charAt(string.length() - 1) == c) {
             return string.substring(0, string.length() - 1);

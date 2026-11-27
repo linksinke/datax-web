@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 public class ThreadPoolUtil {
 
     /**
-     * make server thread pool
+     * 创建服务端工作线程池
      *
      * @param serverType
      * @return
@@ -23,7 +23,7 @@ public class ThreadPoolUtil {
                 r -> new Thread(r, "xxl-rpc, " + serverType + "-serverHandlerPool-" + r.hashCode()),
                 (r, executor) -> {
                     throw new XxlRpcException("xxl-rpc " + serverType + " Thread pool is EXHAUSTED!");
-                });        // default maxThreads 300, minThreads 60
+                });        // 默认最大线程数300、最小线程数60
 
         return serverHandlerPool;
     }

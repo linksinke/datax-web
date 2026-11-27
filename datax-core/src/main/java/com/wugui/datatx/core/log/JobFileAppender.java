@@ -9,21 +9,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * store trigger log in each log-file
+ * 按执行实例分别保存触发日志
  * @author xuxueli 2016-3-12 19:25:12
  */
 public class JobFileAppender {
 	private static Logger logger = LoggerFactory.getLogger(JobFileAppender.class);
 	
-	// for JobThread (support log for child thread of job handler)
+	// 任务日志上下文支持处理器创建的子线程
 	//public static ThreadLocal<String> contextHolder = new ThreadLocal<String>();
 	public static final InheritableThreadLocal<String> contextHolder = new InheritableThreadLocal<>();
 
 
 	/**
-	 * log base path
+	 * 日志根目录
 	 *
-	 * strut like:
+	 * 目录结构示例：
 	 * 	---/
 	 * 	---/gluesource/
 	 * 	---/gluesource/10_1514171108000.js
@@ -36,18 +36,18 @@ public class JobFileAppender {
 	private static String logBasePath = "/data/applogs/executor/jobhandler";
 	private static String glueSrcPath = logBasePath.concat("/gluesource");
 	public static void initLogPath(String logPath){
-		// init
+		// 初始化
 		if (logPath!=null && logPath.trim().length()>0) {
 			logBasePath = logPath;
 		}
-		// mk base dir
+		// 创建日志根目录
 		File logPathDir = new File(logBasePath);
 		if (!logPathDir.exists()) {
 			logPathDir.mkdirs();
 		}
 		logBasePath = logPathDir.getPath();
 
-		// mk glue dir
+		// 创建脚本目录
 		File glueBaseDir = new File(logPathDir, "gluesource");
 		if (!glueBaseDir.exists()) {
 			glueBaseDir.mkdirs();
@@ -62,7 +62,7 @@ public class JobFileAppender {
 	}
 
 	/**
-	 * log filename, like "logPath/yyyy-MM-dd/9999.log"
+	 * 日志文件路径示例：logPath/yyyy-MM-dd/9999.log
 	 *
 	 * @param triggerDate
 	 * @param logId
@@ -71,7 +71,7 @@ public class JobFileAppender {
 	public static String makeLogFileName(Date triggerDate, long logId) {
 
 		// filePath/yyyy-MM-dd
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");	// avoid concurrent problem, can not be static
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");	// 使用局部日期格式化器避免并发访问问题
 		File logFilePath = new File(getLogPath(), sdf.format(triggerDate));
 		if (!logFilePath.exists()) {
 			logFilePath.mkdir();
@@ -86,14 +86,14 @@ public class JobFileAppender {
 	}
 
 	/**
-	 * append log
+	 * 追加日志
 	 *
 	 * @param logFileName
 	 * @param appendLog
 	 */
 	public static void appendLog(String logFileName, String appendLog) {
 
-		// log file
+		// 日志文件
 		if (logFileName==null || logFileName.trim().length()==0) {
 			return;
 		}
@@ -108,13 +108,13 @@ public class JobFileAppender {
 			}
 		}
 
-		// log
+		// 执行日志
 		if (appendLog == null) {
 			appendLog = "";
 		}
 		appendLog += "\r\n";
 		
-		// append file content
+		// 追加文件内容
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(logFile, true);
@@ -135,14 +135,14 @@ public class JobFileAppender {
 	}
 
 	/**
-	 * support read log-file
+	 * 支持分段读取日志文件
 	 *
 	 * @param logFileName
-	 * @return log content
+	 * @return 日志内容
 	 */
 	public static LogResult readLog(String logFileName, int fromLineNum){
 
-		// valid log file
+		// 校验日志文件
 		if (logFileName==null || logFileName.trim().length()==0) {
             return new LogResult(fromLineNum, 0, "readLog fail, logFile not found", true);
 		}
@@ -152,7 +152,7 @@ public class JobFileAppender {
             return new LogResult(fromLineNum, 0, "readLog fail, logFile not exists", true);
 		}
 
-		// read file
+		// 读取文件
 		StringBuffer logContentBuffer = new StringBuffer();
 		int toLineNum = 0;
 		LineNumberReader reader = null;
@@ -162,7 +162,7 @@ public class JobFileAppender {
 			String line;
 
 			while ((line = reader.readLine())!=null) {
-				toLineNum = reader.getLineNumber();		// [from, to], start as 1
+				toLineNum = reader.getLineNumber();		// 读取区间为闭区间，行号从1开始
 				if (toLineNum >= fromLineNum) {
 					logContentBuffer.append(line).append("\n");
 				}
@@ -179,12 +179,12 @@ public class JobFileAppender {
 			}
 		}
 
-		// result
+		// 返回结果
 		LogResult logResult = new LogResult(fromLineNum, toLineNum, logContentBuffer.toString(), false);
 		return logResult;
 
 		/*
-        // it will return the number of characters actually skipped
+        // 返回实际跳过的字符数量
         reader.skip(Long.MAX_VALUE);
         int maxLineNum = reader.getLineNumber();
         maxLineNum++;	// 最大行号
@@ -192,9 +192,9 @@ public class JobFileAppender {
 	}
 
 	/**
-	 * read log data
+	 * 读取日志内容
 	 * @param logFile
-	 * @return log line content
+	 * @return 指定行的日志内容
 	 */
 	public static String readLines(File logFile){
 		BufferedReader reader = null;

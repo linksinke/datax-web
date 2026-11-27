@@ -1,4 +1,5 @@
 <section class="app-container ui-page ui-build">
+  <p class="ui-wizard-intro">按源表与目标表的顺序批量配对，复用统一调度模板。请先核对两侧表结构。</p>
   <el-steps :active="active - 1" finish-status="success" align-center>
     <el-step title="选择源库" description="Reader">
     </el-step>
@@ -30,7 +31,7 @@
     </el-alert>
     <p class="ui-hint" style="margin-top: 16px">每组源表、目标表配对生成一个同步任务。</p>
   </div>
-  <div class="ui-build-actions">
+  <div class="ui-build-actions ui-wizard-footer">
     <el-button v-if="active > 1" :disabled="uiPending.save" @click="last">上一步</el-button>
     <el-button v-if="active < 4" type="primary" @click="uiNext">下一步</el-button>
     <el-button v-else type="primary" :loading="uiPending.save" @click="uiSaveBuiltTask">批量创建任务</el-button>

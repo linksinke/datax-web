@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.wugui.datax.admin.core.util.TemplateBatchCodes;
+import com.wugui.datax.admin.core.util.SelectSqlPolicy;
+import com.wugui.datax.admin.core.util.SqlTemplateSupport;
 import com.wugui.datax.admin.dto.*;
 import com.wugui.datax.admin.entity.JobDatasource;
 import com.wugui.datax.admin.tool.datax.DataxJsonHelper;
@@ -176,14 +178,26 @@ public class DataxConfigTemplateService {
 
     private String generate(DataXJsonBuildDto config, Map<Long, JobDatasource> sources) {
         validateConfig(config, sources);
-        // The generator only resolves the configured runtime credentials; it never opens that connection.
+        // 运行SQL使用实际表名；保存的方案仍保留{{table}}，便于换表复用。
+        DataXJsonBuildDto runtime = TemplateConfigJson.read(TemplateConfigJson.write(config));
+        if (config.getRdbmsReader() != null && config.getRdbmsReader().getQuerySql() != null
+                && !config.getRdbmsReader().getQuerySql().trim().isEmpty()) {
+            JobDatasource source = sources == null ? datasources.getById(config.getReaderDatasourceId()) : sources.get(config.getReaderDatasourceId());
+            runtime.getRdbmsReader().setQuerySql(SelectSqlPolicy.expand(config.getRdbmsReader().getQuerySql(), config.getReaderTables().get(0), source.getDatasource()));
+        }
+        if (runtime.getRdbmsWriter() != null) {
+            JobDatasource target = sources == null ? datasources.getById(config.getWriterDatasourceId()) : sources.get(config.getWriterDatasourceId());
+            runtime.getRdbmsWriter().setPreSql(SqlTemplateSupport.expandTable(runtime.getRdbmsWriter().getPreSql(), config.getWriterTables().get(0), target.getDatasource()));
+            runtime.getRdbmsWriter().setPostSql(SqlTemplateSupport.expandTable(runtime.getRdbmsWriter().getPostSql(), config.getWriterTables().get(0), target.getDatasource()));
+        }
+        // 生成器仅读取实际数据源的连接配置，不连接实际业务数据库。
         String json;
         if (sources == null) {
-            json = generator.buildJobJson(config);
+            json = generator.buildJobJson(runtime);
         } else {
             DataxJsonHelper helper = new DataxJsonHelper();
-            helper.initReader(config, sources.get(config.getReaderDatasourceId()));
-            helper.initWriter(config, sources.get(config.getWriterDatasourceId()));
+            helper.initReader(runtime, sources.get(config.getReaderDatasourceId()));
+            helper.initWriter(runtime, sources.get(config.getWriterDatasourceId()));
             json = JSON.toJSONString(helper.buildJob());
         }
         JSONObject document = JSON.parseObject(json, com.alibaba.fastjson.parser.Feature.OrderedField);
@@ -191,8 +205,8 @@ public class DataxConfigTemplateService {
         for (int index = 0; index < content.size(); index++) {
             JSONObject parameter = content.getJSONObject(index).getJSONObject("reader").getJSONObject("parameter");
             JSONArray columns = parameter.getJSONArray("column");
-            // A reader column is a SELECT expression; writer columns are INSERT targets and must stay bare.
-            // Custom querySql already defines its own SELECT expressions and has no column array.
+            // 读取字段可使用 SELECT 表达式；写入字段必须是目标列名，不添加别名。
+            // 自定义查询已定义 SELECT 表达式，读取端不再额外生成字段数组。
             if (columns != null) {
                 for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
                     String column = columns.getString(columnIndex);
@@ -203,7 +217,7 @@ public class DataxConfigTemplateService {
         return TemplateJsonLayout.format(document);
     }
 
-    /** Each table pair is one JSON document and one queryable record; all records are committed together. */
+    /** 每组表生成一份 JSON 和一条查询记录，整批记录在同一事务中提交。 */
     @Transactional
     public List<DataxConfigTemplateDto> generateBatch(DataxTemplateBatchDto batch, int owner) {
         Assert.notNull(batch, "请选择要生成的表");
@@ -265,7 +279,7 @@ public class DataxConfigTemplateService {
             rows.add(new Object[]{dto.getName(), dto.getDescription(), owner, dto.getBuildConfig().getReaderDatasourceId(),
                     dto.getBuildConfig().getWriterDatasourceId(), TemplateConfigJson.write(dto.getBuildConfig()), encrypted});
         }
-        // Bound both row count and payload. Multi-row INSERT avoids one network round trip per document.
+        // 同时限制行数和载荷大小，使用多行插入减少逐份配置的网络往返。
         for (int start = 0; start < rows.size(); ) {
             int end = start, bytes = 0;
             while (end < rows.size() && end - start < 100) {
@@ -299,7 +313,7 @@ public class DataxConfigTemplateService {
 
     public byte[] downloadBatch(List<Long> ids, int owner) throws IOException {
         Assert.isTrue(ids != null && !ids.isEmpty() && ids.size() <= 500, "请选择1至500份模板");
-        // Resolve all documents before producing any archive; an unauthorized ID fails the entire request.
+        // 打包前校验全部配置，只要包含无权访问的编号就拒绝整个请求。
         List<DataxConfigTemplateDto> documents = new ArrayList<>();
         for (Long id : new LinkedHashSet<>(ids)) {
             Assert.notNull(id, "模板ID不能为空");
@@ -332,7 +346,7 @@ public class DataxConfigTemplateService {
         validateJson(dto.getJobJson());
         dto.setJobJson(TemplateJsonLayout.format(JsonDatasourceCredentials.document(dto.getJobJson())));
         dto.getBuildConfig().setFileName(fileName(dto.getBuildConfig(), dto.getJobJson()));
-        // JSON contains connection credentials; use the same key as managed datasources.
+        // JSON 包含连接凭据，使用与数据源管理一致的密钥加密保存。
         String encrypted = AESUtil.encrypt(dto.getJobJson());
         Assert.notNull(encrypted, "模板加密失败，请检查数据源加密密钥配置");
         if (dto.getId() == null) {
@@ -393,6 +407,13 @@ public class DataxConfigTemplateService {
         Assert.notNull(config, "请选择数据源和表字段");
         validateDatasource(config.getReaderDatasourceId(), sources);
         validateDatasource(config.getWriterDatasourceId(), sources);
+        if (config.getProjectId() != null) {
+            Assert.isTrue(jdbc.queryForObject("SELECT COUNT(*) FROM job_project WHERE id=? AND flag=1", Integer.class, config.getProjectId()) == 1, "关联项目不存在或已停用");
+            for (Long id : Arrays.asList(config.getReaderDatasourceId(), config.getWriterDatasourceId())) {
+                Assert.isTrue(jdbc.queryForObject("SELECT COUNT(*) FROM job_project_datasource WHERE project_id=? AND datasource_id=?", Integer.class, config.getProjectId(), id) == 1,
+                        "实际数据源未绑定到当前项目，请重新选择");
+            }
+        }
         if (config.getReaderMetadataDatasourceId() != null)
             validateDatasource(config.getReaderMetadataDatasourceId(), sources);
         if (config.getWriterMetadataDatasourceId() != null)

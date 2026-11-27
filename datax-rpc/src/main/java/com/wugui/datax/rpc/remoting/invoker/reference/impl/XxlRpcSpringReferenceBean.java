@@ -5,21 +5,21 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * rpc reference bean, use by spring xml and annotation (for spring)
+ * 通过 Spring XML 或注解配置的 RPC 服务引用
  *
  * @author xuxueli 2015-10-29 20:18:32
  */
 public class XxlRpcSpringReferenceBean implements FactoryBean<Object>, InitializingBean {
 
 
-    // ---------------------- util ----------------------
+    // 辅助方法
 
     private XxlRpcReferenceBean xxlRpcReferenceBean;
 
     @Override
     public void afterPropertiesSet() {
 
-        // init config
+        // 初始化服务引用配置
         this.xxlRpcReferenceBean = new XxlRpcReferenceBean();
     }
 

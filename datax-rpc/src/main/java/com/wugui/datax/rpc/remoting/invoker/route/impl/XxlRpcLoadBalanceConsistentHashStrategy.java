@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * consustent hash
+ * 一致性哈希策略
  *
  * 单个JOB对应的每个执行器，使用频率最低的优先被选举
  *      a(*)、LFU(Least Frequently Used)：最不经常使用，频率/次数
@@ -29,7 +29,7 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
      */
     private long hash(String key) {
 
-        // md5 byte
+        // 计算 MD5 字节摘要
         MessageDigest md5;
         try {
             md5 = MessageDigest.getInstance("MD5");
@@ -47,7 +47,7 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
         md5.update(keyBytes);
         byte[] digest = md5.digest();
 
-        // hash code, Truncate to 32-bits
+        // 计算哈希值并截取低32位
         long hashCode = ((long) (digest[3] & 0xFF) << 24)
                 | ((long) (digest[2] & 0xFF) << 16)
                 | ((long) (digest[1] & 0xFF) << 8)

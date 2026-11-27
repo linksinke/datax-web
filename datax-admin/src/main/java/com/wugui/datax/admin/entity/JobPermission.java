@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @TableName("job_permission")
-public class JobPermission {
+public class JobPermission extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private int id;

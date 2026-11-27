@@ -31,7 +31,7 @@
     }
 
     function api(url, method, data, params) {
-        return request({url: url, method: method || "get", data: data, params: params}).then(content);
+        return request({url: url, method: method || "get", data: data, params: params, silent: true}).then(content);
     }
 
     function read(vm, work, accept) {
@@ -175,7 +175,7 @@
         appendHook(options, "beforeDestroy", function () {
             ++this.uiReadSequence;
         });
-        // Keep options compatible with existing Vue children such as Reader, Writer and CodeMirror.
+        // Share options with Vue children such as Reader, Writer and CodeMirror.
         pages[name] = options;
         return options;
     }
@@ -190,6 +190,7 @@
             options.data = function () {
                 return Object.assign(oldData ? oldData.call(this) : {}, {
                     uiSearchVisible: false,
+                    uiNotificationsVisible: false,
                     uiSearchQuery: "",
                     uiSearchIndex: 0
                 });
@@ -197,6 +198,9 @@
             options.computed = Object.assign({}, options.computed, {
                 uiUsername: function () {
                     return this.$store.getters.name || "当前账号";
+                },
+                uiWorkbench: function () {
+                    return global.DataxWorkbench ? global.DataxWorkbench.state : { running: 0, unread: 0, records: [], available: true };
                 },
                 uiSearchResults: function () {
                     var found = [], query = this.uiSearchQuery.trim().toLowerCase();
@@ -218,6 +222,18 @@
                 }
             });
             options.methods = Object.assign({}, options.methods, {
+                uiOpenNotifications: function () {
+                    this.uiNotificationsVisible = true;
+                    if (global.DataxWorkbench) global.DataxWorkbench.refresh();
+                },
+                uiReadNotifications: function () {
+                    return global.DataxWorkbench.read().catch(error => this.$message.error(error.message));
+                },
+                uiOpenNotice: function (notice) {
+                    this.uiNotificationsVisible = false;
+                    global.DataxWorkbench.read(notice.id).catch(error => this.$message.error(error.message));
+                    this.$router.push('/datax/operations/jobs?operationId=' + notice.id);
+                },
                 uiOpenSearch: function () {
                     var vm = this;
                     vm.uiSearchQuery = "";
@@ -238,6 +254,7 @@
             });
             appendHook(options, "mounted", function () {
                 var vm = this;
+                if (global.DataxWorkbench) global.DataxWorkbench.start();
                 vm.uiSearchShortcut = function (event) {
                     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
                         event.preventDefault();
@@ -248,6 +265,7 @@
             });
             appendHook(options, "beforeDestroy", function () {
                 document.removeEventListener("keydown", this.uiSearchShortcut);
+                if (global.DataxWorkbench) global.DataxWorkbench.stop();
             });
         }
         return options;
@@ -259,6 +277,7 @@
         store = storage;
         request = dependencies.request;
         navigation = dependencies.navigation;
+        if (global.DataxWorkbench) global.DataxWorkbench.init(Vue, router);
         Vue.component("ui-data-state", apply({props: {state: {type: Object, required: true}}}, "data-state"));
         Vue.component("ui-pagination", apply({
             props: ["total", "current", "size", "updatedAt"], methods: {

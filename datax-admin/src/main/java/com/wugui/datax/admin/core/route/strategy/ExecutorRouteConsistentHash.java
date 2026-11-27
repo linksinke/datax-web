@@ -15,7 +15,7 @@ import java.util.TreeMap;
  * 分组下机器地址相同，不同JOB均匀散列在不同机器上，保证分组下机器分配JOB平均；且每个JOB固定调度其中一台机器；
  *      a、virtual node：解决不均衡问题
  *      b、hash method replace hashCode：String的hashCode可能重复，需要进一步扩大hashCode的取值范围
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteConsistentHash extends ExecutorRouter {
 
@@ -28,7 +28,7 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
      */
     private static long hash(String key) {
 
-        // md5 byte
+        // 计算 MD5 字节摘要
         MessageDigest md5;
         try {
             md5 = MessageDigest.getInstance("MD5");
@@ -46,7 +46,7 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
         md5.update(keyBytes);
         byte[] digest = md5.digest();
 
-        // hash code, Truncate to 32-bits
+        // 计算哈希值并截取低32位
         long hashCode = ((long) (digest[3] & 0xFF) << 24)
                 | ((long) (digest[2] & 0xFF) << 16)
                 | ((long) (digest[1] & 0xFF) << 8)

@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 /**
- * xxl-job config
+ * 任务调度配置
  *
  * @author xuxueli 2017-04-28
  */
@@ -29,7 +29,7 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
     }
 
 
-    // ---------------------- XxlJobScheduler ----------------------
+    // 任务调度器
 
     private JobScheduler xxlJobScheduler;
 
@@ -47,9 +47,9 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
     }
 
 
-    // ---------------------- XxlJobScheduler ----------------------
+    // 任务调度器
 
-    // conf
+    // 配置参数
     @Value("${datax.job.i18n}")
     private String i18n;
 
@@ -71,7 +71,7 @@ public class JobAdminConfig implements InitializingBean, DisposableBean {
     @Value("${datasource.aes.key}")
     private String dataSourceAESKey;
 
-    // dao, service
+    // 数据访问与业务服务
 
     @Resource
     private JobLogMapper jobLogMapper;

@@ -10,7 +10,7 @@ import com.wugui.datax.admin.core.util.I18nUtil;
 import java.util.List;
 
 /**
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteFailover extends ExecutorRouter {
 
@@ -19,7 +19,7 @@ public class ExecutorRouteFailover extends ExecutorRouter {
 
         StringBuffer beatResultSB = new StringBuffer();
         for (String address : addressList) {
-            // beat
+            // 检测心跳
             ReturnT<String> beatResult = null;
             try {
                 ExecutorBiz executorBiz = JobScheduler.getExecutorBiz(address);
@@ -34,7 +34,7 @@ public class ExecutorRouteFailover extends ExecutorRouter {
                     .append("<br>code：").append(beatResult.getCode())
                     .append("<br>msg：").append(beatResult.getMsg());
 
-            // beat success
+            // 心跳检测成功
             if (beatResult.getCode() == ReturnT.SUCCESS_CODE) {
 
                 beatResult.setMsg(beatResultSB.toString());

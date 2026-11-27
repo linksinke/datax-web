@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Startup defaults; existing datasource records are never overwritten. */
+/**
+ * 启动默认配置；已存在的数据源记录不会被覆盖
+ */
 @Data
 @Component
 @ConfigurationProperties(prefix = "datax.bootstrap")

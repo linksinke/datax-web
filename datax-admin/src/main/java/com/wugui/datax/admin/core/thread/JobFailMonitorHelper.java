@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * job monitor instance
+ * 任务失败监控实例
  *
  * @author xuxueli 2015-9-1 18:05:56
  */
@@ -32,7 +32,7 @@ public class JobFailMonitorHelper {
 		return instance;
 	}
 
-	// ---------------------- monitor ----------------------
+	// 监控处理
 
 	private Thread monitorThread;
 	private volatile boolean toStop = false;
@@ -42,7 +42,7 @@ public class JobFailMonitorHelper {
 			@Override
 			public void run() {
 
-				// monitor
+				// 监控任务状态
 				while (!toStop) {
 					try {
 
@@ -50,7 +50,7 @@ public class JobFailMonitorHelper {
 						if (failLogIds!=null && !failLogIds.isEmpty()) {
 							for (long failLogId: failLogIds) {
 
-								// lock log
+								// 锁定待处理日志
 								int lockRet = JobAdminConfig.getAdminConfig().getJobLogMapper().updateAlarmStatus(failLogId, 0, -1);
 								if (lockRet < 1) {
 									continue;
@@ -58,7 +58,7 @@ public class JobFailMonitorHelper {
 								JobLog log = JobAdminConfig.getAdminConfig().getJobLogMapper().selectById(failLogId);
 								JobInfo info = JobAdminConfig.getAdminConfig().getJobInfoMapper().selectById(log.getJobId());
 
-								// 1、fail retry monitor
+								// 处理失败任务重试
 								if (log.getExecutorFailRetryCount() > 0) {
 									JobTriggerPoolHelper.trigger(log.getJobId(), TriggerTypeEnum.RETRY, (log.getExecutorFailRetryCount()-1), log.getExecutorShardingParam(), log.getExecutorParam());
 									String retryMsg = "<br><br><span style=\"color:#F39C12;\" > >>>>>>>>>>>"+ I18nUtil.getString("jobconf_trigger_type_retry") +"<<<<<<<<<<< </span><br>";
@@ -66,7 +66,7 @@ public class JobFailMonitorHelper {
 									JobAdminConfig.getAdminConfig().getJobLogMapper().updateTriggerInfo(log);
 								}
 
-								// 2、fail alarm monitor
+								// 处理失败任务告警
 								int newAlarmStatus = 0;		// 告警状态：0-默认、-1=锁定状态、1-无需告警、2-告警成功、3-告警失败
 								if (info!=null && info.getAlarmEmail()!=null && info.getAlarmEmail().trim().length()>0) {
 									boolean alarmResult = true;
@@ -112,7 +112,7 @@ public class JobFailMonitorHelper {
 
 	public void toStop(){
 		toStop = true;
-		// interrupt and wait
+		// 发送中断信号并等待线程退出
 		monitorThread.interrupt();
 		try {
 			monitorThread.join();
@@ -122,9 +122,9 @@ public class JobFailMonitorHelper {
 	}
 
 
-	// ---------------------- alarm ----------------------
+	// 告警处理
 
-	// email alarm template
+	// 邮件告警模板
 	private static final String mailBodyTemplate = "<h5>" + I18nUtil.getString("jobconf_monitor_detail") + "：</span>" +
 			"<table border=\"1\" cellpadding=\"3\" style=\"border-collapse:collapse; width:80%;\" >\n" +
 			"   <thead style=\"font-weight: bold;color: #ffffff;background-color: #ff8c00;\" >" +
@@ -148,17 +148,17 @@ public class JobFailMonitorHelper {
 			"</table>";
 
 	/**
-	 * fail alarm
+	 * 任务失败告警
 	 *
 	 * @param jobLog
 	 */
 	private boolean failAlarm(JobInfo info, JobLog jobLog){
 		boolean alarmResult = true;
 
-		// send monitor email
+		// 发送监控告警邮件
 		if (info!=null && info.getAlarmEmail()!=null && info.getAlarmEmail().trim().length()>0) {
 
-			// alarmContent
+			// 告警内容
 			String alarmContent = "Alarm Job LogId=" + jobLog.getId();
 			if (jobLog.getTriggerCode() != ReturnT.SUCCESS_CODE) {
 				alarmContent += "<br>TriggerMsg=<br>" + jobLog.getTriggerMsg();
@@ -167,7 +167,7 @@ public class JobFailMonitorHelper {
 				alarmContent += "<br>HandleCode=" + jobLog.getHandleMsg();
 			}
 
-			// email info
+			// 告警邮件内容
 			JobGroup group = JobAdminConfig.getAdminConfig().getJobGroupMapper().selectById(Integer.valueOf(info.getJobGroup()));
 			String personal = I18nUtil.getString("admin_name_full");
 			String title = I18nUtil.getString("jobconf_monitor");
@@ -180,7 +180,7 @@ public class JobFailMonitorHelper {
 			Set<String> emailSet = new HashSet<String>(Arrays.asList(info.getAlarmEmail().split(",")));
 			for (String email: emailSet) {
 
-				// make mail
+				// 组装邮件
 				try {
 					MimeMessage mimeMessage = JobAdminConfig.getAdminConfig().getMailSender().createMimeMessage();
 
@@ -200,7 +200,7 @@ public class JobFailMonitorHelper {
 			}
 		}
 
-		// do something, custom alarm strategy, such as sms
+		// 可在此扩展短信等自定义告警策略
 
 
 		return alarmResult;

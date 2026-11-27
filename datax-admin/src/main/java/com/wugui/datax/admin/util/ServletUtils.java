@@ -241,7 +241,7 @@ public class ServletUtils {
                 String[] values = request.getParameterValues(paramName);
                 if (values == null || values.length == 0) {
                     values = new String[]{};
-                    // Do nothing, no values found at all.
+                    // 未找到任何值时保持空结果。
                 } else if (values.length > 1) {
                     params.put(unprefixed, values);
                 } else {
@@ -293,9 +293,9 @@ public class ServletUtils {
      * 设置客户端缓存过期时间 的Header.
      */
     public static void setExpiresHeader(HttpServletResponse response, long expiresSeconds) {
-        // Http 1.0 header, set a fix expires date.
+        // 设置 HTTP 1.0 缓存头，使用固定过期时间。
         response.setDateHeader(HttpHeaders.EXPIRES, System.currentTimeMillis() + expiresSeconds * 1000);
-        // Http 1.1 header, set a time after now.
+        // 设置 HTTP 1.1 缓存头，使用相对当前时刻的过期时间。
         response.setHeader(HttpHeaders.CACHE_CONTROL, "private, max-age=" + expiresSeconds);
     }
 
@@ -303,10 +303,10 @@ public class ServletUtils {
      * 设置禁止客户端缓存的Header.
      */
     public static void setNoCacheHeader(HttpServletResponse response) {
-        // Http 1.0 header
+        // HTTP 1.0 响应头
         response.setDateHeader(HttpHeaders.EXPIRES, 1L);
         response.addHeader(HttpHeaders.PRAGMA, "no-cache");
-        // Http 1.1 header
+        // HTTP 1.1 响应头
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0");
     }
 

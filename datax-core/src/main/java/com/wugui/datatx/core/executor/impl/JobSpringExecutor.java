@@ -14,25 +14,25 @@ import org.springframework.context.ApplicationContextAware;
 import java.util.Map;
 
 /**
- * xxl-job executor (for spring)
+ * Spring 环境下的任务执行器
  *
  * @author xuxueli 2018-11-01 09:24:52
  */
 public class JobSpringExecutor extends JobExecutor implements ApplicationContextAware, SmartInitializingSingleton, DisposableBean {
 
 
-    // start
+    // 启动
     @Override
     public void afterSingletonsInstantiated() {
 
-        // init JobHandler Repository
+        // 初始化任务处理器容器
         initJobHandlerRepository(applicationContext);
 
-        // refresh GlueFactory
+        // 刷新动态脚本工厂
         GlueFactory.refreshInstance(1);
 
 
-        // super start
+        // 调用父类启动逻辑
         try {
             super.start();
         } catch (Exception e) {
@@ -40,7 +40,7 @@ public class JobSpringExecutor extends JobExecutor implements ApplicationContext
         }
     }
 
-    // destroy
+    // 释放资源
     @Override
     public void destroy() {
         super.destroy();
@@ -52,7 +52,7 @@ public class JobSpringExecutor extends JobExecutor implements ApplicationContext
             return;
         }
 
-        // init job handler action
+        // 初始化任务处理器行为
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
 
         if (CollectionUtil.isNotEmpty(serviceBeanMap)) {
@@ -69,7 +69,7 @@ public class JobSpringExecutor extends JobExecutor implements ApplicationContext
         }
     }
 
-    // ---------------------- applicationContext ----------------------
+    // Spring 应用上下文
     private static ApplicationContext applicationContext;
 
     @Override

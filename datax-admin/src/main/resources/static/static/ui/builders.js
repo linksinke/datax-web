@@ -17,12 +17,26 @@
     uiNext: function () {
       try {
         var side = this.active === 1 ? "reader" : "writer";
-        if (this.active < 3 && !this.$refs[side].getData().datasourceId) throw new Error("请先选择" + (side === "reader" ? "源库" : "目标库") + "数据源");
+        if (this.active < 3) {
+          var component = this.$refs[side], data = component.getData(), relational = !component.dataSource || ['mysql','oracle','postgresql','sqlserver','clickhouse'].includes(component.dataSource);
+          if (!data.datasourceId) throw new Error('请先选择' + (side === 'reader' ? '源库' : '目标库') + '数据源');
+          if (relational && this.$options.uiBuilderKind === 'single') {
+            if (!data.tableName && !(side === 'reader' && data.querySql)) throw new Error('请选择数据库表，或填写读取 SQL');
+            if (!data.columns || !data.columns.length) throw new Error('请选择字段；使用 SQL 时请先解析输出字段');
+          }
+          if (this.$options.uiBuilderKind === 'batch' && (!data.tables || !data.tables.length)) throw new Error('请至少选择一张表');
+        }
+        if (this.active === 3) this.uiValidateMapping();
         if (this.active === 3 && this.$options.uiBuilderKind === "single") {
           var vm = this; return this.uiGenerate().then(function (done) { if (done) vm.active = 4; });
         }
         this.next();
       } catch (error) { this.$message.warning(error.message || "请完善当前步骤配置"); }
+    },
+    uiValidateMapping: function () {
+      var single = this.$options.uiBuilderKind === 'single', mapper = this.$refs.mapper;
+      var source = single ? mapper.getLColumns() : mapper.getLTables(), target = single ? mapper.getRColumns() : mapper.getRTables();
+      if (!source || !target || !source.length || source.length !== target.length) throw new Error('请按左右同序号配对' + (single ? '字段' : '表') + '，两侧数量必须一致且不为空');
     },
     uiCopyJson: function () {
       var value = typeof this.configJson === "string" ? this.configJson : JSON.stringify(this.configJson, null, 2);
@@ -35,6 +49,7 @@
     uiGenerate: function () {
       var vm = this;
       return UI.commit(vm, "build", function () {
+        vm.uiValidateMapping();
         var permission = vm.configJson ? vm.$confirm("重新生成将替换当前 JSON，是否继续？", "重新生成", { confirmButtonText: "重新生成", cancelButtonText: "保留当前配置", type: "warning" }) : Promise.resolve();
         return permission.then(function () {
           var reader = vm.$refs.reader.getData(), writer = vm.$refs.writer.getData();

@@ -22,173 +22,17 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * Provides a parser and evaluator for unix-like cron expressions. Cron 
- * expressions provide the ability to specify complex time combinations such as
- * &quot;At 8:00am every Monday through Friday&quot; or &quot;At 1:30am every 
- * last Friday of the month&quot;. 
- * <P>
- * Cron expressions are comprised of 6 required fields and one optional field
- * separated by white space. The fields respectively are described as follows:
- * 
- * <table cellspacing="8">
- * <tr>
- * <th align="left">Field Name</th>
- * <th align="left">&nbsp;</th>
- * <th align="left">Allowed Values</th>
- * <th align="left">&nbsp;</th>
- * <th align="left">Allowed Special Characters</th>
- * </tr>
- * <tr>
- * <td align="left"><code>Seconds</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>0-59</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * /</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Minutes</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>0-59</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * /</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Hours</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>0-23</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * /</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Day-of-month</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>1-31</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * ? / L W</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Month</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>0-11 or JAN-DEC</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * /</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Day-of-Week</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>1-7 or SUN-SAT</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * ? / L #</code></td>
- * </tr>
- * <tr>
- * <td align="left"><code>Year (Optional)</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>empty, 1970-2199</code></td>
- * <td align="left">&nbsp;</th>
- * <td align="left"><code>, - * /</code></td>
- * </tr>
- * </table>
- * <P>
- * The '*' character is used to specify all values. For example, &quot;*&quot; 
- * in the minute field means &quot;every minute&quot;.
- * <P>
- * The '?' character is allowed for the day-of-month and day-of-week fields. It
- * is used to specify 'no specific value'. This is useful when you need to
- * specify something in one of the two fields, but not the other.
- * <P>
- * The '-' character is used to specify ranges For example &quot;10-12&quot; in
- * the hour field means &quot;the hours 10, 11 and 12&quot;.
- * <P>
- * The ',' character is used to specify additional values. For example
- * &quot;MON,WED,FRI&quot; in the day-of-week field means &quot;the days Monday,
- * Wednesday, and Friday&quot;.
- * <P>
- * The '/' character is used to specify increments. For example &quot;0/15&quot;
- * in the seconds field means &quot;the seconds 0, 15, 30, and 45&quot;. And 
- * &quot;5/15&quot; in the seconds field means &quot;the seconds 5, 20, 35, and
- * 50&quot;.  Specifying '*' before the  '/' is equivalent to specifying 0 is
- * the value to start with. Essentially, for each field in the expression, there
- * is a set of numbers that can be turned on or off. For seconds and minutes, 
- * the numbers range from 0 to 59. For hours 0 to 23, for days of the month 0 to
- * 31, and for months 0 to 11 (JAN to DEC). The &quot;/&quot; character simply helps you turn
- * on every &quot;nth&quot; value in the given set. Thus &quot;7/6&quot; in the
- * month field only turns on month &quot;7&quot;, it does NOT mean every 6th 
- * month, please note that subtlety.  
- * <P>
- * The 'L' character is allowed for the day-of-month and day-of-week fields.
- * This character is short-hand for &quot;last&quot;, but it has different 
- * meaning in each of the two fields. For example, the value &quot;L&quot; in 
- * the day-of-month field means &quot;the last day of the month&quot; - day 31 
- * for January, day 28 for February on non-leap years. If used in the 
- * day-of-week field by itself, it simply means &quot;7&quot; or 
- * &quot;SAT&quot;. But if used in the day-of-week field after another value, it
- * means &quot;the last xxx day of the month&quot; - for example &quot;6L&quot;
- * means &quot;the last friday of the month&quot;. You can also specify an offset 
- * from the last day of the month, such as "L-3" which would mean the third-to-last 
- * day of the calendar month. <i>When using the 'L' option, it is important not to 
- * specify lists, or ranges of values, as you'll get confusing/unexpected results.</i>
- * <P>
- * The 'W' character is allowed for the day-of-month field.  This character 
- * is used to specify the weekday (Monday-Friday) nearest the given day.  As an 
- * example, if you were to specify &quot;15W&quot; as the value for the 
- * day-of-month field, the meaning is: &quot;the nearest weekday to the 15th of
- * the month&quot;. So if the 15th is a Saturday, the trigger will fire on 
- * Friday the 14th. If the 15th is a Sunday, the trigger will fire on Monday the
- * 16th. If the 15th is a Tuesday, then it will fire on Tuesday the 15th. 
- * However if you specify &quot;1W&quot; as the value for day-of-month, and the
- * 1st is a Saturday, the trigger will fire on Monday the 3rd, as it will not 
- * 'jump' over the boundary of a month's days.  The 'W' character can only be 
- * specified when the day-of-month is a single day, not a range or list of days.
- * <P>
- * The 'L' and 'W' characters can also be combined for the day-of-month 
- * expression to yield 'LW', which translates to &quot;last weekday of the 
- * month&quot;.
- * <P>
- * The '#' character is allowed for the day-of-week field. This character is
- * used to specify &quot;the nth&quot; XXX day of the month. For example, the 
- * value of &quot;6#3&quot; in the day-of-week field means the third Friday of 
- * the month (day 6 = Friday and &quot;#3&quot; = the 3rd one in the month). 
- * Other examples: &quot;2#1&quot; = the first Monday of the month and 
- * &quot;4#5&quot; = the fifth Wednesday of the month. Note that if you specify
- * &quot;#5&quot; and there is not 5 of the given day-of-week in the month, then
- * no firing will occur that month.  If the '#' character is used, there can
- * only be one expression in the day-of-week field (&quot;3#1,6#3&quot; is 
- * not valid, since there are two expressions).
- * <P>
- * <!--The 'C' character is allowed for the day-of-month and day-of-week fields.
- * This character is short-hand for "calendar". This means values are
- * calculated against the associated calendar, if any. If no calendar is
- * associated, then it is equivalent to having an all-inclusive calendar. A
- * value of "5C" in the day-of-month field means "the first day included by the
- * calendar on or after the 5th". A value of "1C" in the day-of-week field
- * means "the first day included by the calendar on or after Sunday".-->
- * <P>
- * The legal characters and the names of months and days of the week are not
- * case sensitive.
- * 
- * <p>
- * <b>NOTES:</b>
- * <ul>
- * <li>Support for specifying both a day-of-week and a day-of-month value is
- * not complete (you'll need to use the '?' character in one of these fields).
- * </li>
- * <li>Overflowing ranges is supported - that is, having a larger number on 
- * the left hand side than the right. You might do 22-2 to catch 10 o'clock 
- * at night until 2 o'clock in the morning, or you might have NOV-FEB. It is 
- * very important to note that overuse of overflowing ranges creates ranges 
- * that don't make sense and no effort has been made to determine which 
- * interpretation CronExpression chooses. An example would be 
- * "0 0 14-6 ? * FRI-MON". </li>
- * </ul>
- * </p>
- * 
- * 
- * @author Sharada Jambula, James House
- * @author Contributions from Mads Henderson
- * @author Refactoring from CronTrigger to CronExpression by Aaron Craven
- *
- * Borrowed from quartz v2.3.1
- *
+ * Cron 表达式解析与下一次触发时间计算。
+ * <p>表达式由秒、分、时、日、月、星期六个必填字段和一个可选年份字段组成，以空格分隔。
+ * 秒与分钟为0至59，小时为0至23，日期为1至31，月份为1至12，星期为1至7；
+ * 月份也可使用 JAN 至 DEC，星期也可使用 SUN 至 SAT。
+ * <p>支持逗号枚举、连字符范围、星号通配、斜杠步长。问号用于日期或星期中的未指定项；
+ * L 表示最后一天或最后一个指定星期，W 表示最近工作日，# 表示本月第几个指定星期。
+ * 日期和星期不能同时指定具体规则，非法范围或不支持的组合会抛出解析异常。
+ * <p>例如 0 0 8 ? * MON-FRI 表示工作日早八点。计算忽略毫秒，采用配置时区；
+ * 夏令时切换可能使某个本地时间重复或不存在，需结合业务时区校验调度计划。
+ * 可解析的最大年份为当前年份加100。反向时间及最终触发时间查询尚未实现。
+ * 原始版权及许可声明保留在文件头。
  */
 public final class CronExpression implements Serializable, Cloneable {
 
@@ -250,15 +94,9 @@ public final class CronExpression implements Serializable, Cloneable {
     
     public static final int MAX_YEAR = Calendar.getInstance().get(Calendar.YEAR) + 100;
 
-    /**
-     * Constructs a new <CODE>CronExpression</CODE> based on the specified 
-     * parameter.
-     * 
-     * @param cronExpression String representation of the cron expression the
-     *                       new object should represent
-     * @throws java.text.ParseException
-     *         if the string expression cannot be parsed into a valid
-     *         <CODE>CronExpression</CODE>
+    /** 根据表达式创建解析器。
+     * @param cronExpression 完整 Cron 表达式
+     * @throws ParseException 表达式语法或字段范围无效
      */
     public CronExpression(String cronExpression) throws ParseException {
         if (cronExpression == null) {
@@ -270,18 +108,14 @@ public final class CronExpression implements Serializable, Cloneable {
         buildExpression(this.cronExpression);
     }
 
-    /**
-     * Constructs a new {@code CronExpression} as a copy of an existing
-     * instance.
-     *
-     * @param expression
-     *            The existing cron expression to be copied
+    /** 复制已有表达式及其时区。
+     * @param expression 待复制的解析器
      */
     public CronExpression(CronExpression expression) {
         /*
-         * We don't call the other constructor here since we need to swallow the
-         * ParseException. We also elide some of the sanity checking as it is
-         * not logically trippable.
+         * 此处不调用另一个构造器，因为需要捕获
+         * 解析异常；同时省略在复制已有有效表达式时
+         * 不会触发的重复校验。
          */
         this.cronExpression = expression.getCronExpression();
         try {
@@ -294,14 +128,9 @@ public final class CronExpression implements Serializable, Cloneable {
         }
     }
 
-    /**
-     * Indicates whether the given date satisfies the cron expression. Note that
-     * milliseconds are ignored, so two Dates falling on different milliseconds
-     * of the same second will always have the same result here.
-     *
-     * @param date the date to evaluate
-     * @return a boolean indicating whether the given date satisfies the cron
-     *         expression
+    /** 判断指定时间是否匹配表达式；同一秒内的不同毫秒视为相同时间。
+     * @param date 待判断时间
+     * @return 是否匹配
      */
     public boolean isSatisfiedBy(Date date) {
         Calendar testDateCal = Calendar.getInstance(getTimeZone());
@@ -316,30 +145,22 @@ public final class CronExpression implements Serializable, Cloneable {
         return ((timeAfter != null) && (timeAfter.equals(originalDate)));
     }
 
-    /**
-     * Returns the next date/time <I>after</I> the given date/time which
-     * satisfies the cron expression.
-     *
-     * @param date the date/time at which to begin the search for the next valid
-     *             date/time
-     * @return the next valid date/time
+    /** 查找严格晚于指定时间的下一个匹配时间；无可用时间时返回空。
+     * @param date 搜索起点
+     * @return 下一个有效触发时间
      */
     public Date getNextValidTimeAfter(Date date) {
         return getTimeAfter(date);
     }
 
-    /**
-     * Returns the next date/time <I>after</I> the given date/time which does
-     * <I>not</I> satisfy the expression
-     *
-     * @param date the date/time at which to begin the search for the next
-     *             invalid date/time
-     * @return the next valid date/time
+    /** 查找严格晚于指定时间的第一个不匹配时刻。
+     * @param date 搜索起点
+     * @return 第一个无效触发时间
      */
     public Date getNextInvalidTimeAfter(Date date) {
         long difference = 1000;
 
-        //move back to the nearest second so differences will be accurate
+        //回退到整秒，保证时间差比较准确
         Calendar adjustCal = Calendar.getInstance(getTimeZone());
         adjustCal.setTime(date);
         adjustCal.set(Calendar.MILLISECOND, 0);
@@ -347,11 +168,11 @@ public final class CronExpression implements Serializable, Cloneable {
 
         Date newDate;
 
-        //FUTURE_TODO: (QUARTZ-481) IMPROVE THIS! The following is a BAD solution to this problem. Performance will be very bad here, depending on the cron expression. It is, however A solution.
+        //待优化（QUARTZ-481）：逐秒检查对部分表达式性能较差，应改为区间计算
 
-        //keep getting the next included time until it's farther than one second
-        // apart. At that point, lastDate is the last valid fire time. We return
-        // the second immediately following it.
+        //持续查找下一个匹配时间，直到间隔超过一秒
+        // 此时 lastDate 为最后一个连续匹配的时间点，返回
+        // 紧接该时间点的下一秒
         while (difference == 1000) {
             newDate = getTimeAfter(lastDate);
             if(newDate == null)
@@ -367,10 +188,7 @@ public final class CronExpression implements Serializable, Cloneable {
         return new Date(lastDate.getTime() + 1000);
     }
 
-    /**
-     * Returns the time zone for which this <code>CronExpression</code>
-     * will be resolved.
-     */
+    /** 获取计算触发时间使用的时区；未设置时使用系统默认时区。 */
     public TimeZone getTimeZone() {
         if (timeZone == null) {
             timeZone = TimeZone.getDefault();
@@ -379,31 +197,24 @@ public final class CronExpression implements Serializable, Cloneable {
         return timeZone;
     }
 
-    /**
-     * Sets the time zone for which  this <code>CronExpression</code>
-     * will be resolved.
+    /** 设置计算触发时间使用的时区。
+     * @param timeZone 业务时区
      */
     public void setTimeZone(TimeZone timeZone) {
         this.timeZone = timeZone;
     }
 
-    /**
-     * Returns the string representation of the <CODE>CronExpression</CODE>
-     *
-     * @return a string representation of the <CODE>CronExpression</CODE>
+    /** 返回原始表达式文本。
+     * @return Cron 表达式
      */
     @Override
     public String toString() {
         return cronExpression;
     }
 
-    /**
-     * Indicates whether the specified cron expression can be parsed into a
-     * valid cron expression
-     *
-     * @param cronExpression the expression to evaluate
-     * @return a boolean indicating whether the given expression is a valid cron
-     *         expression
+    /** 判断表达式能否成功解析。
+     * @param cronExpression 待校验表达式
+     * @return 语法和字段范围是否有效
      */
     public static boolean isValidExpression(String cronExpression) {
 
@@ -424,7 +235,7 @@ public final class CronExpression implements Serializable, Cloneable {
 
     ////////////////////////////////////////////////////////////////////////////
     //
-    // Expression Parsing Functions
+    // 表达式解析
     //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -463,11 +274,11 @@ public final class CronExpression implements Serializable, Cloneable {
             while (exprsTok.hasMoreTokens() && exprOn <= YEAR) {
                 String expr = exprsTok.nextToken().trim();
 
-                // throw an exception if L is used with other days of the month
+                // 月份日期中 L 与其他日期并用时抛出异常
                 if(exprOn == DAY_OF_MONTH && expr.indexOf('L') != -1 && expr.length() > 1 && expr.contains(",")) {
                     throw new ParseException("Support for specifying 'L' and 'LW' with other days of the month is not implemented", -1);
                 }
-                // throw an exception if L is used with other days of the week
+                // 星期规则中 L 与其他星期并用时抛出异常
                 if(exprOn == DAY_OF_WEEK && expr.indexOf('L') != -1 && expr.length() > 1  && expr.contains(",")) {
                     throw new ParseException("Support for specifying 'L' with other days of the week is not implemented", -1);
                 }
@@ -496,7 +307,7 @@ public final class CronExpression implements Serializable, Cloneable {
             TreeSet<Integer> dow = getSet(DAY_OF_WEEK);
             TreeSet<Integer> dom = getSet(DAY_OF_MONTH);
 
-            // Copying the logic from the UnsupportedOperationException below
+            // 沿用下方不支持操作分支的校验逻辑
             boolean dayOfMSpec = !dom.contains(NO_SPEC);
             boolean dayOfWSpec = !dow.contains(NO_SPEC);
 
@@ -627,7 +438,7 @@ public final class CronExpression implements Serializable, Cloneable {
                 i++;
             }
             c = s.charAt(i);
-            if (c == '/') { // is an increment specified?
+            if (c == '/') { // 是否指定递增步长
                 i++;
                 if (i >= s.length()) {
                     throw new ParseException("Unexpected end of string.", i);
@@ -1005,7 +816,7 @@ public final class CronExpression implements Serializable, Cloneable {
 
         if (val == ALL_SPEC_INT && incr <= 0) {
             incr = 1;
-            set.add(ALL_SPEC); // put in a marker, but also fill values
+            set.add(ALL_SPEC); // 设置通配标记并补全实际取值
         }
 
         if (type == SECOND || type == MINUTE) {
@@ -1052,9 +863,9 @@ public final class CronExpression implements Serializable, Cloneable {
             }
         }
 
-        // if the end of the range is before the start, then we need to overflow into
-        // the next day, month etc. This is done by adding the maximum amount for that
-        // type, and using modulus max to determine the value being added.
+        // 范围终点小于起点时，需要跨越到
+        // 下一个日、月等周期；先累加该字段的最大跨度
+        // 再按最大值取模得到实际字段值
         int max = -1;
         if (stopAt < startAt) {
             switch (type) {
@@ -1072,13 +883,13 @@ public final class CronExpression implements Serializable, Cloneable {
 
         for (int i = startAt; i <= stopAt; i += incr) {
             if (max == -1) {
-                // ie: there's no max to overflow over
+                // 年份范围不支持跨越最大值
                 set.add(i);
             } else {
-                // take the modulus to get the real value
+                // 取模得到实际值
                 int i2 = i % max;
 
-                // 1-indexed ranges should not include 0, and should include their max
+                // 从1开始的范围应排除0并保留最大值
                 if (i2 == 0 && (type == MONTH || type == DAY_OF_WEEK || type == DAY_OF_MONTH) ) {
                     i2 = max;
                 }
@@ -1155,28 +966,28 @@ public final class CronExpression implements Serializable, Cloneable {
 
     ////////////////////////////////////////////////////////////////////////////
     //
-    // Computation Functions
+    // 触发时间计算
     //
     ////////////////////////////////////////////////////////////////////////////
 
     public Date getTimeAfter(Date afterTime) {
 
-        // Computation is based on Gregorian year only.
+        // 仅按公历年份进行计算
         Calendar cl = new java.util.GregorianCalendar(getTimeZone());
 
-        // move ahead one second, since we're computing the time *after* the
-        // given time
+        // 向前推进一秒，因为计算的是严格晚于
+        // 输入时间的触发时刻
         afterTime = new Date(afterTime.getTime() + 1000);
-        // CronTrigger does not deal with milliseconds
+        // Cron 调度不处理毫秒
         cl.setTime(afterTime);
         cl.set(Calendar.MILLISECOND, 0);
 
         boolean gotOne = false;
-        // loop until we've computed the next time, or we've past the endTime
+        // 循环查找下一个触发时间，直到找到或超出结束时间
         while (!gotOne) {
 
             //if (endTime != null && cl.getTime().after(endTime)) return null;
-            if(cl.get(Calendar.YEAR) > 2999) { // prevent endless loop...
+            if(cl.get(Calendar.YEAR) > 2999) { // 防止无法匹配的表达式造成无限循环
                 return null;
             }
 
@@ -1186,7 +997,7 @@ public final class CronExpression implements Serializable, Cloneable {
             int sec = cl.get(Calendar.SECOND);
             int min = cl.get(Calendar.MINUTE);
 
-            // get second.................................................
+            // 计算秒字段
             st = seconds.tailSet(sec);
             if (st != null && st.size() != 0) {
                 sec = st.first();
@@ -1201,7 +1012,7 @@ public final class CronExpression implements Serializable, Cloneable {
             int hr = cl.get(Calendar.HOUR_OF_DAY);
             t = -1;
 
-            // get minute.................................................
+            // 计算分钟字段
             st = minutes.tailSet(min);
             if (st != null && st.size() != 0) {
                 t = min;
@@ -1222,7 +1033,7 @@ public final class CronExpression implements Serializable, Cloneable {
             int day = cl.get(Calendar.DAY_OF_MONTH);
             t = -1;
 
-            // get hour...................................................
+            // 计算小时字段
             st = hours.tailSet(hr);
             if (st != null && st.size() != 0) {
                 t = hr;
@@ -1242,15 +1053,15 @@ public final class CronExpression implements Serializable, Cloneable {
 
             day = cl.get(Calendar.DAY_OF_MONTH);
             int mon = cl.get(Calendar.MONTH) + 1;
-            // '+ 1' because calendar is 0-based for this field, and we are
-            // 1-based
+            // 日历字段从0开始，本解析器从1开始，因此加1
+            // 字段值按1开始编号
             t = -1;
             int tmon = mon;
 
-            // get day...................................................
+            // 计算日期字段
             boolean dayOfMSpec = !daysOfMonth.contains(NO_SPEC);
             boolean dayOfWSpec = !daysOfWeek.contains(NO_SPEC);
-            if (dayOfMSpec && !dayOfWSpec) { // get day by day of month rule
+            if (dayOfMSpec && !dayOfWSpec) { // 按照月份日期规则确定日期
                 st = daysOfMonth.tailSet(day);
                 if (lastdayOfMonth) {
                     if(!nearestWeekday) {
@@ -1261,7 +1072,7 @@ public final class CronExpression implements Serializable, Cloneable {
                             mon++;
                             if(mon > 12) {
                                 mon = 1;
-                                tmon = 3333; // ensure test of mon != tmon further below fails
+                                tmon = 3333; // 确保后续月份变化检查能够识别本次调整
                                 cl.add(Calendar.YEAR, 1);
                             }
                             day = 1;
@@ -1342,7 +1153,7 @@ public final class CronExpression implements Serializable, Cloneable {
                 } else if (st != null && st.size() != 0) {
                     t = day;
                     day = st.first();
-                    // make sure we don't over-run a short month, such as february
+                    // 避免日期超出二月等较短月份的天数
                     int lastDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
                     if (day > lastDay) {
                         day = daysOfMonth.first();
@@ -1359,16 +1170,16 @@ public final class CronExpression implements Serializable, Cloneable {
                     cl.set(Calendar.HOUR_OF_DAY, 0);
                     cl.set(Calendar.DAY_OF_MONTH, day);
                     cl.set(Calendar.MONTH, mon - 1);
-                    // '- 1' because calendar is 0-based for this field, and we
-                    // are 1-based
+                    // 日历字段从0开始，本解析器从1开始，因此减1
+                    // 此处采用从1开始的编号
                     continue;
                 }
-            } else if (dayOfWSpec && !dayOfMSpec) { // get day by day of week rule
-                if (lastdayOfWeek) { // are we looking for the last XXX day of
-                    // the month?
-                    int dow = daysOfWeek.first(); // desired
-                    // d-o-w
-                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
+            } else if (dayOfWSpec && !dayOfMSpec) { // 按照星期规则确定日期
+                if (lastdayOfWeek) { // 是否查找指定星期在本月的最后一次出现
+                    // 当前月份范围内
+                    int dow = daysOfWeek.first(); // 期望的星期
+                    // 星期字段
+                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // 当前星期
                     int daysToAdd = 0;
                     if (cDow < dow) {
                         daysToAdd = dow - cDow;
@@ -1379,18 +1190,18 @@ public final class CronExpression implements Serializable, Cloneable {
 
                     int lDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
 
-                    if (day + daysToAdd > lDay) { // did we already miss the
-                        // last one?
+                    if (day + daysToAdd > lDay) { // 判断是否已错过
+                        // 本月最后一次匹配
                         cl.set(Calendar.SECOND, 0);
                         cl.set(Calendar.MINUTE, 0);
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, 1);
                         cl.set(Calendar.MONTH, mon);
-                        // no '- 1' here because we are promoting the month
+                        // 此处递增月份，无需减1
                         continue;
                     }
 
-                    // find date of last occurrence of this day in this month...
+                    // 查找本月最后一个指定星期对应的日期
                     while ((day + daysToAdd + 7) <= lDay) {
                         daysToAdd += 7;
                     }
@@ -1403,15 +1214,15 @@ public final class CronExpression implements Serializable, Cloneable {
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, day);
                         cl.set(Calendar.MONTH, mon - 1);
-                        // '- 1' here because we are not promoting the month
+                        // 此处不递增月份，需要减1转换为日历索引
                         continue;
                     }
 
                 } else if (nthdayOfWeek != 0) {
-                    // are we looking for the Nth XXX day in the month?
-                    int dow = daysOfWeek.first(); // desired
-                    // d-o-w
-                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
+                    // 是否查找本月第N个指定星期
+                    int dow = daysOfWeek.first(); // 期望的星期
+                    // 星期字段
+                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // 当前星期
                     int daysToAdd = 0;
                     if (cDow < dow) {
                         daysToAdd = dow - cDow;
@@ -1440,7 +1251,7 @@ public final class CronExpression implements Serializable, Cloneable {
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, 1);
                         cl.set(Calendar.MONTH, mon);
-                        // no '- 1' here because we are promoting the month
+                        // 此处递增月份，无需减1
                         continue;
                     } else if (daysToAdd > 0 || dayShifted) {
                         cl.set(Calendar.SECOND, 0);
@@ -1448,13 +1259,13 @@ public final class CronExpression implements Serializable, Cloneable {
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, day);
                         cl.set(Calendar.MONTH, mon - 1);
-                        // '- 1' here because we are NOT promoting the month
+                        // 此处不递增月份，需要减1转换为日历索引
                         continue;
                     }
                 } else {
-                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
-                    int dow = daysOfWeek.first(); // desired
-                    // d-o-w
+                    int cDow = cl.get(Calendar.DAY_OF_WEEK); // 当前星期
+                    int dow = daysOfWeek.first(); // 期望的星期
+                    // 星期字段
                     st = daysOfWeek.tailSet(cDow);
                     if (st != null && st.size() > 0) {
                         dow = st.first();
@@ -1470,23 +1281,23 @@ public final class CronExpression implements Serializable, Cloneable {
 
                     int lDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
 
-                    if (day + daysToAdd > lDay) { // will we pass the end of
-                        // the month?
+                    if (day + daysToAdd > lDay) { // 判断是否会超出
+                        // 当前月份范围内
                         cl.set(Calendar.SECOND, 0);
                         cl.set(Calendar.MINUTE, 0);
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, 1);
                         cl.set(Calendar.MONTH, mon);
-                        // no '- 1' here because we are promoting the month
+                        // 此处递增月份，无需减1
                         continue;
-                    } else if (daysToAdd > 0) { // are we swithing days?
+                    } else if (daysToAdd > 0) { // 是否需要切换日期
                         cl.set(Calendar.SECOND, 0);
                         cl.set(Calendar.MINUTE, 0);
                         cl.set(Calendar.HOUR_OF_DAY, 0);
                         cl.set(Calendar.DAY_OF_MONTH, day + daysToAdd);
                         cl.set(Calendar.MONTH, mon - 1);
-                        // '- 1' because calendar is 0-based for this field,
-                        // and we are 1-based
+                        // 日历字段从0开始，因此减1
+                        // 本解析器采用从1开始的编号
                         continue;
                     }
                 }
@@ -1497,18 +1308,18 @@ public final class CronExpression implements Serializable, Cloneable {
             cl.set(Calendar.DAY_OF_MONTH, day);
 
             mon = cl.get(Calendar.MONTH) + 1;
-            // '+ 1' because calendar is 0-based for this field, and we are
-            // 1-based
+            // 日历字段从0开始，本解析器从1开始，因此加1
+            // 字段值按1开始编号
             int year = cl.get(Calendar.YEAR);
             t = -1;
 
-            // test for expressions that never generate a valid fire date,
-            // but keep looping...
+            // 检查始终无法匹配有效触发日期的表达式
+            // 避免持续循环查找
             if (year > MAX_YEAR) {
                 return null;
             }
 
-            // get month...................................................
+            // 计算月份字段
             st = months.tailSet(mon);
             if (st != null && st.size() != 0) {
                 t = mon;
@@ -1523,25 +1334,25 @@ public final class CronExpression implements Serializable, Cloneable {
                 cl.set(Calendar.HOUR_OF_DAY, 0);
                 cl.set(Calendar.DAY_OF_MONTH, 1);
                 cl.set(Calendar.MONTH, mon - 1);
-                // '- 1' because calendar is 0-based for this field, and we are
-                // 1-based
+                // 日历字段从0开始，本解析器从1开始，因此减1
+                // 字段值按1开始编号
                 cl.set(Calendar.YEAR, year);
                 continue;
             }
             cl.set(Calendar.MONTH, mon - 1);
-            // '- 1' because calendar is 0-based for this field, and we are
-            // 1-based
+            // 日历字段从0开始，本解析器从1开始，因此减1
+            // 字段值按1开始编号
 
             year = cl.get(Calendar.YEAR);
             t = -1;
 
-            // get year...................................................
+            // 计算年份字段
             st = years.tailSet(year);
             if (st != null && st.size() != 0) {
                 t = year;
                 year = st.first();
             } else {
-                return null; // ran out of years...
+                return null; // 已超出可用年份范围
             }
 
             if (year != t) {
@@ -1550,8 +1361,8 @@ public final class CronExpression implements Serializable, Cloneable {
                 cl.set(Calendar.HOUR_OF_DAY, 0);
                 cl.set(Calendar.DAY_OF_MONTH, 1);
                 cl.set(Calendar.MONTH, 0);
-                // '- 1' because calendar is 0-based for this field, and we are
-                // 1-based
+                // 日历字段从0开始，本解析器从1开始，因此减1
+                // 字段值按1开始编号
                 cl.set(Calendar.YEAR, year);
                 continue;
             }
@@ -1563,12 +1374,9 @@ public final class CronExpression implements Serializable, Cloneable {
         return cl.getTime();
     }
 
-    /**
-     * Advance the calendar to the particular hour paying particular attention
-     * to daylight saving problems.
-     *
-     * @param cal the calendar to operate on
-     * @param hour the hour to set
+    /** 设置日历小时，并处理夏令时导致的小时跳变。
+     * @param cal 目标日历
+     * @param hour 目标小时
      */
     protected void setCalendarHour(Calendar cal, int hour) {
         cal.set(java.util.Calendar.HOUR_OF_DAY, hour);
@@ -1577,21 +1385,15 @@ public final class CronExpression implements Serializable, Cloneable {
         }
     }
 
-    /**
-     * NOT YET IMPLEMENTED: Returns the time before the given time
-     * that the <code>CronExpression</code> matches.
-     */ 
+    /** 尚未实现：查找指定时间之前的匹配时刻。 */
     public Date getTimeBefore(Date endTime) {
-        // FUTURE_TODO: implement QUARTZ-423
+        // 待实现 QUARTZ-423：反向时间及最终触发时间计算
         return null;
     }
 
-    /**
-     * NOT YET IMPLEMENTED: Returns the final time that the 
-     * <code>CronExpression</code> will match.
-     */
+    /** 尚未实现：获取表达式的最终触发时间。 */
     public Date getFinalFireTime() {
-        // FUTURE_TODO: implement QUARTZ-423
+        // 待实现 QUARTZ-423：反向时间及最终触发时间计算
         return null;
     }
     
@@ -1640,7 +1442,7 @@ public final class CronExpression implements Serializable, Cloneable {
         try {
             buildExpression(cronExpression);
         } catch (Exception ignore) {
-        } // never happens
+        } // 该分支在当前约束下不会出现
     }    
     
     @Override

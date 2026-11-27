@@ -5,7 +5,7 @@ import com.wugui.datax.admin.entity.JobDatasource;
 import java.sql.SQLException;
 
 /**
- * sql server
+ * SQL Server 结构查询
  *
  * @author zhouhongfa@gz-yibo.com
  * @version 1.0

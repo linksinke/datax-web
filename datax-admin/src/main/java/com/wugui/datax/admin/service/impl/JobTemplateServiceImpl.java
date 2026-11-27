@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * core job action for xxl-job
+ * 调度任务核心业务
  *
  * @author xuxueli 2016-5-28 15:30:33
  */
@@ -43,11 +43,11 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
     @Override
     public Map<String, Object> pageList(int start, int length, int jobGroup, String jobDesc, String executorHandler, int userId, Integer[] projectIds) {
 
-        // page list
+        // 分页查询列表
         List<JobTemplate> list = baseMapper.pageList(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
         int list_count = baseMapper.pageListCount(start, length, jobGroup, jobDesc, executorHandler, userId, projectIds);
 
-        // package result
+        // 组装分页结果
         Map<String, Object> maps = new HashMap<>();
         maps.put("recordsTotal", list_count);        // 总记录数
         maps.put("recordsFiltered", list_count);    // 过滤后的总记录数
@@ -57,7 +57,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
 
     @Override
     public ReturnT<String> add(JobTemplate jobTemplate) {
-        // valid
+        // 参数校验
         JobGroup group = jobGroupMapper.selectById(jobTemplate.getJobGroup());
         if (group == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_choose") + I18nUtil.getString("jobinfo_field_jobgroup")));
@@ -84,12 +84,12 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + "JobHandler"));
         }
 
-        // fix "\r" in shell
+        // 移除 Shell 脚本中的回车符
         if (GlueTypeEnum.GLUE_SHELL == GlueTypeEnum.match(jobTemplate.getGlueType()) && jobTemplate.getGlueSource() != null) {
             jobTemplate.setGlueSource(jobTemplate.getGlueSource().replaceAll("\r", ""));
         }
 
-        // ChildJobId valid
+        // 校验子任务编号
         if (jobTemplate.getChildJobId() != null && jobTemplate.getChildJobId().trim().length() > 0) {
             String[] childJobIds = jobTemplate.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
@@ -104,7 +104,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
                             MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_invalid")), childJobIdItem));
                 }
             }
-            // join , avoid "xxx,,"
+            // 拼接任务编号，避免出现连续逗号
             String temp = Constants.STRING_BLANK;
             for (String item : childJobIds) {
                 temp += item + Constants.SPLIT_COMMA;
@@ -118,7 +118,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_jobproject")));
         }
 
-        // add in db
+        // 将任务保存到管理库
         jobTemplate.setAddTime(new Date());
         jobTemplate.setUpdateTime(new Date());
         jobTemplate.setGlueUpdatetime(new Date());
@@ -142,7 +142,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
     @Override
     public ReturnT<String> update(JobTemplate jobTemplate) {
 
-        // valid
+        // 参数校验
         if (!CronExpression.isValidExpression(jobTemplate.getJobCron())) {
             return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_invalid"));
         }
@@ -159,7 +159,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
             return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorBlockStrategy") + I18nUtil.getString("system_invalid")));
         }
 
-        // ChildJobId valid
+        // 校验子任务编号
         if (jobTemplate.getChildJobId() != null && jobTemplate.getChildJobId().trim().length() > 0) {
             String[] childJobIds = jobTemplate.getChildJobId().split(",");
             for (String childJobIdItem : childJobIds) {
@@ -175,7 +175,7 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
                 }
             }
 
-            // join , avoid "xxx,,"
+            // 拼接任务编号，避免出现连续逗号
             String temp = Constants.STRING_BLANK;
             for (String item : childJobIds) {
                 temp += item + Constants.SPLIT_COMMA;
@@ -185,13 +185,13 @@ public class JobTemplateServiceImpl extends ServiceImpl<JobTemplateMapper, JobTe
             jobTemplate.setChildJobId(temp);
         }
 
-        // group valid
+        // 校验执行器分组
         JobGroup jobGroup = jobGroupMapper.selectById(jobTemplate.getJobGroup());
         if (jobGroup == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_invalid")));
         }
 
-        // stage job info
+        // 保存当前任务配置
         JobTemplate exists_jobTemplate = getById(jobTemplate.getId());
         if (exists_jobTemplate == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));

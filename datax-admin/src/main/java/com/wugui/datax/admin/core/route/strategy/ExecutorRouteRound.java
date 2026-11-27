@@ -10,20 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteRound extends ExecutorRouter {
 
     private static ConcurrentMap<Integer, Integer> routeCountEachJob = new ConcurrentHashMap<Integer, Integer>();
     private static long CACHE_VALID_TIME = 0;
     private static int count(int jobId) {
-        // cache clear
+        // 清空缓存
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             routeCountEachJob.clear();
             CACHE_VALID_TIME = System.currentTimeMillis() + 1000*60*60*24;
         }
 
-        // count++
+        // 递增轮询计数
         Integer count = routeCountEachJob.get(jobId);
         count = (count==null || count>1000000)?(new Random().nextInt(100)):++count;  // 初始化时主动Random一次，缓解首次压力
         routeCountEachJob.put(jobId, count);

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * index controller
+ * 首页控制器
  *
  * @author xuxueli 2015-12-19 16:13:16
  */
@@ -88,7 +88,7 @@ public class JobInfoController extends BaseController{
     @PostMapping(value = "/trigger")
     @ApiOperation("触发任务")
     public ReturnT<String> triggerJob(@RequestBody TriggerJobDto dto) {
-        // force cover job param
+        // 使用本次请求参数覆盖任务参数
         String executorParam=dto.getExecutorParam();
         if (executorParam == null) {
             executorParam = "";

@@ -7,7 +7,7 @@ import com.wugui.datax.admin.service.JobRegistryService;
 import org.springframework.stereotype.Service;
 
 /**
- * JobRegistryServiceImpl
+ * 执行器注册业务实现
  * @author jingwk
  * @since 2019-03-15
  * @version v2.1.1

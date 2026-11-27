@@ -25,7 +25,7 @@ public class BasicJsonwriter {
     private static final Map<String, Field[]> cacheFields = new HashMap<>();
 
     /**
-     * write object to json
+     * 将对象写入 JSON 文本
      *
      * @param object
      * @return
@@ -38,7 +38,7 @@ public class BasicJsonwriter {
             logger.error(e.getMessage(), e);
         }
 
-        // replace
+        // 替换转义字符
         String str = json.toString();
         if (str.contains("\n")) {
             str = str.replaceAll("\\n", "\\\\n");
@@ -53,7 +53,7 @@ public class BasicJsonwriter {
     }
 
     /**
-     * append Obj
+     * 追加对象内容
      *
      * @param key
      * @param value
@@ -63,7 +63,7 @@ public class BasicJsonwriter {
 
         /*if ("serialVersionUID".equals(key)
                 || value instanceof Logger) {
-            // pass
+            // 跳过无需处理的调用
 
             return;
         }*/
@@ -73,13 +73,13 @@ public class BasicJsonwriter {
             json.append(STR_SLASH).append(key).append(STR_SLASH_STR);
         }
 
-        // val
+        // 字段值
         if (value == null) {
             json.append("null");
         } else if (value instanceof String
                 || value instanceof Byte
                 || value instanceof CharSequence) {
-            // string
+            // 字符串值
 
             json.append(STR_SLASH).append(value.toString()).append(STR_SLASH);
         } else if (value instanceof Boolean
@@ -89,7 +89,7 @@ public class BasicJsonwriter {
                 || value instanceof Float
                 || value instanceof Double
         ) {
-            // number
+            // 数值类型
 
             json.append(value);
         } else if (value instanceof Object[] || value instanceof Collection) {
@@ -114,7 +114,7 @@ public class BasicJsonwriter {
             json.append(STR_ARRAY_RIGHT);
 
         } else if (value instanceof Map) {
-            // map
+            // 映射类型
 
             Map<?, ?> valueMap = (Map<?, ?>) value;
 
@@ -131,7 +131,7 @@ public class BasicJsonwriter {
             json.append(STR_OBJECT_RIGHT);
 
         } else {
-            // bean
+            // 业务对象
 
             json.append(STR_OBJECT_LEFT);
             Field[] fields = getDeclaredFields(value.getClass());

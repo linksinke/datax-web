@@ -1,7 +1,7 @@
 package com.wugui.datax.rpc.serialize;
 
 /**
- * serializer
+ * 序列化器
  *
  * 		Tips：模板方法模式：定义一个操作中算法的骨架（或称为顶级逻辑），将一些步骤（或称为基本方法）的执行延迟到其子类中；
  * 		Tips：基本方法：抽象方法 + 具体方法final + 钩子方法；

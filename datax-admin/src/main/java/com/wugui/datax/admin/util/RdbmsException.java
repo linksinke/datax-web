@@ -3,7 +3,7 @@ package com.wugui.datax.admin.util;
 import com.wugui.datatx.core.util.Constants;
 
 /**
- * RdbmsException
+ * 关系型数据库异常转换
  *
  * @author jingwk
  * @ClassName RdbmsException

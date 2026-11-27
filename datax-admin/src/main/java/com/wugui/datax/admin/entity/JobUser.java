@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
  */
 @Data
 @TableName("job_user")
-public class JobUser {
+public class JobUser extends AuditFields {
 
     @TableId(type = IdType.AUTO)
     private int id;
@@ -32,7 +32,7 @@ public class JobUser {
     private String permission;
 
 
-    // plugin
+    // 插件配置
     public boolean validPermission(int jobGroup) {
         if ("1".equals(this.role)) {
             return true;

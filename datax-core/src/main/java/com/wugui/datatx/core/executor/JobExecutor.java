@@ -22,12 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Created by xuxueli on 2016/3/2 21:14.
+ * 创建者：xuxueli，时间：2016/3/2 21:14.
  */
 public class JobExecutor {
     private static final Logger logger = LoggerFactory.getLogger(JobExecutor.class);
 
-    // ---------------------- param ----------------------
+    // 执行器参数
     private String adminAddresses;
     private String appName;
     private String ip;
@@ -65,26 +65,26 @@ public class JobExecutor {
     }
 
 
-    // ---------------------- start + stop ----------------------
+    // 执行器启动与停止
     public void start() throws Exception {
 
-        // init logpath
+        // 初始化日志目录
         JobFileAppender.initLogPath(logPath);
 
-        // init invoker, admin-client
+        // 初始化远程调用与管理端客户端
         initAdminBizList(adminAddresses, accessToken);
 
 
-        // init JobLogFileCleanThread
+        // 初始化日志文件清理线程
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
-        // init TriggerCallbackThread
+        // 初始化触发结果回调线程
         TriggerCallbackThread.getInstance().start();
 
-        // init ProcessCallbackThread
+        // 初始化进程结果回调线程
         ProcessCallbackThread.getInstance().start();
 
-        // init executor-server
+        // 初始化执行器服务端
         port = port > 0 ? port : NetUtil.findAvailablePort(9999);
         ip = (ip != null && ip.trim().length() > 0) ? ip : IpUtil.getIp();
         initRpcProvider(ip, port, appName, accessToken);
@@ -92,15 +92,15 @@ public class JobExecutor {
 
     public void destroy() {
 
-        // destory executor-server
+        // 关闭执行器服务端
         stopRpcProvider();
 
-        // destory jobThreadRepository
+        // 清理任务线程容器
         if (jobThreadRepository.size() > 0) {
             for (Map.Entry<Integer, JobThread> item : jobThreadRepository.entrySet()) {
                 removeJobThread(item.getKey(), "web container destroy and kill the job.");
                 JobThread oldJobThread = removeJobThread(item.getKey(), "web container destroy and kill the job.");
-                // wait for job thread push result to callback queue
+                // 等待任务线程将结果放入回调队列
                 if (oldJobThread != null) {
                     try {
                         oldJobThread.join();
@@ -113,19 +113,19 @@ public class JobExecutor {
         }
         jobHandlerRepository.clear();
 
-        // destory JobLogFileCleanThread
+        // 停止日志清理线程
         JobLogFileCleanThread.getInstance().toStop();
 
-        // destory TriggerCallbackThread
+        // 停止触发回调线程
         TriggerCallbackThread.getInstance().toStop();
 
-        // destory ProcessCallbackThread
+        // 停止进程回调线程
         ProcessCallbackThread.getInstance().toStop();
 
     }
 
 
-    // ---------------------- admin-client (rpc invoker) ----------------------
+    // 管理端 RPC 调用方
     private static List<AdminBiz> adminBizList;
     private static Serializer serializer = new HessianSerializer();
 
@@ -154,12 +154,12 @@ public class JobExecutor {
     }
 
 
-    // ---------------------- executor-server (rpc provider) ----------------------
+    // 执行器 RPC 服务端
     private XxlRpcProviderFactory xxlRpcProviderFactory = null;
 
     private void initRpcProvider(String ip, int port, String appName, String accessToken) throws Exception {
 
-        // init, provider factory
+        // 初始化服务提供方工厂
         String address = IpUtil.getIpPort(ip, port);
         Map<String, String> serviceRegistryParam = new HashMap<>();
         serviceRegistryParam.put("appName", appName);
@@ -177,10 +177,10 @@ public class JobExecutor {
         xxlRpcProviderFactory.setServiceRegistry(ExecutorServiceRegistry.class);
         xxlRpcProviderFactory.setServiceRegistryParam(serviceRegistryParam);
 
-        // add services
+        // 注册服务实现
         xxlRpcProviderFactory.addService(ExecutorBiz.class.getName(), null, new ExecutorBizImpl());
 
-        // start
+        // 启动
         xxlRpcProviderFactory.start();
 
     }
@@ -189,13 +189,13 @@ public class JobExecutor {
 
         @Override
         public void start(Map<String, String> param) {
-            // start registry
+            // 启动注册服务
             ExecutorRegistryThread.getInstance().start(param.get("appName"), param.get("address"));
         }
 
         @Override
         public void stop() {
-            // stop registry
+            // 停止注册服务
             ExecutorRegistryThread.getInstance().toStop();
         }
 
@@ -222,7 +222,7 @@ public class JobExecutor {
     }
 
     private void stopRpcProvider() {
-        // stop provider factory
+        // 停止服务提供方工厂
         try {
             xxlRpcProviderFactory.stop();
         } catch (Exception e) {
@@ -231,7 +231,7 @@ public class JobExecutor {
     }
 
 
-    // ---------------------- job handler repository ----------------------
+    // 任务处理器容器
     private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<String, IJobHandler>();
 
     public static IJobHandler registJobHandler(String name, IJobHandler jobHandler) {
@@ -244,7 +244,7 @@ public class JobExecutor {
     }
 
 
-    // ---------------------- job thread repository ----------------------
+    // 任务线程容器
     private static ConcurrentMap<Integer, JobThread> jobThreadRepository = new ConcurrentHashMap<Integer, JobThread>();
 
     public static JobThread registJobThread(int jobId, IJobHandler handler, String removeOldReason) {
@@ -252,7 +252,7 @@ public class JobExecutor {
         newJobThread.start();
         logger.info(">>>>>>>>>>> datax-web regist JobThread success, jobId:{}, handler:{}", new Object[]{jobId, handler});
 
-        JobThread oldJobThread = jobThreadRepository.put(jobId, newJobThread);    // putIfAbsent | oh my god, map's put method return the old value!!!
+        JobThread oldJobThread = jobThreadRepository.put(jobId, newJobThread);    // 写入新线程并取得旧线程，以便停止被替换的实例
         if (oldJobThread != null) {
             oldJobThread.toStop(removeOldReason);
             oldJobThread.interrupt();

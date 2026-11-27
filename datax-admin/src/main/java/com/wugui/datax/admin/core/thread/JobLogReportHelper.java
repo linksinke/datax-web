@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * job log report helper
+ * 任务日志报表辅助类
  *
  * @author xuxueli 2019-11-22
  */
@@ -33,18 +33,18 @@ public class JobLogReportHelper {
             @Override
             public void run() {
 
-                // last clean log time
+                // 上次日志清理时间
                 long lastCleanLogTime = 0;
 
 
                 while (!toStop) {
 
-                    // 1、log-report refresh: refresh log report in 3 days
+                    // 刷新最近三天的日志报表
                     try {
 
                         for (int i = 0; i < 3; i++) {
 
-                            // today
+                            // 当天统计
                             Calendar itemDay = Calendar.getInstance();
                             itemDay.add(Calendar.DAY_OF_MONTH, -i);
                             itemDay.set(Calendar.HOUR_OF_DAY, 0);
@@ -61,7 +61,7 @@ public class JobLogReportHelper {
 
                             Date todayTo = itemDay.getTime();
 
-                            // refresh log-report every minute
+                            // 每分钟刷新一次日志报表
                             JobLogReport xxlJobLogReport = new JobLogReport();
                             xxlJobLogReport.setTriggerDay(todayFrom);
                             xxlJobLogReport.setRunningCount(0);
@@ -80,7 +80,7 @@ public class JobLogReportHelper {
                                 xxlJobLogReport.setFailCount(triggerDayCountFail);
                             }
 
-                            // do refresh
+                            // 执行刷新
                             int ret = JobAdminConfig.getAdminConfig().getJobLogReportMapper().updateByTriggerDay(xxlJobLogReport);
                             if (ret < 1) {
                                 JobAdminConfig.getAdminConfig().getJobLogReportMapper().insert(xxlJobLogReport);
@@ -93,11 +93,11 @@ public class JobLogReportHelper {
                         }
                     }
 
-                    // 2、log-clean: switch open & once each day
+                    // 启用清理后每天执行一次
                     if (JobAdminConfig.getAdminConfig().getLogretentiondays()>0
                             && System.currentTimeMillis() - lastCleanLogTime > 24*60*60*1000) {
 
-                        // expire-time
+                        // 计算日志过期时间
                         Calendar expiredDay = Calendar.getInstance();
                         expiredDay.add(Calendar.DAY_OF_MONTH, -1 * JobAdminConfig.getAdminConfig().getLogretentiondays());
                         expiredDay.set(Calendar.HOUR_OF_DAY, 0);
@@ -106,7 +106,7 @@ public class JobLogReportHelper {
                         expiredDay.set(Calendar.MILLISECOND, 0);
                         Date clearBeforeTime = expiredDay.getTime();
 
-                        // clean expired log
+                        // 清理过期日志
                         List<Long> logIds = null;
                         do {
                             logIds = JobAdminConfig.getAdminConfig().getJobLogMapper().findClearLogIds(0, 0, clearBeforeTime, 0, 1000);
@@ -115,7 +115,7 @@ public class JobLogReportHelper {
                             }
                         } while (logIds!=null && logIds.size()>0);
 
-                        // update clean time
+                        // 更新最近清理时间
                         lastCleanLogTime = System.currentTimeMillis();
                     }
 
@@ -140,7 +140,7 @@ public class JobLogReportHelper {
 
     public void toStop(){
         toStop = true;
-        // interrupt and wait
+        // 发送中断信号并等待线程退出
         logrThread.interrupt();
         try {
             logrThread.join();

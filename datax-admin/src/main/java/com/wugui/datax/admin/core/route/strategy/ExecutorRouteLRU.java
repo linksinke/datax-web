@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentMap;
  *      a、LFU(Least Frequently Used)：最不经常使用，频率/次数
  *      b(*)、LRU(Least Recently Used)：最近最久未使用，时间
  *
- * Created by xuxueli on 17/3/10.
+ * 创建者：xuxueli，时间：17/3/10.
  */
 public class ExecutorRouteLRU extends ExecutorRouter {
 
@@ -24,17 +24,17 @@ public class ExecutorRouteLRU extends ExecutorRouter {
 
     public String route(int jobId, List<String> addressList) {
 
-        // cache clear
+        // 清空缓存
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             jobLRUMap.clear();
             CACHE_VALID_TIME = System.currentTimeMillis() + 1000*60*60*24;
         }
 
-        // init lru
+        // 初始化最近最少使用缓存
         LinkedHashMap<String, String> lruItem = jobLRUMap.get(jobId);
         if (lruItem == null) {
             /**
-             * LinkedHashMap
+             * 使用有序映射维护访问顺序
              *      a、accessOrder：true=访问顺序排序（get/put时排序）；false=插入顺序排期；
              *      b、removeEldestEntry：新增元素时将会调用，返回true时会删除最老元素；可封装LinkedHashMap并重写该方法，比如定义最大容量，超出是返回true即可实现固定长度的LRU算法；
              */
@@ -42,13 +42,13 @@ public class ExecutorRouteLRU extends ExecutorRouter {
             jobLRUMap.putIfAbsent(jobId, lruItem);
         }
 
-        // put new
+        // 写入新记录
         for (String address: addressList) {
             if (!lruItem.containsKey(address)) {
                 lruItem.put(address, address);
             }
         }
-        // remove old
+        // 移除旧记录
         List<String> delKeys = new ArrayList<>();
         for (String existKey: lruItem.keySet()) {
             if (!addressList.contains(existKey)) {
@@ -61,7 +61,7 @@ public class ExecutorRouteLRU extends ExecutorRouter {
             }
         }
 
-        // load
+        // 加载记录
         String eldestKey = lruItem.entrySet().iterator().next().getKey();
         String eldestValue = lruItem.get(eldestKey);
         return eldestValue;

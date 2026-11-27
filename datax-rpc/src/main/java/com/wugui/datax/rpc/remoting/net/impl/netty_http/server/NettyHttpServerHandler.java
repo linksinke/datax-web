@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
- * netty_http
+ * 基于 Netty 的 HTTP 通信
  *
  * @author xuxueli 2015-11-24 22:25:15
  */
@@ -38,12 +38,12 @@ public class NettyHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
 
-        // request parse
+        // 解析请求
         final byte[] requestBytes = ByteBufUtil.getBytes(msg.content());    // byteBuf.toString(io.netty.util.CharsetUtil.UTF_8);
         final String uri = msg.uri();
         final boolean keepAlive = HttpUtil.isKeepAlive(msg);
 
-        // do invoke
+        // 发起远程调用
         serverHandlerPool.execute(new Runnable() {
             @Override
             public void run() {
@@ -55,66 +55,66 @@ public class NettyHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
     private void process(ChannelHandlerContext ctx, String uri, byte[] requestBytes, boolean keepAlive){
         String requestId = null;
         try {
-            if ("/services".equals(uri)) {	// services mapping
+            if ("/services".equals(uri)) {	// 服务接口映射
 
-                // request
+                // 请求对象
                 StringBuffer stringBuffer = new StringBuffer("<ui>");
                 for (String serviceKey: xxlRpcProviderFactory.getServiceData().keySet()) {
                     stringBuffer.append("<li>").append(serviceKey).append(": ").append(xxlRpcProviderFactory.getServiceData().get(serviceKey)).append("</li>");
                 }
                 stringBuffer.append("</ui>");
 
-                // response serialize
+                // 序列化响应
                 byte[] responseBytes = stringBuffer.toString().getBytes("UTF-8");
 
-                // response-write
+                // 写回响应
                 writeResponse(ctx, keepAlive, responseBytes);
 
             } else {
 
-                // valid
+                // 参数校验
                 if (requestBytes.length == 0) {
                     throw new XxlRpcException("xxl-rpc request data empty.");
                 }
 
-                // request deserialize
+                // 反序列化请求
                 XxlRpcRequest xxlRpcRequest = (XxlRpcRequest) xxlRpcProviderFactory.getSerializerInstance().deserialize(requestBytes, XxlRpcRequest.class);
                 requestId = xxlRpcRequest.getRequestId();
 
-                // filter beat
+                // 过滤心跳消息
                 if (Beat.BEAT_ID.equalsIgnoreCase(xxlRpcRequest.getRequestId())){
                     logger.debug(">>>>>>>>>>> xxl-rpc provider netty_http server read beat-ping.");
                     return;
                 }
 
-                // invoke + response
+                // 调用服务并返回响应
                 XxlRpcResponse xxlRpcResponse = xxlRpcProviderFactory.invokeService(xxlRpcRequest);
 
-                // response serialize
+                // 序列化响应
                 byte[] responseBytes = xxlRpcProviderFactory.getSerializerInstance().serialize(xxlRpcResponse);
 
-                // response-write
+                // 写回响应
                 writeResponse(ctx, keepAlive, responseBytes);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
 
-            // response error
+            // 构建异常响应
             XxlRpcResponse xxlRpcResponse = new XxlRpcResponse();
             xxlRpcResponse.setRequestId(requestId);
             xxlRpcResponse.setErrorMsg(ThrowableUtil.toString(e));
 
-            // response serialize
+            // 序列化响应
             byte[] responseBytes = xxlRpcProviderFactory.getSerializerInstance().serialize(xxlRpcResponse);
 
-            // response-write
+            // 写回响应
             writeResponse(ctx, keepAlive, responseBytes);
         }
 
     }
 
     /**
-     * write response
+     * 写回响应
      */
     private void writeResponse(ChannelHandlerContext ctx, boolean keepAlive, byte[] responseBytes){
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(responseBytes));
@@ -140,7 +140,7 @@ public class NettyHttpServerHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent){
-            ctx.channel().close();      // beat 3N, close if idle
+            ctx.channel().close();      // 连续三个心跳周期空闲时关闭连接
             logger.debug(">>>>>>>>>>> xxl-rpc provider netty_http server close an idle channel.");
         } else {
             super.userEventTriggered(ctx, evt);

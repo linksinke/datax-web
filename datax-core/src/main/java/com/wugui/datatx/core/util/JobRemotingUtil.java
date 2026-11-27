@@ -20,7 +20,7 @@ public class JobRemotingUtil {
     public static String XXL_RPC_ACCESS_TOKEN = "XXL-RPC-ACCESS-TOKEN";
 
     /**
-     * post
+     * 发送 POST 请求
      *
      * @param url
      * @param accessToken
@@ -31,11 +31,11 @@ public class JobRemotingUtil {
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
         try {
-            // connection
+            // 连接对象
             URL realUrl = new URL(url);
             connection = (HttpURLConnection) realUrl.openConnection();
 
-            // connection setting
+            // 配置连接参数
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setDoInput(true);
@@ -50,10 +50,10 @@ public class JobRemotingUtil {
                 connection.setRequestProperty(XXL_RPC_ACCESS_TOKEN, accessToken);
             }
 
-            // do connection
+            // 建立连接
             connection.connect();
 
-            // write requestBody
+            // 写入请求体
             String requestBody = BasicJson.toJson(requestObj);
 
             DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
@@ -68,13 +68,13 @@ public class JobRemotingUtil {
             outwritestream.flush();
             outwritestream.close();*/
 
-            // valid StatusCode
+            // 校验响应状态码
             int statusCode = connection.getResponseCode();
             if (statusCode != 200) {
                 return new ReturnT<String>(ReturnT.FAIL_CODE, "xxl-rpc remoting fail, StatusCode("+ statusCode +") invalid. for url : " + url);
             }
 
-            // result
+            // 返回结果
             bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder result = new StringBuilder();
             String line;
@@ -83,7 +83,7 @@ public class JobRemotingUtil {
             }
             String resultJson = result.toString();
 
-            // parse returnT
+            // 解析统一返回结果
             try {
                 Map<String, Object> resultMap = BasicJson.parseMap(resultJson);
 

@@ -3,10 +3,10 @@ package com.wugui.datax.admin.tool.meta;
 public interface DatabaseInterface {
 
     /**
-     * Returns the minimal SQL to launch in order to determine the layout of the resultset for a given com.com.wugui.datax.admin.tool.database table
+     * 返回用于确定指定表结果集结构的最小查询语句。
      *
-     * @param tableName The name of the table to determine the layout for
-     * @return The SQL to launch.
+     * @param tableName 需要读取结果集结构的表名
+     * @return 用于读取结果集结构的查询语句
      */
     String getSQLQueryFields(String tableName);
 
@@ -49,7 +49,7 @@ public interface DatabaseInterface {
      * 获取表的schema
      *
      * @param args 表名
-     * @return The SQL to launch.
+     * @return 用于读取结果集结构的查询语句
      */
     String getSQLQueryTableSchema(String... args);
 
@@ -63,7 +63,7 @@ public interface DatabaseInterface {
     /**
      * 获取表和字段注释的sql语句
      *
-     * @return The SQL to launch.
+     * @return 用于读取结果集结构的查询语句
      */
     String getSQLQueryComment(String schemaName, String tableName, String columnName);
 

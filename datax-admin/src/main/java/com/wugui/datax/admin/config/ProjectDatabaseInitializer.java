@@ -14,7 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/** Completes before the scheduler starts querying the project database. */
+/** 在调度器访问管理库之前完成初始化。 */
 @Component("projectDatabaseInitializer")
 public class ProjectDatabaseInitializer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectDatabaseInitializer.class);
@@ -26,7 +26,7 @@ public class ProjectDatabaseInitializer implements InitializingBean {
         this.properties = properties;
     }
 
-    // MySQL DDL auto-commits. A connection-scoped lock serializes simultaneous admin starts.
+    // MySQL DDL 会自动提交，使用连接级锁串行执行多个管理端的启动升级。
     static void acquireLock(Connection connection) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("SELECT GET_LOCK(?, 30)")) {
             statement.setString(1, lockName(connection));
@@ -60,6 +60,7 @@ public class ProjectDatabaseInitializer implements InitializingBean {
                 ScriptUtils.executeSqlScript(connection, new EncodedResource(
                         new ClassPathResource("db/bootstrap/schema.sql"), "UTF-8"));
                 TemplateBatchMigration.migrate(connection);
+                DatabaseAuditMigration.migrate(connection);
                 LOGGER.info("Project database schema ready: {}", connection.getCatalog());
             } finally {
                 releaseLock(connection);

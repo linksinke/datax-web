@@ -21,7 +21,7 @@ import java.util.*;
 import static com.google.common.collect.Maps.newTreeMap;
 
 /**
- * application configuration
+ * 应用配置
  */
 @Component(value = "ServiceModelToSwagger2Mapper")
 @Primary

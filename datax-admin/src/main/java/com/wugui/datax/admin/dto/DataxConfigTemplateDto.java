@@ -3,7 +3,7 @@ package com.wugui.datax.admin.dto;
 import lombok.Data;
 
 /**
- * A configuration document, deliberately independent of scheduler jobs.
+ * 独立保存的配置文档，不会创建调度任务。
  */
 @Data
 public class DataxConfigTemplateDto {

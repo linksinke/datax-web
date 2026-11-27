@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * JobProjectServiceImpl
+ * 项目业务实现
  * @author jingwk
  * @since 2019-05-30
  * @version v2.1.2

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * netty_http
+ * 基于 Netty 的 HTTP 通信
  *
  * @author xuxueli 2015-11-24 22:25:15
  */
@@ -35,23 +35,23 @@ public class NettyHttpClientHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
 
-        // valid status
+        // 校验响应状态
         if (!HttpResponseStatus.OK.equals(msg.status())) {
             throw new XxlRpcException("xxl-rpc response status invalid.");
         }
 
-        // response parse
+        // 解析响应
         byte[] responseBytes = ByteBufUtil.getBytes(msg.content());
 
-        // valid length
+        // 校验响应长度
         if (responseBytes.length == 0) {
             throw new XxlRpcException("xxl-rpc response data empty.");
         }
 
-        // response deserialize
+        // 反序列化响应
         XxlRpcResponse xxlRpcResponse = (XxlRpcResponse) serializer.deserialize(responseBytes, XxlRpcResponse.class);
 
-        // notify response
+        // 通知等待方接收响应
         xxlRpcInvokerFactory.notifyInvokerFuture(xxlRpcResponse.getRequestId(), xxlRpcResponse);
 
     }
@@ -65,17 +65,17 @@ public class NettyHttpClientHandler extends SimpleChannelInboundHandler<FullHttp
 
     /*@Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        // retry
+        // 失败重试
         super.channelInactive(ctx);
     }*/
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent){
-            /*ctx.channel().close();      // close idle channel
+            /*ctx.channel().close();      // 关闭空闲连接
             logger.debug(">>>>>>>>>>> xxl-rpc netty_http client close an idle channel.");*/
 
-            nettyHttpConnectClient.send(Beat.BEAT_PING);    // beat N, close if fail(may throw error)
+            nettyHttpConnectClient.send(Beat.BEAT_PING);    // 按心跳周期检测连接，失败时关闭连接
             logger.debug(">>>>>>>>>>> xxl-rpc netty_http client send beat-ping.");
         } else {
             super.userEventTriggered(ctx, evt);

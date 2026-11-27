@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 
 /**
- * Reader
+ * 读取插件基类
  *
  * @author zhouhongfa@gz-yibo.com
  * @ClassName BaseReaderPlugin

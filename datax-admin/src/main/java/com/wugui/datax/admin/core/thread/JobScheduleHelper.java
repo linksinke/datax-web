@@ -27,7 +27,7 @@ public class JobScheduleHelper {
         return instance;
     }
 
-    public static final long PRE_READ_MS = 5000;    // pre read
+    public static final long PRE_READ_MS = 5000;    // 调度预读窗口
 
     private Thread scheduleThread;
     private Thread ringThread;
@@ -37,7 +37,7 @@ public class JobScheduleHelper {
 
     public void start() {
 
-        // schedule thread
+        // 任务调度线程
         scheduleThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -51,12 +51,12 @@ public class JobScheduleHelper {
                 }
                 logger.info(">>>>>>>>> init datax-web admin scheduler success.");
 
-                // pre-read count: treadpool-size * trigger-qps (each trigger cost 50ms, qps = 1000/50 = 20)
+                // 预读数量为线程池大小乘以每秒触发量；按单次50毫秒估算，每秒约20次
                 int preReadCount = (JobAdminConfig.getAdminConfig().getTriggerPoolFastMax() + JobAdminConfig.getAdminConfig().getTriggerPoolSlowMax()) * 20;
 
                 while (!scheduleThreadToStop) {
 
-                    // Scan Job
+                    // 扫描待调度任务
                     long start = System.currentTimeMillis();
 
                     Connection conn = null;
@@ -73,64 +73,64 @@ public class JobScheduleHelper {
                         preparedStatement = conn.prepareStatement("select * from job_lock where lock_name = 'schedule_lock' for update");
                         preparedStatement.execute();
 
-                        // tx start
+                        // 开启事务
 
-                        // 1、pre read
+                        // 预读取即将触发的任务
                         long nowTime = System.currentTimeMillis();
                         List<JobInfo> scheduleList = JobAdminConfig.getAdminConfig().getJobInfoMapper().scheduleJobQuery(nowTime + PRE_READ_MS, preReadCount);
                         if (scheduleList != null && scheduleList.size() > 0) {
-                            // 2、push time-ring
+                            // 将任务放入时间轮
                             for (JobInfo jobInfo : scheduleList) {
 
-                                // time-ring jump
+                                // 跳过已过期时间槽
                                 if (nowTime > jobInfo.getTriggerNextTime() + PRE_READ_MS) {
-                                    // 2.1、trigger-expire > 5s：pass && make next-trigger-time
+                                    // 过期超过5秒：跳过本次并计算下次触发时间
                                     logger.warn(">>>>>>>>>>> datax-web, schedule misfire, jobId = " + jobInfo.getId());
 
-                                    // fresh next
+                                    // 刷新下一次触发时间
                                     refreshNextValidTime(jobInfo, new Date());
 
                                 } else if (nowTime > jobInfo.getTriggerNextTime()) {
-                                    // 2.2、trigger-expire < 5s：direct-trigger && make next-trigger-time
+                                    // 过期不足5秒：立即触发并计算下次触发时间
 
-                                    // 1、trigger
+                                    // 触发任务
                                     JobTriggerPoolHelper.trigger(jobInfo.getId(), TriggerTypeEnum.CRON, -1, null, null);
                                     logger.debug(">>>>>>>>>>> datax-web, schedule push trigger : jobId = " + jobInfo.getId());
 
-                                    // 2、fresh next
+                                    // 刷新下一次触发时间
                                     refreshNextValidTime(jobInfo, new Date());
 
-                                    // next-trigger-time in 5s, pre-read again
+                                    // 下次触发在5秒内时再次预读
                                     if (jobInfo.getTriggerStatus() == 1 && nowTime + PRE_READ_MS > jobInfo.getTriggerNextTime()) {
 
-                                        // 1、make ring second
+                                        // 计算时间轮的秒槽位
                                         int ringSecond = (int) ((jobInfo.getTriggerNextTime() / 1000) % 60);
 
-                                        // 2、push time ring
+                                        // 将任务加入时间轮
                                         pushTimeRing(ringSecond, jobInfo.getId());
 
-                                        // 3、fresh next
+                                        // 更新下一次触发时间
                                         refreshNextValidTime(jobInfo, new Date(jobInfo.getTriggerNextTime()));
 
                                     }
 
                                 } else {
-                                    // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
+                                    // 预读任务：进入时间轮并计算下次触发时间
 
-                                    // 1、make ring second
+                                    // 计算时间轮的秒槽位
                                     int ringSecond = (int) ((jobInfo.getTriggerNextTime() / 1000) % 60);
 
-                                    // 2、push time ring
+                                    // 将任务加入时间轮
                                     pushTimeRing(ringSecond, jobInfo.getId());
 
-                                    // 3、fresh next
+                                    // 更新下一次触发时间
                                     refreshNextValidTime(jobInfo, new Date(jobInfo.getTriggerNextTime()));
 
                                 }
 
                             }
 
-                            // 3、update trigger info
+                            // 更新任务触发信息
                             for (JobInfo jobInfo : scheduleList) {
                                 JobAdminConfig.getAdminConfig().getJobInfoMapper().scheduleUpdate(jobInfo);
                             }
@@ -139,7 +139,7 @@ public class JobScheduleHelper {
                             preReadSuc = false;
                         }
 
-                        // tx stop
+                        // 结束事务
 
 
                     } catch (Exception e) {
@@ -148,7 +148,7 @@ public class JobScheduleHelper {
                         }
                     } finally {
 
-                        // commit
+                        // 提交事务
                         if (conn != null) {
                             try {
                                 conn.commit();
@@ -173,7 +173,7 @@ public class JobScheduleHelper {
                             }
                         }
 
-                        // close PreparedStatement
+                        // 关闭预编译语句
                         if (null != preparedStatement) {
                             try {
                                 preparedStatement.close();
@@ -187,10 +187,10 @@ public class JobScheduleHelper {
                     long cost = System.currentTimeMillis() - start;
 
 
-                    // Wait seconds, align second
-                    if (cost < 1000) {  // scan-overtime, not wait
+                    // 等待并对齐到整秒
+                    if (cost < 1000) {  // 扫描超时后立即开始下一轮
                         try {
-                            // pre-read period: success > scan each second; fail > skip this period;
+                            // 预读周期：正常时每秒扫描，失败时跳过当前周期
                             TimeUnit.MILLISECONDS.sleep((preReadSuc ? 1000 : PRE_READ_MS) - System.currentTimeMillis() % 1000);
                         } catch (InterruptedException e) {
                             if (!scheduleThreadToStop) {
@@ -209,10 +209,10 @@ public class JobScheduleHelper {
         scheduleThread.start();
 
 
-        // ring thread
+        // 时间轮触发线程
         ringThread = new Thread(() -> {
 
-            // align second
+            // 对齐到整秒
             try {
                 TimeUnit.MILLISECONDS.sleep(1000 - System.currentTimeMillis() % 1000);
             } catch (InterruptedException e) {
@@ -224,7 +224,7 @@ public class JobScheduleHelper {
             while (!ringThreadToStop) {
 
                 try {
-                    // second data
+                    // 取出当前秒对应的任务
                     List<Integer> ringItemData = new ArrayList<>();
                     int nowSecond = Calendar.getInstance().get(Calendar.SECOND);   // 避免处理耗时太长，跨过刻度，向前校验一个刻度；
                     for (int i = 0; i < 2; i++) {
@@ -234,15 +234,15 @@ public class JobScheduleHelper {
                         }
                     }
 
-                    // ring trigger
+                    // 触发时间轮中的任务
                     logger.debug(">>>>>>>>>>> datax-web, time-ring beat : " + nowSecond + " = " + Arrays.asList(ringItemData));
                     if (ringItemData.size() > 0) {
-                        // do trigger
+                        // 触发任务
                         for (int jobId : ringItemData) {
-                            // do trigger
+                            // 触发任务
                             JobTriggerPoolHelper.trigger(jobId, TriggerTypeEnum.CRON, -1, null, null);
                         }
-                        // clear
+                        // 清理已处理记录
                         ringItemData.clear();
                     }
                 } catch (Exception e) {
@@ -251,7 +251,7 @@ public class JobScheduleHelper {
                     }
                 }
 
-                // next second, align second
+                // 等待下一整秒
                 try {
                     TimeUnit.MILLISECONDS.sleep(1000 - System.currentTimeMillis() % 1000);
                 } catch (InterruptedException e) {
@@ -280,7 +280,7 @@ public class JobScheduleHelper {
     }
 
     private void pushTimeRing(int ringSecond, int jobId) {
-        // push async ring
+        // 异步放入时间轮
         List<Integer> ringItemData = ringData.get(ringSecond);
         if (ringItemData == null) {
             ringItemData = new ArrayList<Integer>();
@@ -293,15 +293,15 @@ public class JobScheduleHelper {
 
     public void toStop() {
 
-        // 1、stop schedule
+        // 停止调度扫描线程
         scheduleThreadToStop = true;
         try {
-            TimeUnit.SECONDS.sleep(1);  // wait
+            TimeUnit.SECONDS.sleep(1);  // 等待处理完成
         } catch (InterruptedException e) {
             logger.error(e.getMessage(), e);
         }
         if (scheduleThread.getState() != Thread.State.TERMINATED) {
-            // interrupt and wait
+            // 发送中断信号并等待线程退出
             scheduleThread.interrupt();
             try {
                 scheduleThread.join();
@@ -329,7 +329,7 @@ public class JobScheduleHelper {
             }
         }
 
-        // stop ring (wait job-in-memory stop)
+        // 等待内存任务处理后停止时间轮
         ringThreadToStop = true;
         try {
             TimeUnit.SECONDS.sleep(1);
@@ -337,7 +337,7 @@ public class JobScheduleHelper {
             logger.error(e.getMessage(), e);
         }
         if (ringThread.getState() != Thread.State.TERMINATED) {
-            // interrupt and wait
+            // 发送中断信号并等待线程退出
             ringThread.interrupt();
             try {
                 ringThread.join();

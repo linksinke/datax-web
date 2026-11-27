@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * datax writer base
+ * DataX 写入插件基类
  *
  * @author zhouhongfa@gz-yibo.com
  * @ClassName BaseWriterPlugin
@@ -48,15 +48,9 @@ public abstract class BaseWriterPlugin extends BaseDataxPlugin {
         return writerObj;
     }
 
-    private String[] splitSql(String sql) {
-        String[] sqlArr = null;
-        if (StringUtils.isNotBlank(sql)) {
-            Pattern p = Pattern.compile("\r\n|\r|\n|\n\r");
-            Matcher m = p.matcher(sql);
-            String sqlStr = m.replaceAll(Constants.STRING_BLANK);
-            sqlArr = sqlStr.split(Constants.SPLIT_COLON);
-        }
-        return sqlArr;
+    /** 多条前后置 SQL 按语句边界拆分，不能破坏引号内的分号。 */
+    protected String[] splitSql(String sql) {
+        return com.wugui.datax.admin.core.util.SqlTemplateSupport.statements(sql);
     }
 
     @Override

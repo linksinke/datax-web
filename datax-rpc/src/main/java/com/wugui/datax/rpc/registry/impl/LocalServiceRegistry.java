@@ -8,20 +8,20 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * service registry for "local"
+ * 本地服务注册实现
  *
  * @author xuxueli 2018-10-17
  */
 public class LocalServiceRegistry extends ServiceRegistry {
 
     /**
-     * registry data
+     * 服务注册数据
      */
     private Map<String, TreeSet<String>> registryData;
 
 
     /**
-     * @param param ignore, not use
+     * @param param 兼容参数，当前实现不使用
      */
     @Override
     public void start(Map<String, String> param) {

@@ -70,16 +70,16 @@ public class AdminBizImpl implements AdminBiz {
 
 
     private ReturnT<String> callback(HandleCallbackParam handleCallbackParam) {
-        // valid log item
+        // 校验回调日志记录
         JobLog log = jobLogMapper.selectById(handleCallbackParam.getLogId());
         if (log == null) {
             return new ReturnT<String>(ReturnT.FAIL_CODE, "log item not found.");
         }
         if (log.getHandleCode() > 0) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, "log repeate callback.");     // avoid repeat callback, trigger child job etc
+            return new ReturnT<String>(ReturnT.FAIL_CODE, "log repeate callback.");     // 避免重复回调造成子任务多次触发
         }
 
-        // trigger success, to trigger child job
+        // 当前任务成功后触发子任务
         String callbackMsg = null;
         int resultCode = handleCallbackParam.getExecuteResult().getCode();
 
@@ -100,7 +100,7 @@ public class AdminBizImpl implements AdminBiz {
                         JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null);
                         ReturnT<String> triggerChildResult = ReturnT.SUCCESS;
 
-                        // add msg
+                        // 追加处理说明
                         callbackMsg += MessageFormat.format(I18nUtil.getString("jobconf_callback_child_msg1"),
                                 (i + 1),
                                 childJobIds.length,
@@ -118,12 +118,12 @@ public class AdminBizImpl implements AdminBiz {
             }
         }
 
-        //kill execution timeout DataX process
+        //终止执行超时的 DataX 进程
         if (!StringUtils.isEmpty(log.getProcessId()) && IJobHandler.FAIL_TIMEOUT.getCode() == resultCode) {
             KillJob.trigger(log.getId(), log.getTriggerTime(), log.getExecutorAddress(), log.getProcessId());
         }
 
-        // handle msg
+        // 处理结果说明
         StringBuffer handleMsg = new StringBuffer();
         if (log.getHandleMsg() != null) {
             handleMsg.append(log.getHandleMsg()).append("<br>");
@@ -139,7 +139,7 @@ public class AdminBizImpl implements AdminBiz {
             handleMsg = new StringBuffer(handleMsg.substring(0, 15000));  // text最大64kb 避免长度过长
         }
 
-        // success, save log
+        // 执行成功后保存日志
         log.setHandleTime(new Date());
         log.setHandleCode(resultCode);
         log.setHandleMsg(handleMsg.toString());
@@ -170,7 +170,7 @@ public class AdminBizImpl implements AdminBiz {
     @Override
     public ReturnT<String> registry(RegistryParam registryParam) {
 
-        // valid
+        // 参数校验
         if (!StringUtils.hasText(registryParam.getRegistryGroup())
                 || !StringUtils.hasText(registryParam.getRegistryKey())
                 || !StringUtils.hasText(registryParam.getRegistryValue())) {
@@ -185,7 +185,7 @@ public class AdminBizImpl implements AdminBiz {
             registry.setUpdateTime(new Date());
             jobRegistryMapper.insert(registry);
 
-            // fresh
+            // 刷新状态
             freshGroupRegistryInfo(registryParam);
         }
         return ReturnT.SUCCESS;
@@ -194,7 +194,7 @@ public class AdminBizImpl implements AdminBiz {
     @Override
     public ReturnT<String> registryRemove(RegistryParam registryParam) {
 
-        // valid
+        // 参数校验
         if (!StringUtils.hasText(registryParam.getRegistryGroup())
                 || !StringUtils.hasText(registryParam.getRegistryKey())
                 || !StringUtils.hasText(registryParam.getRegistryValue())) {
@@ -204,14 +204,14 @@ public class AdminBizImpl implements AdminBiz {
         int ret = jobRegistryMapper.registryDelete(registryParam.getRegistryGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());
         if (ret > 0) {
 
-            // fresh
+            // 刷新状态
             freshGroupRegistryInfo(registryParam);
         }
         return ReturnT.SUCCESS;
     }
 
     private void freshGroupRegistryInfo(RegistryParam registryParam) {
-        // Under consideration, prevent affecting core tables
+        // 暂不启用，避免影响核心表
     }
 
 }

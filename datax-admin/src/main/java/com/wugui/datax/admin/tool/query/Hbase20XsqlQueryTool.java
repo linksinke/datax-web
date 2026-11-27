@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * for HBase2.X and Phoenix5.X
+ * 适配 HBase 2.X 与 Phoenix 5.X
  */
 
 public class Hbase20XsqlQueryTool extends BaseQueryTool implements QueryToolInterface {

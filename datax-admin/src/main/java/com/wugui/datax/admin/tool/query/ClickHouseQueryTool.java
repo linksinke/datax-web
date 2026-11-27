@@ -5,7 +5,7 @@ import com.wugui.datax.admin.entity.JobDatasource;
 import java.sql.SQLException;
 
 /**
- * ClickHouse
+ * ClickHouse 结构查询
  */
 
 public class ClickHouseQueryTool extends BaseQueryTool implements QueryToolInterface {

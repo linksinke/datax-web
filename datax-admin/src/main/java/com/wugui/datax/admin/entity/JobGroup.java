@@ -9,11 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by jingwk on 2019/11/17
+ * 创建者：jingwk，时间：2019/11/17
  */
 @Data
 @TableName("job_group")
-public class JobGroup {
+public class JobGroup extends AuditFields {
 
     @ApiModelProperty("执行器Id")
     @TableId(type = IdType.AUTO)
